@@ -1,0 +1,211 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Project Lover Boy 💙</title>
+  <style>
+    :root {
+      --sky: #a4deff;
+      --deep-blue: #245b85;
+      --white: #ffffff;
+    }
+
+    * { box-sizing: border-box; }
+
+    body {
+      margin: 0;
+      min-height: 100vh;
+      font-family: "Trebuchet MS", Arial, sans-serif;
+      background: linear-gradient(145deg, #c8edff, var(--sky) 55%, #8ccfff);
+      color: var(--deep-blue);
+      display: grid;
+      place-items: center;
+      overflow-x: hidden;
+    }
+
+    .screen {
+      width: min(900px, 100%);
+      min-height: 100vh;
+      padding: 28px 18px;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      text-align: center;
+    }
+
+    .hidden { display: none; }
+
+    h1 {
+      margin: 0 0 8px;
+      color: var(--white);
+      font-size: clamp(2.2rem, 7vw, 4.5rem);
+      text-shadow: 0 3px 14px #428ec080;
+    }
+
+    .subtitle {
+      margin: 0 0 22px;
+      color: #fff;
+      font-size: clamp(1rem, 3vw, 1.2rem);
+      text-shadow: 0 2px 8px #428ec080;
+    }
+
+    .heart-area {
+      position: relative;
+      width: min(90vw, 470px);
+      height: min(78vw, 410px);
+      min-height: 300px;
+      margin: 0 auto 20px;
+    }
+
+    .love-word {
+      position: absolute;
+      transform: translate(-50%, -50%);
+      color: white;
+      font-weight: 700;
+      font-size: clamp(0.82rem, 2.8vw, 1.15rem);
+      white-space: nowrap;
+      text-shadow: 0 2px 7px #2879ad75;
+      animation: float 3.4s ease-in-out infinite;
+      user-select: none;
+    }
+
+    .love-word:nth-child(3n) { animation-delay: -1s; }
+    .love-word:nth-child(3n + 1) { animation-delay: -2s; }
+
+    @keyframes float {
+      0%, 100% { translate: 0 0; }
+      50% { translate: 0 -5px; }
+    }
+
+    .button {
+      border: 0;
+      border-radius: 999px;
+      padding: 14px 24px;
+      background: white;
+      color: #2873a6;
+      font-size: 1rem;
+      font-weight: 700;
+      cursor: pointer;
+      box-shadow: 0 7px 20px #347eac35;
+      transition: transform 0.2s ease, box-shadow 0.2s ease;
+    }
+
+    .button:hover {
+      transform: translateY(-2px);
+      box-shadow: 0 10px 25px #347eac45;
+    }
+
+    .button:focus-visible {
+      outline: 3px solid #245b85;
+      outline-offset: 4px;
+    }
+
+    .hint {
+      margin-top: 12px;
+      color: #ffffff;
+      font-size: 0.9rem;
+      text-shadow: 0 1px 5px #428ec080;
+    }
+
+    .photo-frame {
+      width: min(88vw, 620px);
+      padding: 12px;
+      border-radius: 24px;
+      background: #ffffffd9;
+      box-shadow: 0 15px 45px #2c78a54a;
+    }
+
+    .photo-frame img {
+      display: block;
+      width: 100%;
+      max-height: 62vh;
+      min-height: 240px;
+      object-fit: cover;
+      border-radius: 16px;
+      background: #d9f1ff;
+    }
+
+    .photo-caption {
+      margin: 16px 0 0;
+      color: #fff;
+      font-size: clamp(1.1rem, 4vw, 1.6rem);
+      text-shadow: 0 2px 9px #428ec080;
+    }
+
+    .back-button { margin-top: 18px; background: #ffffffb8; }
+
+    @media (prefers-reduced-motion: reduce) {
+      *, *::before, *::after {
+        animation-duration: 0.01ms !important;
+        transition-duration: 0.01ms !important;
+        scroll-behavior: auto !important;
+      }
+    }
+  </style>
+</head>
+<body>
+  <main>
+    <section class="screen" id="opening">
+      <h1 id="heading">Love you, Charlotte 💙</h1>
+      <p class="subtitle">A little something made just for you.</p>
+      <div class="heart-area" id="heart" aria-label="Love you words arranged in a heart"></div>
+      <button class="button" id="revealButton" type="button">One more thing…</button>
+      <p class="hint">Made with care 💙</p>
+    </section>
+
+    <section class="screen hidden" id="memory">
+      <h1>A little memory 💙</h1>
+      <div class="photo-frame">
+        <img id="memoryPhoto" src="holding-hands.jpg" alt="A favourite memory together"
+          onerror="this.onerror=null; this.style.display='none'; document.getElementById('photoFallback').style.display='block';">
+        <div id="photoFallback" style="display:none; padding:45px 12px; color:#245b85;">
+          <strong>Your photo goes here 💙</strong>
+          <p>Put the photo in the same folder as index.html and name it <code>holding-hands.jpg</code>.</p>
+        </div>
+      </div>
+      <p class="photo-caption">Thanks for being you.</p>
+      <button class="button back-button" id="backButton" type="button">Back to the heart</button>
+    </section>
+  </main>
+
+  <script>
+    const heart = document.getElementById("heart");
+
+    // Positions are percentages of the heart area, so they adapt to screen size.
+    const heartPositions = [
+      [30, 18], [40, 12], [50, 10], [60, 12], [70, 18],
+      [23, 27], [33, 28], [43, 25], [53, 25], [63, 28], [77, 27],
+      [28, 39], [38, 39], [48, 39], [58, 39], [68, 39],
+      [34, 51], [44, 51], [54, 51], [64, 51],
+      [40, 63], [50, 63], [60, 63],
+      [45, 74], [55, 74], [50, 84]
+    ];
+
+    heartPositions.forEach(([x, y], index) => {
+      const word = document.createElement("span");
+      word.className = "love-word";
+      word.textContent = index % 4 === 0 ? "Love you 💙" : "Love you";
+      word.style.left = x + "%";
+      word.style.top = y + "%";
+      heart.appendChild(word);
+    });
+
+    const opening = document.getElementById("opening");
+    const memory = document.getElementById("memory");
+
+    document.getElementById("revealButton").addEventListener("click", () => {
+      opening.classList.add("hidden");
+      memory.classList.remove("hidden");
+      window.scrollTo({ top: 0, behavior: "smooth" });
+    });
+
+    document.getElementById("backButton").addEventListener("click", () => {
+      memory.classList.add("hidden");
+      opening.classList.remove("hidden");
+      window.scrollTo({ top: 0, behavior: "smooth" });
+    });
+  </script>
+</body>
+</html>
