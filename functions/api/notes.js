@@ -82,22 +82,53 @@ export async function onRequestGet(context) {
   }
 }
 
+function isUnknownAuthor(note) {
+  return !note.author || note.author === 'Unknown';
+}
+
+function findNoteIndex(notes, id, note) {
+  if (id) {
+    const byId = notes.findIndex(n => n.id === id);
+    if (byId !== -1) return byId;
+  }
+  // Older notes may not have an id, so match on their contents instead.
+  if (note) {
+    return notes.findIndex(n =>
+      n.title === note.title &&
+      n.body === note.body &&
+      n.date === note.date &&
+      (n.author || '') === (note.author || '')
+    );
+  }
+  return -1;
+}
+
 export async function onRequestPost(context) {
   try {
     const { request, env } = context;
     const body = await request.json();
     
     if (body.action === 'delete') {
-      const { id, author, sha, currentUser } = body;
-      if (author !== currentUser) {
-        return new Response(JSON.stringify({ error: 'You can only delete your own notes' }), {
+      const { id, sha, currentUser, note } = body;
+      const { notes, sha: currentSha } = await getNotes(env);
+      const index = findNoteIndex(notes, id, note);
+      if (index === -1) {
+        return new Response(JSON.stringify({ error: 'Note not found' }), {
+          status: 404,
+          headers: { 'content-type': 'application/json' }
+        });
+      }
+
+      const target = notes[index];
+      if (!isUnknownAuthor(target) && target.author !== currentUser) {
+        return new Response(JSON.stringify({ error: 'You can only delete your own notes or notes from unknown authors' }), {
           status: 403,
           headers: { 'content-type': 'application/json' }
         });
       }
-      const { notes, sha: currentSha } = await getNotes(env);
-      const filtered = notes.filter(n => n.id !== id);
-      const newSha = await saveNotes(env, filtered, sha || currentSha, `Delete note ${id}`);
+
+      notes.splice(index, 1);
+      const newSha = await saveNotes(env, notes, sha || currentSha, `Delete note ${id || target.title || 'Untitled'}`);
       return new Response(JSON.stringify({ ok: true, sha: newSha }), {
         status: 200,
         headers: { 'content-type': 'application/json' }

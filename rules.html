@@ -1,0 +1,271 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Rules &amp; boundaries</title>
+  <script>
+    if (!localStorage.getItem('charlotte-user')) {
+      window.location.href = 'login.html';
+    }
+  </script>
+  <style>
+    :root { --sky: #a4deff; --deep-blue: #245b85; }
+    * { box-sizing: border-box; }
+    body {
+      margin: 0;
+      min-height: 100vh;
+      font-family: "Trebuchet MS", Arial, sans-serif;
+      background: linear-gradient(145deg, #c8edff, var(--sky) 55%, #8ccfff);
+      color: var(--deep-blue);
+    }
+    .screen {
+      width: min(1000px, 100%);
+      min-height: 100vh;
+      margin: 0 auto;
+      padding: 80px 18px 40px;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      text-align: center;
+      gap: 16px;
+    }
+    h1 { margin: 0; color: #fff; font-size: clamp(2rem, 6vw, 3.6rem); text-shadow: 0 3px 14px #428ec080; }
+    .subtitle { margin: 0; color: #fff; font-size: clamp(1rem, 3vw, 1.2rem); text-shadow: 0 2px 8px #428ec080; }
+    .top-bar { position: fixed; top: 16px; left: 16px; z-index: 5; }
+    .button {
+      border: 0;
+      border-radius: 999px;
+      padding: 12px 22px;
+      background: white;
+      color: #2873a6;
+      font-size: 0.98rem;
+      font-weight: 700;
+      text-decoration: none;
+      box-shadow: 0 7px 20px #347eac35;
+      cursor: pointer;
+    }
+    .button:disabled { opacity: 0.6; cursor: wait; }
+    .sections {
+      width: min(980px, 94vw);
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+      gap: 18px;
+      align-items: start;
+      text-align: left;
+    }
+    .panel {
+      background: #ffffffee;
+      border-radius: 18px;
+      box-shadow: 0 12px 30px #347eac30;
+      padding: clamp(16px, 4vw, 24px);
+      display: flex;
+      flex-direction: column;
+      gap: 12px;
+    }
+    .panel h2 {
+      margin: 0;
+      color: #2873a6;
+      font-size: 1.35rem;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+    .panel .hint { margin: -4px 0 0; color: #3b7db3; font-size: 0.9rem; }
+    .panel textarea {
+      width: 100%;
+      min-height: 74px;
+      resize: vertical;
+      border-radius: 12px;
+      border: 1px solid #b9dcf5;
+      padding: 12px 14px;
+      font-family: inherit;
+      font-size: 1rem;
+    }
+    .panel .button { align-self: flex-start; }
+    .items {
+      display: flex;
+      flex-direction: column;
+      gap: 10px;
+    }
+    .item {
+      background: #e8f6ff;
+      border-radius: 12px;
+      padding: 12px 14px;
+      display: flex;
+      flex-direction: column;
+      gap: 6px;
+    }
+    .item-text { margin: 0; line-height: 1.6; white-space: pre-wrap; overflow-wrap: anywhere; }
+    .item-footer {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      gap: 10px;
+    }
+    .item-meta { color: #3b7db3; font-size: 0.85rem; }
+    .delete-btn {
+      border: 0;
+      background: transparent;
+      color: #3b7db3;
+      font-family: inherit;
+      font-size: 0.85rem;
+      font-weight: 700;
+      cursor: pointer;
+      padding: 2px 4px;
+    }
+    .delete-btn:hover { text-decoration: underline; }
+    .empty { margin: 0; color: #6a9ec2; font-style: italic; font-size: 0.95rem; }
+  </style>
+</head>
+<body>
+  <div class="top-bar">
+    <a class="button" href="index.html">← Back to hub</a>
+  </div>
+  <main class="screen">
+    <h1>Rules &amp; boundaries</h1>
+    <p class="subtitle">What we agree on and what we need</p>
+
+    <div class="sections">
+      <section class="panel">
+        <h2>🤍 Our rules</h2>
+        <p class="hint">Things we both agree to do.</p>
+        <textarea id="rulesInput" maxlength="500" placeholder="e.g. Always tell each other if something is wrong"></textarea>
+        <button class="button add-button" data-section="rules">Add rule</button>
+        <div class="items" id="rulesList"></div>
+      </section>
+
+      <section class="panel">
+        <h2>🛑 Our boundaries</h2>
+        <p class="hint">Things we need to feel safe and respected.</p>
+        <textarea id="boundariesInput" maxlength="500" placeholder="e.g. No going quiet for a whole day without saying why"></textarea>
+        <button class="button add-button" data-section="boundaries">Add boundary</button>
+        <div class="items" id="boundariesList"></div>
+      </section>
+    </div>
+  </main>
+
+  <script>
+    const currentUser = localStorage.getItem('charlotte-user') || 'Unknown';
+    const state = { rules: [], boundaries: [] };
+    let currentSha = null;
+
+    function escapeHtml(text) {
+      const div = document.createElement('div');
+      div.textContent = text;
+      return div.innerHTML;
+    }
+
+    function isUnknownAuthor(item) {
+      return !item.author || item.author === 'Unknown';
+    }
+
+    function canDelete(item) {
+      return isUnknownAuthor(item) || item.author === currentUser;
+    }
+
+    function renderSection(section) {
+      const list = document.getElementById(section + 'List');
+      list.innerHTML = '';
+
+      const items = state[section] || [];
+      if (!items.length) {
+        const empty = document.createElement('p');
+        empty.className = 'empty';
+        empty.textContent = section === 'rules' ? 'No rules yet — add the first one.' : 'No boundaries yet — add the first one.';
+        list.appendChild(empty);
+        return;
+      }
+
+      items.forEach(item => {
+        const el = document.createElement('article');
+        el.className = 'item';
+        el.innerHTML = `
+          <p class="item-text">${escapeHtml(item.text)}</p>
+          <div class="item-footer">
+            <span class="item-meta">By ${escapeHtml(item.author || 'Unknown')} • ${escapeHtml(item.date || '')}</span>
+            ${canDelete(item) ? '<button class="delete-btn" type="button">Delete</button>' : ''}
+          </div>
+        `;
+        const deleteButton = el.querySelector('.delete-btn');
+        if (deleteButton) {
+          deleteButton.addEventListener('click', () => deleteItem(section, item));
+        }
+        list.appendChild(el);
+      });
+    }
+
+    function render() {
+      renderSection('rules');
+      renderSection('boundaries');
+    }
+
+    async function loadRules() {
+      try {
+        const res = await fetch('/api/rules');
+        const json = await res.json();
+        state.rules = json.rules || [];
+        state.boundaries = json.boundaries || [];
+        currentSha = json.sha || null;
+      } catch (e) {
+        state.rules = [];
+        state.boundaries = [];
+        currentSha = null;
+      }
+      render();
+    }
+
+    async function addItem(section, button) {
+      const input = document.getElementById(section + 'Input');
+      const text = input.value.trim();
+      if (!text) return;
+
+      button.disabled = true;
+      try {
+        const res = await fetch('/api/rules', {
+          method: 'POST',
+          headers: { 'content-type': 'application/json' },
+          body: JSON.stringify({ action: 'add', section, item: { text }, currentUser, sha: currentSha })
+        });
+        const json = await res.json();
+        if (!res.ok) throw new Error(json.error || 'Failed to save');
+        currentSha = json.sha || currentSha;
+        state.rules = json.rules || state.rules;
+        state.boundaries = json.boundaries || state.boundaries;
+        input.value = '';
+        render();
+      } catch (e) {
+        alert(e.message);
+      } finally {
+        button.disabled = false;
+      }
+    }
+
+    async function deleteItem(section, item) {
+      if (!confirm('Delete this item?')) return;
+      try {
+        const res = await fetch('/api/rules', {
+          method: 'POST',
+          headers: { 'content-type': 'application/json' },
+          body: JSON.stringify({ action: 'delete', section, id: item.id, currentUser, sha: currentSha })
+        });
+        const json = await res.json();
+        if (!res.ok) throw new Error(json.error || 'Failed to delete');
+        currentSha = json.sha || currentSha;
+        state.rules = json.rules || state.rules;
+        state.boundaries = json.boundaries || state.boundaries;
+        render();
+      } catch (e) {
+        alert(e.message);
+      }
+    }
+
+    document.querySelectorAll('.add-button').forEach(button => {
+      button.addEventListener('click', () => addItem(button.dataset.section, button));
+    });
+
+    loadRules();
+  </script>
+  <script src="avatar.js"></script>
+</body>
+</html>

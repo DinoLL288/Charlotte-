@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Profile</title>
+  <title>Settings</title>
   <style>
     :root { --sky: #a4deff; --deep-blue: #245b85; }
     * { box-sizing: border-box; }
@@ -49,6 +49,18 @@
       cursor: pointer;
     }
     .top-bar { position: absolute; top: 16px; left: 16px; }
+    .subtitle {
+      margin: -6px 0 0;
+      color: #3b7db3;
+      font-size: 0.98rem;
+    }
+    .section-title {
+      width: 100%;
+      margin: 6px 0 -4px;
+      text-align: left;
+      color: #2873a6;
+      font-size: 1rem;
+    }
   </style>
 </head>
 <body>
@@ -56,10 +68,13 @@
     <a class="button" href="index.html">← Back to hub</a>
   </div>
   <div class="card">
-    <h1 id="username">Profile</h1>
+    <h1>Settings</h1>
+    <p class="subtitle">Signed in as <strong id="username"></strong></p>
+    <h2 class="section-title">Profile picture</h2>
     <img id="avatar" class="avatar" src="https://ui-avatars.com/api/?name=User&background=e8f6ff&color=2873a6&size=256" alt="Profile picture">
     <input type="file" id="avatarInput" accept="image/*">
     <button class="button" id="saveAvatar">Save profile picture</button>
+    <h2 class="section-title">Account</h2>
     <button class="button" id="logout">Logout</button>
   </div>
 
@@ -111,7 +126,10 @@
         });
         const json = await res.json();
         if (!res.ok) throw new Error(json.error || 'Failed');
-        if (json.url) avatar.src = json.url;
+        if (json.url) {
+          avatar.src = json.url;
+          localStorage.setItem('charlotte-avatar-' + user, json.url);
+        }
         alert('Profile picture saved!');
       } catch (e) {
         alert(e.message);

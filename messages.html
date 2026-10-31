@@ -116,6 +116,14 @@
     let currentSha = null;
     const currentUser = localStorage.getItem('charlotte-user') || 'Unknown';
 
+    function isUnknownAuthor(note) {
+      return !note.author || note.author === 'Unknown';
+    }
+
+    function canDelete(note) {
+      return isUnknownAuthor(note) || note.author === currentUser;
+    }
+
     function render() {
       notesList.innerHTML = '';
       notes.slice().reverse().forEach(note => {
@@ -127,12 +135,13 @@
               <div class="note-title">${escapeHtml(note.title || 'Untitled')}</div>
               <div style="color:#3b7db3; font-size:0.9rem;">By ${escapeHtml(note.author || 'Unknown')} • ${note.date}</div>
             </div>
-            ${note.author === currentUser ? `<button class="button" style="padding:8px 16px; font-size:0.9rem;" data-id="${note.id}">Delete</button>` : ''}
+            ${canDelete(note) ? `<button class="button" style="padding:8px 16px; font-size:0.9rem;" data-id="${note.id || ''}">Delete</button>` : ''}
           </div>
           <p class="note-body">${escapeHtml(note.body)}</p>
         `;
-        if (note.author === currentUser) {
-          el.querySelector('button').addEventListener('click', () => deleteNote(note));
+        const deleteButton = el.querySelector('button');
+        if (deleteButton) {
+          deleteButton.addEventListener('click', () => deleteNote(note));
         }
         notesList.appendChild(el);
       });
@@ -163,12 +172,13 @@
         const res = await fetch('/api/notes', {
           method: 'POST',
           headers: { 'content-type': 'application/json' },
-          body: JSON.stringify({ action: 'delete', id: note.id, author: note.author, currentUser, sha: currentSha })
+          body: JSON.stringify({ action: 'delete', id: note.id, note, currentUser, sha: currentSha })
         });
         const json = await res.json();
         if (!res.ok) throw new Error(json.error || 'Failed to delete');
         currentSha = json.sha || currentSha;
-        notes = notes.filter(n => n.id !== note.id);
+        const index = notes.indexOf(note);
+        if (index !== -1) notes.splice(index, 1);
         render();
       } catch (e) {
         alert(e.message);
@@ -209,5 +219,6 @@
 
     loadNotes();
   </script>
+  <script src="avatar.js"></script>
 </body>
 </html>

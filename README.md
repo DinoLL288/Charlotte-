@@ -8,6 +8,8 @@ A little site for Charlotte. Now split into a hub with multiple sections.
 - `index.html` - Hub page to navigate between sections
 - `love.html` - Original heart animation + photo memory
 - `messages.html`, `gallery.html`, `timeline.html` - Extra sections
+- `rules.html` - Shared rules & boundaries, saved to `rules/rules.json` via `/api/rules`
+- `avatar.js` - Shared top-right profile picture button that links to Settings
 - `tiktok.html` - Save TikTok links and plan dance dates (dates auto-sync to the calendar)
 
 ## Gallery photo uploads (Cloudflare Pages)
