@@ -37,9 +37,20 @@ export async function onRequestGet(context) {
           });
         }
 
+        // Load metadata
+        let metadata = {};
+        try {
+          const metaRes = await fetch(`https://api.github.com/repos/${repo}/contents/gallery/metadata.json?ref=${branch}`, { headers });
+          if (metaRes.status === 200) {
+            const metaJson = await metaRes.json();
+            const metaContent = atob((metaJson.content || '').replace(/\n/g, ''));
+            metadata = JSON.parse(decodeURIComponent(escape(metaContent)) || '{}');
+          }
+        } catch (e) {}
+
         const photos = json
           .filter(f => f.type === 'file')
-          .map(f => ({ name: f.name, url: f.download_url || f.html_url, path: f.path, uploadedBy: null }))
+          .map(f => ({ name: f.name, url: f.download_url || f.html_url, path: f.path, uploadedBy: metadata[f.path]?.uploadedBy || null }))
           .sort((a, b) => b.name.localeCompare(a.name));
 
         return new Response(JSON.stringify({ photos }), {
@@ -62,9 +73,19 @@ export async function onRequestGet(context) {
         });
       }
 
+      let metadata = {};
+      try {
+        const metaRes = await fetch(`https://api.github.com/repos/${repo}/contents/gallery/metadata.json?ref=${branch}`, { headers });
+        if (metaRes.status === 200) {
+          const metaJson = await metaRes.json();
+          const metaContent = atob((metaJson.content || '').replace(/\n/g, ''));
+          metadata = JSON.parse(decodeURIComponent(escape(metaContent)) || '{}');
+        }
+      } catch (e) {}
+
       const photos = json
         .filter(f => f.type === 'file')
-        .map(f => ({ name: f.name, url: f.download_url || f.html_url, path: f.path, uploadedBy: null }))
+        .map(f => ({ name: f.name, url: f.download_url || f.html_url, path: f.path, uploadedBy: metadata[f.path]?.uploadedBy || null }))
         .sort((a, b) => b.name.localeCompare(a.name));
 
       return new Response(JSON.stringify({ photos }), {

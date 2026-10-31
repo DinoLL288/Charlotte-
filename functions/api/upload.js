@@ -58,6 +58,47 @@ export async function onRequestPost(context) {
     }
 
     const url = json.content?.download_url || `/${filename}`;
+    
+    // Update metadata
+    try {
+      const metaPath = 'gallery/metadata.json';
+      const metaHeaders = {
+        'Authorization': `Bearer ${token}`,
+        'Accept': 'application/vnd.github.v3+json',
+        'User-Agent': 'cf-pages-upload'
+      };
+      let metadata = {};
+      let metaSha = null;
+      const metaRes = await fetch(`https://api.github.com/repos/${repo}/contents/${metaPath}?ref=${branch}`, { headers: metaHeaders });
+      if (metaRes.status === 200) {
+        const metaJson = await metaRes.json();
+        metaSha = metaJson.sha;
+        try {
+          const metaContent = atob((metaJson.content || '').replace(/\n/g, ''));
+          metadata = JSON.parse(decodeURIComponent(escape(metaContent)) || '{}');
+        } catch {
+          const metaContent = atob((metaJson.content || '').replace(/\n/g, ''));
+          metadata = JSON.parse(metaContent || '{}');
+        }
+      }
+      metadata[filename] = { uploadedBy, uploadedAt: new Date().toISOString() };
+      const updatedMetaContent = JSON.stringify(metadata, null, 2);
+      const metaContentEncoded = btoa(unescape(encodeURIComponent(updatedMetaContent)));
+      const metaBody = {
+        message: `Update gallery metadata for ${filename.split('/').pop()}`,
+        content: metaContentEncoded,
+        branch: branch
+      };
+      if (metaSha) metaBody.sha = metaSha;
+      await fetch(`https://api.github.com/repos/${repo}/contents/${metaPath}`, {
+        method: 'PUT',
+        headers: metaHeaders,
+        body: JSON.stringify(metaBody)
+      });
+    } catch (e) {
+      // ignore metadata errors
+    }
+    
     return new Response(JSON.stringify({ ok: true, url, path: filename, uploadedBy }), {
       status: 200,
       headers: { 'content-type': 'application/json' }
