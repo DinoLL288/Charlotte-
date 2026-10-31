@@ -112,25 +112,22 @@
     .grid {
       width: min(1100px, 94vw);
       display: grid;
-      grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
-      gap: 16px;
+      grid-template-columns: repeat(auto-fill, minmax(220px, 1fr));
+      gap: 14px;
       align-items: start;
     }
     .tile {
-      border-radius: 16px;
+      border-radius: 12px;
       overflow: hidden;
-      background: linear-gradient(145deg, #f0faff, #e6f6ff);
-      box-shadow: 0 12px 30px #347eac30;
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      min-height: 220px;
+      background: #ffffff;
+      box-shadow: 0 8px 20px #347eac25;
+      position: relative;
+      aspect-ratio: 4 / 3;
     }
     .tile img {
       width: 100%;
-      height: auto;
-      max-height: 70vh;
-      object-fit: contain;
+      height: 100%;
+      object-fit: cover;
       display: block;
     }
     .tile.empty {
@@ -254,26 +251,15 @@
           json.photos.forEach(photo => {
             const tile = document.createElement('div');
             tile.className = 'tile';
-            tile.style.flexDirection = 'column';
             tile.style.cursor = 'pointer';
             const img = document.createElement('img');
             img.src = photo.url;
             img.alt = 'Gallery photo';
             tile.appendChild(img);
             if (photo.uploadedBy) {
-              const byline = document.createElement('div');
-              byline.style.padding = '6px 10px';
-              byline.style.fontSize = '0.85rem';
-              byline.style.color = '#2873a6';
-              byline.textContent = `Uploaded by ${photo.uploadedBy}`;
-              tile.appendChild(byline);
+              tile.dataset.uploadedBy = photo.uploadedBy;
             } else {
-              const byline = document.createElement('div');
-              byline.style.padding = '6px 10px';
-              byline.style.fontSize = '0.85rem';
-              byline.style.color = '#3b7db3';
-              byline.textContent = 'Uploaded by Unknown';
-              tile.appendChild(byline);
+              tile.dataset.uploadedBy = 'Unknown';
             }
             grid.appendChild(tile);
           });
@@ -285,12 +271,12 @@
             json2.photos.forEach(photo => {
               const tile = document.createElement('div');
               tile.className = 'tile';
-              tile.style.flexDirection = 'column';
               tile.style.cursor = 'pointer';
               const img = document.createElement('img');
               img.src = photo.url;
               img.alt = 'Gallery photo';
               tile.appendChild(img);
+              tile.dataset.uploadedBy = photo.uploadedBy || 'Unknown';
               grid.appendChild(tile);
             });
           } else {
@@ -407,13 +393,13 @@
     document.addEventListener('click', (e) => {
       if (e.target.tagName === 'IMG' && e.target.closest('.tile')) {
         const tile = e.target.closest('.tile');
-        const byline = tile.querySelector('div');
-        const by = byline ? byline.textContent.replace('Uploaded by ', '') : 'Unknown';
+        const by = tile.dataset.uploadedBy || 'Unknown';
         openLightbox(e.target.src, by);
       }
     });
 
     loadFolders();
   </script>
+  <script src="avatar.js"></script>
 </body>
 </html>
