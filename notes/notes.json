@@ -5,7 +5,10 @@
       "title": "I love you",
       "body": "I love you so much baby",
       "date": "31/10/2026, 5:09:48 pm",
-      "author": "Charlotte"
+      "author": "Charlotte",
+      "locked": true,
+      "lockedBy": "Luke",
+      "lockedAt": "10/31/2026, 9:46:55 AM"
     }
   ]
 }
