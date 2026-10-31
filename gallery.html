@@ -116,13 +116,13 @@
     <section class="upload-card">
       <strong>Upload a photo</strong>
       <div style="display:flex; gap:10px; flex-wrap:wrap; align-items:center; justify-content:center;">
-        <select id="folderSelect" style="padding:10px 14px; border-radius:10px; border:1px solid #b9dcf5;"></select>
+        <div id="folderCheckboxes" style="display:flex; gap:10px; flex-wrap:wrap; justify-content:center;"></div>
         <input id="newFolderInput" placeholder="New folder name" style="padding:10px 14px; border-radius:10px; border:1px solid #b9dcf5;">
-        <button class="button" id="createFolderBtn" type="button">Create Folder</button>
+        <button class="button" id="createFolderBtn" type="button">Add Folder</button>
       </div>
       <form id="uploadForm">
         <input id="photoInput" type="file" name="photo" accept="image/*" required>
-        <button class="button" id="uploadBtn" type="submit">Upload to selected folder</button>
+        <button class="button" id="uploadBtn" type="submit">Upload to selected folders</button>
       </form>
       <div class="status" id="uploadStatus"></div>
     </section>
@@ -133,7 +133,7 @@
     const input = document.getElementById('photoInput');
     const btn = document.getElementById('uploadBtn');
     const statusEl = document.getElementById('uploadStatus');
-    const folderSelect = document.getElementById('folderSelect');
+    const folderCheckboxes = document.getElementById('folderCheckboxes');
     const newFolderInput = document.getElementById('newFolderInput');
     const createFolderBtn = document.getElementById('createFolderBtn');
     const folderView = document.getElementById('folderView');
@@ -141,46 +141,41 @@
     let folders = [];
 
     function renderFolders() {
-      folderSelect.innerHTML = '';
-      const allOption = document.createElement('option');
-      allOption.value = 'all';
-      allOption.textContent = 'All Photos';
-      folderSelect.appendChild(allOption);
+      folderCheckboxes.innerHTML = '';
       folders.forEach(f => {
-        const opt = document.createElement('option');
-        opt.value = f;
-        opt.textContent = f;
-        folderSelect.appendChild(opt);
+        if (f === 'Old Photos') return;
+        const label = document.createElement('label');
+        label.style.display = 'flex';
+        label.style.alignItems = 'center';
+        label.style.gap = '6px';
+        label.style.background = '#ffffffee';
+        label.style.padding = '8px 14px';
+        label.style.borderRadius = '999px';
+        label.style.boxShadow = '0 6px 16px #347eac20';
+        const cb = document.createElement('input');
+        cb.type = 'checkbox';
+        cb.value = f;
+        cb.checked = f === 'General';
+        label.appendChild(cb);
+        label.appendChild(document.createTextNode(f));
+        folderCheckboxes.appendChild(label);
       });
       renderGalleryView();
     }
 
     function renderGalleryView() {
       folderView.innerHTML = '';
-      const selected = folderSelect.value;
-      if (selected === 'all') {
-        folders.forEach(folder => {
-          const section = document.createElement('section');
-          section.style.width = 'min(1100px, 94vw)';
-          section.innerHTML = `<h2 style="color:#fff; text-shadow:0 2px 8px #428ec080; text-align:left;">${folder}</h2>`;
-          const grid = document.createElement('div');
-          grid.className = 'grid';
-          grid.dataset.folder = folder;
-          section.appendChild(grid);
-          folderView.appendChild(section);
-          loadFolderPhotos(folder, grid);
-        });
-      } else {
+      folders.forEach(folder => {
         const section = document.createElement('section');
         section.style.width = 'min(1100px, 94vw)';
-        section.innerHTML = `<h2 style="color:#fff; text-shadow:0 2px 8px #428ec080; text-align:left;">${selected}</h2>`;
+        section.innerHTML = `<h2 style="color:#fff; text-shadow:0 2px 8px #428ec080; text-align:left;">${folder}</h2>`;
         const grid = document.createElement('div');
         grid.className = 'grid';
-        grid.dataset.folder = selected;
+        grid.dataset.folder = folder;
         section.appendChild(grid);
         folderView.appendChild(section);
-        loadFolderPhotos(selected, grid);
-      }
+        loadFolderPhotos(folder, grid);
+      });
     }
 
     async function loadFolderPhotos(folder, grid) {
@@ -237,34 +232,36 @@
         folders.push(name);
         newFolderInput.value = '';
         renderFolders();
-        folderSelect.value = name;
-        renderGalleryView();
       }
     });
-
-    folderSelect.addEventListener('change', renderGalleryView);
 
     form.addEventListener('submit', async (e) => {
       e.preventDefault();
       const file = input.files?.[0];
       if (!file) return;
       const user = localStorage.getItem('charlotte-user') || 'Unknown';
-      const folder = folderSelect.value === 'all' ? 'General' : folderSelect.value;
+      const selectedFolders = Array.from(folderCheckboxes.querySelectorAll('input:checked')).map(cb => cb.value);
+      if (selectedFolders.length === 0) {
+        statusEl.textContent = 'Select at least one folder';
+        return;
+      }
       btn.disabled = true;
       statusEl.textContent = 'Uploading...';
 
       try {
-        const data = new FormData();
-        data.append('photo', file);
-        data.append('uploadedBy', user);
-        data.append('folder', folder);
-        const res = await fetch('/api/upload', {
-          method: 'POST',
-          body: data
-        });
-        const json = await res.json();
-        if (!res.ok) throw new Error(json.error || 'Upload failed');
-        statusEl.textContent = 'Uploaded!';
+        for (const folder of selectedFolders) {
+          const data = new FormData();
+          data.append('photo', file);
+          data.append('uploadedBy', user);
+          data.append('folder', folder);
+          const res = await fetch('/api/upload', {
+            method: 'POST',
+            body: data
+          });
+          const json = await res.json();
+          if (!res.ok) throw new Error(json.error || 'Upload failed');
+        }
+        statusEl.textContent = 'Uploaded to all selected folders!';
         form.reset();
         renderGalleryView();
       } catch (err) {
