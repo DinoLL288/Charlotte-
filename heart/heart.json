@@ -56,5 +56,25 @@
       "category": "",
       "month": ""
     }
+  ],
+  "awards": [
+    {
+      "id": "86d0a3a5-0c15-46cd-a193-ef7dc811a8b4",
+      "author": "Luke",
+      "createdAt": "2026-10-31T13:48:50.199Z",
+      "title": "Bestest girl ever",
+      "body": "when charlotte started dating me",
+      "occasion": "",
+      "rhythm": "",
+      "place": "",
+      "date": "",
+      "url": "",
+      "artist": "",
+      "feeling": "",
+      "question": "",
+      "answer": "",
+      "category": "",
+      "month": "2026-10"
+    }
   ]
 }
