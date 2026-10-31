@@ -1,0 +1,235 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Little things, together</title>
+  <script>if (!localStorage.getItem('charlotte-user')) location.href = 'login.html';</script>
+  <link rel="stylesheet" href="theme.css">
+  <style>
+    .hero { padding: 78px 20px 66px; text-align:center; color:white; background:linear-gradient(160deg,#0d2c44,#2a78a8); }
+    .hero .eyebrow { color:var(--gold-soft); }
+    .hero h1 { margin:10px 0; font-size:clamp(2.2rem,7vw,3.5rem); font-weight:400; }
+    .hero p:last-child { max-width:54ch; margin:0 auto; color:#e6f3fc; line-height:1.6; }
+    .top-bar { position:absolute; top:16px; left:16px; z-index:2; }
+    .shell { width:min(920px,100%); margin:-30px auto 60px; padding:0 18px; position:relative; }
+    .tabs { display:flex; gap:8px; overflow:auto; padding:10px; border-radius:18px; background:rgba(255,255,255,.92); box-shadow:0 14px 36px #143f5f22; }
+    .tab { flex:none; border:0; border-radius:999px; padding:10px 15px; color:#315d78; background:transparent; font:inherit; font-weight:700; cursor:pointer; }
+    .tab[aria-selected="true"] { color:white; background:#143f5f; }
+    .panel { display:none; margin-top:18px; padding:clamp(20px,4vw,32px); border:1px solid white; border-radius:24px; background:rgba(255,253,247,.96); box-shadow:0 20px 55px #143f5f22; }
+    .panel.is-active { display:block; }
+    .panel h2 { margin:0; color:#123a58; font-size:1.8rem; }
+    .intro { margin:8px 0 22px; color:#5c7c93; line-height:1.55; }
+    .composer { display:grid; gap:11px; padding:18px; border-radius:17px; background:#f1f8fc; }
+    .composer input,.composer textarea,.composer select { width:100%; padding:12px 14px; border:1px solid #c8dceb; border-radius:11px; color:var(--ink); background:white; font:inherit; }
+    .composer textarea { min-height:96px; resize:vertical; }
+    .composer .button { justify-self:start; }
+    .entries { display:grid; grid-template-columns:repeat(auto-fit,minmax(min(100%,260px),1fr)); gap:12px; margin-top:18px; }
+    .keepsake { position:relative; padding:18px; border-radius:17px; border:1px solid #e1ecf2; background:linear-gradient(145deg,#fff,#f8fbfd); }
+    .keepsake h3 { margin:0 34px 7px 0; color:#123a58; font:700 1.2rem var(--font-display); }
+    .keepsake p { margin:7px 0 0; color:#486a83; line-height:1.55; white-space:pre-wrap; overflow-wrap:anywhere; }
+    .keepsake details { margin-top:12px; color:#315d78; }
+    .keepsake summary { cursor:pointer; font-weight:700; }
+    .meta { color:#8a6d2b!important; font-size:.75rem; font-weight:700; letter-spacing:.07em; text-transform:uppercase; }
+    .entry-actions { display:flex; gap:8px; margin-top:13px; }
+    .small-button { border:1px solid #d5e3ec; border-radius:999px; padding:7px 11px; color:#24516e; background:white; font:inherit; font-size:.82rem; font-weight:700; cursor:pointer; text-decoration:none; }
+    .small-button:hover { background:#edf7fd; }
+    .small-button.delete { color:#754936; }
+    .empty { grid-column:1/-1; padding:26px; border:1px dashed #bfd5e3; border-radius:16px; text-align:center; color:#5c7c93; }
+    .surprise { margin:16px 0 0; padding:18px 20px; border-radius:16px; color:#684f1d; background:#fff5d9; font:italic 1.2rem/1.55 var(--font-display); }
+    .surprise[hidden] { display:none; }
+    .page-status { min-height:1.4em; margin:12px 4px 0; color:#754936; }
+    .done { opacity:.64; }
+    @media(max-width:520px) { .hero { padding-top:88px; } .tabs { margin:0 -4px; } }
+  </style>
+</head>
+<body>
+  <div class="top-bar"><a class="button" href="index.html">← Back to hub</a></div>
+  <header class="hero"><p class="eyebrow">A small collection of us</p><h1>Little things, together</h1><p>Keep the sweet details, the plans, and the places that make your story yours.</p></header>
+  <main class="shell">
+    <a class="small-button" href="play.html">🎲 Visit Play &amp; ask for your question ritual and little games →</a>
+    <a class="small-button" href="our-life.html">🧩 Visit Things we make together →</a>
+    <nav class="tabs" aria-label="Shared keepsakes">
+      <button class="tab" aria-selected="true" data-tab="jar">🤍 Little things</button>
+      <button class="tab" aria-selected="false" data-tab="letters">✉️ Open when</button>
+      <button class="tab" aria-selected="false" data-tab="traditions">🕯️ Traditions</button>
+      <button class="tab" aria-selected="false" data-tab="wishes">✨ Wish list</button>
+      <button class="tab" aria-selected="false" data-tab="places">📍 Memory map</button>
+      <button class="tab" aria-selected="false" data-tab="datepick">🌙 Date picker</button>
+      <button class="tab" aria-selected="false" data-tab="songs">🎧 Soundtrack</button>
+      <button class="tab" aria-selected="false" data-tab="checkins">💬 Check-ins</button>
+      <button class="tab" aria-selected="false" data-tab="quizzes">🎲 Quiz</button>
+      <button class="tab" aria-selected="false" data-tab="futureNotes">🗓️ Future notes</button>
+    </nav>
+
+    <section class="panel is-active" id="panel-jar">
+      <h2>Little things I love about you</h2><p class="intro">Drop a kind thought in the jar. When you need one, draw a little reminder.</p>
+      <form class="composer" data-type="jar"><textarea name="body" maxlength="300" placeholder="The way you always…" required></textarea><button class="button" type="submit">Add to the jar</button></form>
+      <blockquote class="surprise" id="surprise" hidden></blockquote><div class="entry-actions"><button class="small-button" id="drawNote" type="button">Draw a little reminder</button></div><div class="entries" id="list-jar"></div>
+    </section>
+
+    <section class="panel" id="panel-letters">
+      <h2>Open when…</h2><p class="intro">Write a note for a particular kind of day. The letter is here whenever that moment comes.</p>
+      <form class="composer" data-type="letters"><input name="occasion" maxlength="100" placeholder="Open when you’ve had a hard day" required><textarea name="body" maxlength="1500" placeholder="What would you like her to hear?" required></textarea><button class="button" type="submit">Save this letter</button></form><div class="entries" id="list-letters"></div>
+    </section>
+
+    <section class="panel" id="panel-traditions">
+      <h2>Our little traditions</h2><p class="intro">Save the small rituals you want to keep coming back to.</p>
+      <form class="composer" data-type="traditions"><input name="title" maxlength="100" placeholder="Sunday evening call" required><input name="rhythm" maxlength="100" placeholder="Every Sunday · whenever it works"><input name="date" type="date" aria-label="Next date (optional)"><textarea name="body" maxlength="500" placeholder="What makes this one yours? (optional)"></textarea><button class="button" type="submit">Keep this tradition</button></form><div class="entries" id="list-traditions"></div>
+    </section>
+
+    <section class="panel" id="panel-wishes">
+      <h2>Things we’d love to do</h2><p class="intro">Collect date ideas, little adventures, and things you want to try together.</p>
+      <form class="composer" data-type="wishes"><input name="title" maxlength="100" placeholder="Watch the sunset at the beach" required><select name="category" aria-label="Date idea type"><option value="">Any kind of wish</option><option value="at-home">Cosy at home</option><option value="out">An outing</option></select><textarea name="body" maxlength="500" placeholder="Details or who suggested it (optional)"></textarea><button class="button" type="submit">Add to our list</button></form><div class="entries" id="list-wishes"></div>
+    </section>
+
+    <section class="panel" id="panel-places">
+      <h2>Places that hold a memory</h2><p class="intro">Pin a place by name and save what happened there. The map link opens directions in your maps app.</p>
+      <form class="composer" data-type="places"><input name="place" maxlength="120" placeholder="The little café on the corner" required><input name="url" type="url" maxlength="500" placeholder="Map link (optional)"><textarea name="body" maxlength="700" placeholder="What do you remember about it?" required></textarea><button class="button" type="submit">Save this place</button></form><div class="entries" id="list-places"></div>
+    </section>
+
+    <section class="panel" id="panel-datepick">
+      <h2>Pick a date idea</h2><p class="intro">Can’t decide? Let the wish list choose one for you. Add date ideas to the wish list first.</p>
+      <div class="composer"><label for="dateMood">What sounds good?</label><select id="dateMood"><option value="all">Surprise me</option><option value="at-home">Something cosy at home</option><option value="out">An outing</option></select><button class="button" id="pickDate" type="button">Pick for us</button></div>
+      <blockquote class="surprise" id="datePickResult" hidden></blockquote>
+    </section>
+
+    <section class="panel" id="panel-songs">
+      <h2>Our soundtrack</h2><p class="intro">Save songs that remind you of each other, with the story behind them.</p>
+      <form class="composer" data-type="songs"><input name="title" maxlength="120" placeholder="Song title" required><input name="artist" maxlength="120" placeholder="Artist" required><input name="url" type="url" maxlength="500" placeholder="Spotify or music link (optional)"><textarea name="body" maxlength="500" placeholder="What does this song remind you of?"></textarea><button class="button" type="submit">Add to our soundtrack</button></form><div class="entries" id="list-songs"></div>
+    </section>
+
+    <section class="panel" id="panel-checkins">
+      <h2>A little check-in</h2><p class="intro">Share how you’re feeling when you want to. This is just a gentle snapshot, not a scorecard.</p>
+      <form class="composer" data-type="checkins"><select name="feeling" required aria-label="How are you feeling?"><option value="">How are you feeling?</option><option>Pretty good</option><option>Okay</option><option>A bit low</option><option>Stressed</option><option>Need some quiet</option></select><textarea name="body" maxlength="700" placeholder="Anything you want to share? (optional)"></textarea><button class="button" type="submit">Share check-in</button></form><div class="entries" id="list-checkins"></div>
+    </section>
+
+    <section class="panel" id="panel-quizzes">
+      <h2>Little quiz about us</h2><p class="intro">Make a playful question for each other. The answer stays tucked away until someone opens it.</p>
+      <form class="composer" data-type="quizzes"><input name="question" maxlength="180" placeholder="What was the first film we watched together?" required><input name="answer" maxlength="300" placeholder="The answer" required><button class="button" type="submit">Add a question</button></form><div class="entries" id="list-quizzes"></div>
+    </section>
+
+    <section class="panel" id="panel-futureNotes">
+      <h2>A note for future us</h2><p class="intro">Choose a day for this note to appear. Until then, it stays tucked away.</p>
+      <form class="composer" data-type="futureNotes"><input name="date" type="date" required aria-label="Open this note on"><textarea name="body" maxlength="1500" placeholder="A little message for that day…" required></textarea><button class="button" type="submit">Tuck this note away</button></form><div class="entries" id="list-futureNotes"></div>
+    </section>
+    <p class="page-status" id="pageStatus" role="status"></p>
+  </main>
+  <script src="dialog.js"></script>
+  <script>
+    const currentUser = localStorage.getItem('charlotte-user') || 'Unknown';
+    const data = { jar: [], letters: [], traditions: [], wishes: [], places: [], songs: [], checkins: [], quizzes: [], futureNotes: [] };
+    let busy = false;
+    const statusEl = document.getElementById('pageStatus');
+    const tabButtons = [...document.querySelectorAll('.tab')];
+    function localDateKey(date = new Date()) {
+      return date.getFullYear() + '-' + String(date.getMonth() + 1).padStart(2, '0') + '-' + String(date.getDate()).padStart(2, '0');
+    }
+    const tomorrow = new Date(); tomorrow.setDate(tomorrow.getDate() + 1);
+    document.querySelector('[data-type="futureNotes"] [name="date"]').min = localDateKey(tomorrow);
+
+    tabButtons.forEach(button => button.addEventListener('click', () => {
+      tabButtons.forEach(tab => tab.setAttribute('aria-selected', String(tab === button)));
+      document.querySelectorAll('.panel').forEach(panel => panel.classList.toggle('is-active', panel.id === 'panel-' + button.dataset.tab));
+    }));
+
+    function escapeHtml(value) {
+      const node = document.createElement('span'); node.textContent = value || ''; return node.innerHTML;
+    }
+
+    function card(type, item) {
+      const title = type === 'letters' ? item.occasion : type === 'places' ? item.place : item.title;
+      const body = item.body ? (type === 'letters' ? `<details><summary>Open this letter</summary><p>${escapeHtml(item.body)}</p></details>` : `<p>${escapeHtml(item.body)}</p>`) : '';
+      const meta = type === 'traditions' && item.rhythm ? `<p class="meta">${escapeHtml(item.rhythm)}</p>` : '';
+      const nextDate = type === 'traditions' && item.date ? `<p class="meta">Next: ${escapeHtml(new Date(item.date + 'T00:00:00').toLocaleDateString(undefined, { dateStyle: 'long' }))}</p>` : '';
+      const author = item.author ? `<p class="meta">Added by ${escapeHtml(item.author)}</p>` : '';
+      const placeLink = type === 'places' ? `<a class="small-button" target="_blank" rel="noopener" href="${escapeHtml(item.url || ('https://www.google.com/maps/search/?api=1&query=' + encodeURIComponent(item.place))) }">Open map</a>` : '';
+      const wishActions = type === 'wishes' ? `<button class="small-button" data-done="${item.done ? 'false' : 'true'}" data-id="${escapeHtml(item.id)}">${item.done ? 'Add back' : 'We did this ✓'}</button>` : '';
+      const wishCategory = type === 'wishes' && item.category ? `<p class="meta">${item.category === 'at-home' ? 'Cosy at home' : 'An outing'}</p>` : '';
+      const songArtist = type === 'songs' ? `<p class="meta">${escapeHtml(item.artist)}</p>` : '';
+      const feeling = type === 'checkins' ? `<p class="meta">${escapeHtml(item.feeling)}</p>` : '';
+      const otherUser = currentUser === 'Charlotte' ? 'Luke' : 'Charlotte';
+      const quizAnswer = type === 'quizzes' ? `<details><summary>Reveal both guesses and the answer</summary><p>Charlotte guessed: ${escapeHtml((item.guesses || {}).Charlotte || '—')}</p><p>Luke guessed: ${escapeHtml((item.guesses || {}).Luke || '—')}</p><p><strong>Answer:</strong> ${escapeHtml(item.answer)}</p></details>` : '';
+      const quizGuesses = type === 'quizzes' ? `<p class="meta">Your guess: ${escapeHtml((item.guesses || {})[currentUser] || 'Not guessed yet')} · ${otherUser} ${((item.guesses || {})[otherUser] ? 'has guessed' : 'has not guessed yet')}</p>` : '';
+      const quizGuessForm = type === 'quizzes' ? `<form class="quiz-guess" data-id="${escapeHtml(item.id)}"><input name="guess" maxlength="300" value="${escapeHtml((item.guesses || {})[currentUser] || '')}" placeholder="${escapeHtml(currentUser)}, make your guess" required><button class="small-button" type="submit">Save my guess</button></form>` : '';
+      const future = type === 'futureNotes' ? (item.date > localDateKey() ? `<p class="meta">Opens ${escapeHtml(new Date(item.date + 'T00:00:00').toLocaleDateString(undefined, { dateStyle: 'long' }))}</p>` : `<p>${escapeHtml(item.body)}</p>`) : '';
+      const songLink = type === 'songs' && item.url ? `<a class="small-button" target="_blank" rel="noopener" href="${escapeHtml(item.url)}">Listen</a>` : '';
+      const checkinBody = type === 'checkins' && item.body ? `<p>${escapeHtml(item.body)}</p>` : '';
+      return `<article class="keepsake ${item.done ? 'done' : ''}"><h3>${escapeHtml(type === 'checkins' ? item.author + ' checked in' : type === 'quizzes' ? item.question : type === 'futureNotes' ? 'A note for ' + item.date : title)}</h3>${meta}${nextDate}${wishCategory}${songArtist}${feeling}${type === 'futureNotes' ? future : type === 'quizzes' ? quizGuesses + quizGuessForm + quizAnswer : type === 'checkins' ? checkinBody : body}${author}<div class="entry-actions">${songLink}${placeLink}${wishActions}<button class="small-button delete" data-delete="${escapeHtml(type)}" data-id="${escapeHtml(item.id)}">Remove</button></div></article>`;
+    }
+
+    function render() {
+      for (const type of Object.keys(data)) {
+        const list = document.getElementById('list-' + type);
+        const values = data[type] || [];
+        list.innerHTML = values.length ? values.map(item => card(type, item)).join('') : '<div class="empty">Nothing here yet. Add the first little thing above.</div>';
+      }
+      document.getElementById('drawNote').disabled = !data.jar.length;
+    }
+
+    async function mutate(body) {
+      if (busy) return;
+      busy = true; statusEl.textContent = 'Saving…';
+      try {
+        const res = await fetch('/api/heart', { method: 'POST', headers: { 'content-type': 'application/json' }, body: JSON.stringify(body) });
+        const json = await res.json();
+        if (!res.ok) throw new Error(json.error || 'Could not save that');
+        Object.assign(data, json.data || {}); render(); statusEl.textContent = 'Saved with care.';
+        if (body.action === 'add' && body.type === 'traditions' && body.item.date) {
+          try {
+            const calendarRes = await fetch('/api/calendar', { method: 'POST', headers: { 'content-type': 'application/json' }, body: JSON.stringify({ date: body.item.date, event: { title: body.item.title, author: currentUser, time: 'Our tradition' } }) });
+            if (!calendarRes.ok) { const calendarError = await calendarRes.json().catch(() => ({})); statusEl.textContent = 'Tradition saved, but its calendar reminder could not be added: ' + (calendarError.error || 'please try again.'); }
+          } catch { statusEl.textContent = 'Tradition saved, but its calendar reminder could not be added.'; }
+        }
+        return true;
+      } catch (error) { statusEl.textContent = error.message; return false; }
+      finally { busy = false; }
+    }
+
+    document.querySelectorAll('.composer').forEach(form => form.addEventListener('submit', async event => {
+      event.preventDefault();
+      const fields = Object.fromEntries(new FormData(form).entries());
+      if (await mutate({ action: 'add', type: form.dataset.type, item: { ...fields, author: currentUser } })) form.reset();
+    }));
+
+    document.addEventListener('submit', async event => {
+      const form = event.target.closest('.quiz-guess');
+      if (!form) return;
+      event.preventDefault();
+      const guess = new FormData(form).get('guess');
+      await mutate({ action: 'guess', type: 'quizzes', id: form.dataset.id, author: currentUser, guess });
+    });
+
+    document.addEventListener('click', async event => {
+      const remove = event.target.closest('[data-delete]');
+      if (remove) {
+        const ok = await siteDialog.confirm('Remove this from your shared collection?', { title: 'Let this one go?' });
+        if (ok) await mutate({ action: 'delete', type: remove.dataset.delete, id: remove.dataset.id });
+      }
+      const done = event.target.closest('[data-done]');
+      if (done) await mutate({ action: 'update', type: 'wishes', id: done.dataset.id, done: done.dataset.done === 'true' });
+    });
+
+    document.getElementById('drawNote').addEventListener('click', () => {
+      const notes = data.jar || [];
+      if (!notes.length) return;
+      const note = notes[Math.floor(Math.random() * notes.length)];
+      const quote = document.getElementById('surprise');
+      quote.textContent = '“' + note.body + '”'; quote.hidden = false;
+    });
+
+    document.getElementById('pickDate').addEventListener('click', () => {
+      const filter = document.getElementById('dateMood').value;
+      const ideas = (data.wishes || []).filter(item => !item.done && (filter === 'all' || item.category === filter));
+      const result = document.getElementById('datePickResult');
+      result.textContent = ideas.length ? 'Tonight’s little plan: ' + ideas[Math.floor(Math.random() * ideas.length)].title : 'No ideas in this category yet — add a few to your wish list, then let fate choose.';
+      result.hidden = false;
+    });
+
+    fetch('/api/heart').then(async res => {
+      const json = await res.json(); if (!res.ok) throw new Error(json.error || 'Could not load your collection');
+      Object.assign(data, json.data || {}); render();
+    }).catch(error => { statusEl.textContent = error.message; render(); });
+  </script>
+</body>
+</html>

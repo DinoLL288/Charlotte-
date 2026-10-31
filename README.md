@@ -11,6 +11,10 @@ A little site for Charlotte. Now split into a hub with multiple sections.
 - `rules.html` - Shared rules & boundaries, saved to `rules/rules.json` via `/api/rules`
 - `avatar.js` - Shared top-right profile picture button that links to Settings
 - `tiktok.html` - Save TikTok links and plan dance dates (dates auto-sync to the calendar)
+- `together.html` - Shared appreciation notes, open-when letters, traditions, a wish list, and memory map
+- `functions/api/heart.js` - Saves shared keepsakes to `heart/heart.json` through the configured GitHub token
+- `play.html` - Scheduled question ritual, inside jokes, bingo, and clue hunts
+- `our-life.html` - Shared recipes, books and films, monthly awards, and projects
 
 ## Gallery photo uploads (Cloudflare Pages)
 
