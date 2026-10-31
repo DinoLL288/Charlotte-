@@ -224,7 +224,7 @@
         (events[dateKey] || []).forEach(ev => {
           const evEl = document.createElement('div');
           evEl.className = 'event';
-          evEl.innerHTML = `<strong>${escapeHtml(ev.title)}</strong>${ev.time ? '<br>' + escapeHtml(ev.time) : ''}`;
+          evEl.innerHTML = `<strong>${escapeHtml(ev.title)}</strong>${ev.time ? '<br>' + escapeHtml(ev.time) : ''}${ev.author ? '<br><small>By ' + escapeHtml(ev.author) + '</small>' : ''}`;
           el.appendChild(evEl);
         });
         daysGrid.appendChild(el);
@@ -249,7 +249,7 @@
       if (!selectedDate) return;
       const title = eventTitle.value.trim();
       if (!title) return;
-      const event = { title, time: eventTime.value.trim() };
+      const event = { title, time: eventTime.value.trim(), author: localStorage.getItem('charlotte-user') || 'Unknown', date: new Date().toLocaleString() };
       saveEvent.disabled = true;
       try {
         const res = await fetch('/api/calendar', {

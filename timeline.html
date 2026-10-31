@@ -18,35 +18,37 @@
       font-family: "Trebuchet MS", Arial, sans-serif;
       background: linear-gradient(145deg, #c8edff, var(--sky) 55%, #8ccfff);
       color: var(--deep-blue);
-      display: grid;
-      place-items: center;
     }
     .screen {
       width: min(900px, 100%);
       min-height: 100vh;
-      padding: 28px 18px;
+      margin: 0 auto;
+      padding: 80px 18px 40px;
       display: flex;
       flex-direction: column;
       align-items: center;
-      justify-content: center;
-      text-align: center;
-      gap: 14px;
+      gap: 16px;
     }
     h1 { margin: 0; color: #fff; font-size: clamp(2rem, 6vw, 3.6rem); text-shadow: 0 3px 14px #428ec080; }
     .subtitle { margin: 0; color: #fff; font-size: clamp(1rem, 3vw, 1.2rem); text-shadow: 0 2px 8px #428ec080; }
-    .card {
+    .composer {
       width: min(720px, 92vw);
       background: #ffffffee;
       border-radius: 18px;
       box-shadow: 0 12px 30px #347eac30;
-      padding: clamp(18px, 4vw, 28px);
-      text-align: left;
+      padding: 18px;
       display: flex;
       flex-direction: column;
       gap: 10px;
+      text-align: left;
     }
-    .card h2 { margin: 0; font-size: clamp(1.1rem, 3vw, 1.4rem); color: #2873a6; }
-    .card p { margin: 0; font-size: clamp(1rem, 2.6vw, 1.08rem); line-height: 1.7; }
+    .composer input, .composer textarea {
+      width: 100%;
+      border-radius: 12px;
+      border: 1px solid #b9dcf5;
+      padding: 10px 12px;
+      font-family: inherit;
+    }
     .button {
       border: 0;
       border-radius: 999px;
@@ -57,8 +59,29 @@
       font-weight: 700;
       text-decoration: none;
       box-shadow: 0 7px 20px #347eac35;
+      cursor: pointer;
+      align-self: flex-start;
     }
-    .top-bar { position: absolute; top: 16px; left: 16px; }
+    .timeline {
+      width: min(720px, 92vw);
+      display: flex;
+      flex-direction: column;
+      gap: 12px;
+    }
+    .card {
+      background: #ffffffee;
+      border-radius: 18px;
+      box-shadow: 0 12px 30px #347eac30;
+      padding: 18px 22px;
+      text-align: left;
+      display: flex;
+      flex-direction: column;
+      gap: 8px;
+    }
+    .card h2 { margin: 0; color: #2873a6; }
+    .card p { margin: 0; line-height: 1.7; white-space: pre-wrap; }
+    .card small { color: #3b7db3; }
+    .top-bar { position: fixed; top: 16px; left: 16px; z-index: 5; }
   </style>
 </head>
 <body>
@@ -68,10 +91,49 @@
   <main class="screen">
     <h1>Our timeline</h1>
     <p class="subtitle">Little moments</p>
-    <div class="card">
-      <h2>Today</h2>
-      <p>Add your first memory here.</p>
-    </div>
+    <section class="composer">
+      <input id="momentTitle" placeholder="Title (e.g. First walk together)">
+      <input id="momentDate" type="date">
+      <textarea id="momentBody" rows="4" placeholder="Describe the moment..."></textarea>
+      <button class="button" id="addMoment">Add to timeline</button>
+    </section>
+    <div class="timeline" id="timeline"></div>
   </main>
+
+  <script>
+    const momentTitle = document.getElementById('momentTitle');
+    const momentDate = document.getElementById('momentDate');
+    const momentBody = document.getElementById('momentBody');
+    const addMoment = document.getElementById('addMoment');
+    const timeline = document.getElementById('timeline');
+    const key = 'charlotte-timeline-v1';
+    let moments = JSON.parse(localStorage.getItem(key) || '[]');
+    const user = localStorage.getItem('charlotte-user') || 'Unknown';
+
+    function render() {
+      timeline.innerHTML = '';
+      moments.slice().sort((a,b) => b.date.localeCompare(a.date)).forEach(m => {
+        const el = document.createElement('article');
+        el.className = 'card';
+        el.innerHTML = `<h2>${escapeHtml(m.title)}</h2><small>${m.date} • Added by ${escapeHtml(m.author)}</small><p>${escapeHtml(m.body)}</p>`;
+        timeline.appendChild(el);
+      });
+    }
+
+    function escapeHtml(t){ const d=document.createElement('div'); d.textContent=t; return d.innerHTML; }
+
+    addMoment.addEventListener('click', () => {
+      const title = momentTitle.value.trim();
+      const date = momentDate.value;
+      const body = momentBody.value.trim();
+      if (!title || !date || !body) return;
+      moments.push({ title, date, body, author: user });
+      localStorage.setItem(key, JSON.stringify(moments));
+      momentTitle.value = ''; momentDate.value = ''; momentBody.value = '';
+      render();
+    });
+
+    render();
+  </script>
 </body>
 </html>
