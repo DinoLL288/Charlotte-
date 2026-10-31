@@ -672,12 +672,12 @@
     }
 
     async function deleteEntry(entry) {
-      if (!confirm('Remove these quiet days?')) return;
+      if (!await siteDialog.confirm('Remove these quiet days?')) return;
       try {
         await postApart({ action: 'delete', id: entry.id, currentUser, sha: currentSha });
         render();
       } catch (e) {
-        alert(e.message);
+        siteDialog.alert(e.message);
       }
     }
 
@@ -725,5 +725,6 @@
     loadEntries();
   </script>
   <script src="avatar.js"></script>
+  <script src="dialog.js"></script>
 </body>
 </html>

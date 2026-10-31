@@ -664,14 +664,14 @@
     }
 
     async function deleteMoment(moment) {
-      if (!confirm('Delete this moment?')) return;
+      if (!await siteDialog.confirm('Delete this moment?')) return;
       try {
         await postTimeline({ action: 'delete', id: moment.id, currentUser: user, sha: currentSha });
         const index = moments.indexOf(moment);
         if (index !== -1) moments.splice(index, 1);
         render();
       } catch (e) {
-        alert(e.message);
+        siteDialog.alert(e.message);
       }
     }
 
@@ -736,5 +736,6 @@
     loadMoments();
   </script>
   <script src="avatar.js"></script>
+  <script src="dialog.js"></script>
 </body>
 </html>

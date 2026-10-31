@@ -404,7 +404,7 @@
     }
 
     async function deletePlan(plan) {
-      if (!confirm('Delete "' + (plan.title || 'this plan') + '" and its calendar entry?')) return;
+      if (!await siteDialog.confirm('Delete "' + (plan.title || 'this plan') + '" and its calendar entry?')) return;
       enqueue(async () => {
         setStatus('Deleting...');
         try {
@@ -468,5 +468,6 @@
     loadPlans();
   </script>
   <script src="avatar.js"></script>
+  <script src="dialog.js"></script>
 </body>
 </html>

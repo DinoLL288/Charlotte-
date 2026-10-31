@@ -112,7 +112,7 @@
     
     saveAvatar.addEventListener('click', async () => {
       if (!selectedFile) {
-        alert('Select a picture first');
+        siteDialog.alert('Select a picture first');
         return;
       }
       saveAvatar.disabled = true;
@@ -131,9 +131,9 @@
           avatar.src = json.url;
           localStorage.setItem('charlotte-avatar-' + user, json.url);
         }
-        alert('Profile picture saved!');
+        siteDialog.alert('Profile picture saved!');
       } catch (e) {
-        alert(e.message);
+        siteDialog.alert(e.message);
       } finally {
         saveAvatar.disabled = false;
         saveAvatar.textContent = 'Save profile picture';
@@ -145,5 +145,6 @@
       window.location.href = 'login.html';
     });
   </script>
+  <script src="dialog.js"></script>
 </body>
 </html>

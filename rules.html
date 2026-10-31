@@ -236,14 +236,14 @@
         input.value = '';
         render();
       } catch (e) {
-        alert(e.message);
+        siteDialog.alert(e.message);
       } finally {
         button.disabled = false;
       }
     }
 
     async function deleteItem(section, item) {
-      if (!confirm('Delete this item?')) return;
+      if (!await siteDialog.confirm('Delete this item?')) return;
       try {
         const res = await fetch('/api/rules', {
           method: 'POST',
@@ -257,7 +257,7 @@
         state.boundaries = json.boundaries || state.boundaries;
         render();
       } catch (e) {
-        alert(e.message);
+        siteDialog.alert(e.message);
       }
     }
 
@@ -268,5 +268,6 @@
     loadRules();
   </script>
   <script src="avatar.js"></script>
+  <script src="dialog.js"></script>
 </body>
 </html>

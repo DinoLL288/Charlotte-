@@ -363,7 +363,7 @@
               copyBtn.addEventListener('click', async (e) => {
                 e.stopPropagation();
                 const user = localStorage.getItem('charlotte-user') || 'Unknown';
-                const target = prompt('Copy to which folder? (enter folder name, or "Old Photos" for root)');
+                const target = await siteDialog.prompt('Copy to which folder? (enter folder name, or "Old Photos" for root)');
                 if (!target) return;
                 copyBtn.disabled = true;
                 copyBtn.textContent = '...';
@@ -375,13 +375,13 @@
                   });
                   const j = await res.json();
                   if (res.ok) {
-                    alert('Copied!');
+                    siteDialog.alert('Copied!');
                     renderGalleryView();
                   } else {
-                    alert(j.error || 'Failed');
+                    siteDialog.alert(j.error || 'Failed');
                   }
                 } catch (err) {
-                  alert(err.message);
+                  siteDialog.alert(err.message);
                 } finally {
                   copyBtn.disabled = false;
                   copyBtn.textContent = '+';
@@ -427,7 +427,7 @@
             copyBtn.addEventListener('click', async (e) => {
               e.stopPropagation();
               const user = localStorage.getItem('charlotte-user') || 'Unknown';
-              const target = prompt('Copy to which folder? (enter folder name, or "Old Photos" for root)');
+              const target = await siteDialog.prompt('Copy to which folder? (enter folder name, or "Old Photos" for root)');
               if (!target) return;
               copyBtn.disabled = true;
               copyBtn.textContent = '...';
@@ -439,13 +439,13 @@
                 });
                 const j = await res.json();
                 if (res.ok) {
-                  alert('Copied!');
+                  siteDialog.alert('Copied!');
                   renderGalleryView();
                 } else {
-                  alert(j.error || 'Failed');
+                  siteDialog.alert(j.error || 'Failed');
                 }
               } catch (err) {
-                alert(err.message);
+                siteDialog.alert(err.message);
               } finally {
                 copyBtn.disabled = false;
                 copyBtn.textContent = '+';
@@ -487,7 +487,7 @@
               copyBtn.addEventListener('click', async (e) => {
                 e.stopPropagation();
                 const user = localStorage.getItem('charlotte-user') || 'Unknown';
-                const target = prompt('Copy to which folder? (enter folder name, or "Old Photos" for root)');
+                const target = await siteDialog.prompt('Copy to which folder? (enter folder name, or "Old Photos" for root)');
                 if (!target) return;
                 copyBtn.disabled = true;
                 copyBtn.textContent = '...';
@@ -499,13 +499,13 @@
                   });
                   const j = await res.json();
                   if (res.ok) {
-                    alert('Copied!');
+                    siteDialog.alert('Copied!');
                     renderGalleryView();
                   } else {
-                    alert(j.error || 'Failed');
+                    siteDialog.alert(j.error || 'Failed');
                   }
                 } catch (err) {
-                  alert(err.message);
+                  siteDialog.alert(err.message);
                 } finally {
                   copyBtn.disabled = false;
                   copyBtn.textContent = '+';
@@ -646,5 +646,6 @@
     loadFolders();
   </script>
   <script src="avatar.js"></script>
+  <script src="dialog.js"></script>
 </body>
 </html>

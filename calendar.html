@@ -607,7 +607,7 @@
         closeModal();
         render();
       } catch (e) {
-        alert('Error: ' + e.message);
+        siteDialog.alert('Error: ' + e.message);
       } finally {
         saveEvent.disabled = false;
       }
@@ -617,7 +617,7 @@
       if (!editing) return;
       const target = { ...editing };
       const label = target.event.title || 'this event';
-      if (!confirm('Delete "' + label + '"?')) return;
+      if (!await siteDialog.confirm('Delete "' + label + '"?')) return;
       deleteEvent.disabled = true;
       try {
         const res = await fetch('/api/calendar', {
@@ -634,7 +634,7 @@
         closeModal();
         render();
       } catch (e) {
-        alert('Error: ' + e.message);
+        siteDialog.alert('Error: ' + e.message);
       } finally {
         deleteEvent.disabled = false;
       }
@@ -661,5 +661,6 @@
     loadEvents();
   </script>
   <script src="avatar.js"></script>
+  <script src="dialog.js"></script>
 </body>
 </html>

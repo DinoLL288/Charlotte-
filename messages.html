@@ -321,7 +321,7 @@
     }
 
     async function deleteNote(note) {
-      if (!confirm('Delete this note?')) return;
+      if (!await siteDialog.confirm('Delete this note?')) return;
       try {
         const res = await fetch('/api/notes', {
           method: 'POST',
@@ -336,7 +336,7 @@
         editingNote = null;
         render();
       } catch (e) {
-        alert(e.message);
+        siteDialog.alert(e.message);
       }
     }
 
@@ -344,7 +344,7 @@
       const title = el.querySelector('.edit-title').value.trim();
       const body = el.querySelector('.edit-body').value.trim();
       if (!body) {
-        alert('Write something first');
+        siteDialog.alert('Write something first');
         return;
       }
 
@@ -365,7 +365,7 @@
         editingNote = null;
         render();
       } catch (e) {
-        alert(e.message);
+        siteDialog.alert(e.message);
         saveButton.disabled = false;
       }
     }
@@ -374,7 +374,7 @@
       const message = lock
         ? 'Protect this note so the author cannot delete it?'
         : 'Unlock this note and let the author delete it again?';
-      if (!confirm(message)) return;
+      if (!await siteDialog.confirm(message)) return;
 
       try {
         const res = await fetch('/api/notes', {
@@ -398,7 +398,7 @@
         }
         render();
       } catch (e) {
-        alert(e.message);
+        siteDialog.alert(e.message);
       }
     }
 
@@ -430,7 +430,7 @@
         noteBody.value = '';
         render();
       } catch (e) {
-        alert(e.message);
+        siteDialog.alert(e.message);
       } finally {
         addNote.disabled = false;
       }
@@ -439,5 +439,6 @@
     loadNotes();
   </script>
   <script src="avatar.js"></script>
+  <script src="dialog.js"></script>
 </body>
 </html>
