@@ -3,6 +3,7 @@ export async function onRequestPost(context) {
     const { request, env } = context;
     const formData = await request.formData();
     const file = formData.get('photo');
+    const uploadedBy = formData.get('uploadedBy') || 'Unknown';
 
     if (!file || typeof file === 'string') {
       return new Response(JSON.stringify({ error: 'No file uploaded' }), {
@@ -23,7 +24,7 @@ export async function onRequestPost(context) {
     const ext = file.name.split('.').pop() || 'jpg';
     const filename = `gallery/${Date.now()}-${crypto.randomUUID()}.${ext}`;
     
-    const repo = env.GITHUB_REPO; // e.g. "username/repo"
+    const repo = env.GITHUB_REPO;
     const token = env.GITHUB_TOKEN;
     const branch = env.GITHUB_BRANCH || 'main';
 
@@ -42,7 +43,7 @@ export async function onRequestPost(context) {
         'User-Agent': 'cf-pages-upload'
       },
       body: JSON.stringify({
-        message: `Upload gallery photo ${filename}`,
+        message: `Upload gallery photo by ${uploadedBy}: ${filename}`,
         content: content,
         branch: branch
       })
@@ -57,7 +58,7 @@ export async function onRequestPost(context) {
     }
 
     const url = json.content?.download_url || `/${filename}`;
-    return new Response(JSON.stringify({ ok: true, url, path: filename }), {
+    return new Response(JSON.stringify({ ok: true, url, path: filename, uploadedBy }), {
       status: 200,
       headers: { 'content-type': 'application/json' }
     });

@@ -1,0 +1,87 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Login</title>
+  <style>
+    :root { --sky: #a4deff; --deep-blue: #245b85; }
+    * { box-sizing: border-box; }
+    body {
+      margin: 0;
+      min-height: 100vh;
+      font-family: "Trebuchet MS", Arial, sans-serif;
+      background: linear-gradient(145deg, #c8edff, var(--sky) 55%, #8ccfff);
+      color: var(--deep-blue);
+      display: grid;
+      place-items: center;
+    }
+    .card {
+      width: min(380px, 92vw);
+      background: #ffffffee;
+      border-radius: 18px;
+      box-shadow: 0 12px 30px #347eac30;
+      padding: 26px;
+      display: flex;
+      flex-direction: column;
+      gap: 14px;
+      text-align: center;
+    }
+    h1 { margin: 0; color: #2873a6; }
+    input {
+      width: 100%;
+      border-radius: 12px;
+      border: 1px solid #b9dcf5;
+      padding: 12px 14px;
+      font-family: inherit;
+      font-size: 1rem;
+    }
+    .button {
+      border: 0;
+      border-radius: 999px;
+      padding: 12px 22px;
+      background: #2873a6;
+      color: white;
+      font-size: 0.98rem;
+      font-weight: 700;
+      cursor: pointer;
+    }
+    .error { color: #d64545; min-height: 1.2rem; }
+  </style>
+</head>
+<body>
+  <div class="card">
+    <h1>Login</h1>
+    <input id="username" placeholder="Username" autocomplete="username">
+    <input id="password" placeholder="Password" type="password" autocomplete="current-password">
+    <button class="button" id="loginBtn">Login</button>
+    <div class="error" id="error"></div>
+  </div>
+
+  <script>
+    const users = {
+      'Charlotte': '07212011',
+      'Luke': '09032012'
+    };
+    const loginBtn = document.getElementById('loginBtn');
+    const username = document.getElementById('username');
+    const password = document.getElementById('password');
+    const error = document.getElementById('error');
+
+    loginBtn.addEventListener('click', () => {
+      const u = username.value.trim();
+      const p = password.value.trim();
+      if (users[u] && users[u] === p) {
+        localStorage.setItem('charlotte-user', u);
+        window.location.href = 'index.html';
+      } else {
+        error.textContent = 'Wrong username or password';
+      }
+    });
+
+    password.addEventListener('keypress', (e) => {
+      if (e.key === 'Enter') loginBtn.click();
+    });
+  </script>
+</body>
+</html>

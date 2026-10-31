@@ -4,6 +4,11 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Gallery</title>
+  <script>
+    if (!localStorage.getItem('charlotte-user')) {
+      window.location.href = 'login.html';
+    }
+  </script>
   <style>
     :root { --sky: #a4deff; --deep-blue: #245b85; }
     * { box-sizing: border-box; }
@@ -132,13 +137,22 @@
     const statusEl = document.getElementById('uploadStatus');
     const grid = document.getElementById('galleryGrid');
 
-    function addPhoto(src) {
+    function addPhoto(src, by) {
       const tile = document.createElement('div');
       tile.className = 'tile';
+      tile.style.flexDirection = 'column';
       const img = document.createElement('img');
       img.src = src;
       img.alt = 'Gallery photo';
       tile.appendChild(img);
+      if (by) {
+        const byline = document.createElement('div');
+        byline.style.padding = '6px 10px';
+        byline.style.fontSize = '0.85rem';
+        byline.style.color = '#2873a6';
+        byline.textContent = `Uploaded by ${by}`;
+        tile.appendChild(byline);
+      }
       // remove empty placeholder if present
       const empty = grid.querySelector('.tile.empty');
       if (empty) empty.remove();
@@ -155,10 +169,19 @@
           json.photos.forEach(photo => {
             const tile = document.createElement('div');
             tile.className = 'tile';
+            tile.style.flexDirection = 'column';
             const img = document.createElement('img');
             img.src = photo.url;
             img.alt = 'Gallery photo';
             tile.appendChild(img);
+            if (photo.uploadedBy) {
+              const byline = document.createElement('div');
+              byline.style.padding = '6px 10px';
+              byline.style.fontSize = '0.85rem';
+              byline.style.color = '#2873a6';
+              byline.textContent = `Uploaded by ${photo.uploadedBy}`;
+              tile.appendChild(byline);
+            }
             grid.appendChild(tile);
           });
         }
@@ -173,21 +196,23 @@
       e.preventDefault();
       const file = input.files?.[0];
       if (!file) return;
+      const user = localStorage.getItem('charlotte-user') || 'Unknown';
       btn.disabled = true;
       statusEl.textContent = 'Uploading...';
 
       try {
         const data = new FormData();
         data.append('photo', file);
+        data.append('uploadedBy', user);
         const res = await fetch('/api/upload', {
           method: 'POST',
           body: data
         });
         const json = await res.json();
         if (!res.ok) throw new Error(json.error || 'Upload failed');
-        statusEl.textContent = 'Uploaded! It may take a moment to appear on GitHub Pages.';
+        statusEl.textContent = 'Uploaded!';
         if (json.url) {
-          addPhoto(json.url);
+          addPhoto(json.url, user);
         }
         form.reset();
       } catch (err) {
