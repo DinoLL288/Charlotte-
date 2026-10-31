@@ -178,7 +178,11 @@
         showPlaylist(message.spotifyPlaylist || defaultPlaylist);
         if (message.music && !message.music.paused && Date.now() - Number(message.music.updatedAt || 0) < 30000) {
           pendingPlayback = message.music;
-          status.textContent = 'Our player has saved playback. Open the music panel to reconnect.';
+          const panel = widget.querySelector('#shared-music-panel');
+          panel.hidden = false;
+          widget.querySelector('#shared-music-toggle').setAttribute('aria-expanded', 'true');
+          status.textContent = 'Rejoining our saved playback…';
+          if (playlist && !controller) initializeSpotifyEmbed(playlist);
         }
       }
       if (message.type === 'spotify-playlist') showPlaylist(message.url || '');
