@@ -193,6 +193,7 @@
         render();
       } catch (e) {
         events = {};
+        currentSha = null;
         render();
       }
     }
@@ -265,7 +266,7 @@
         modal.classList.remove('active');
         render();
       } catch (e) {
-        alert(e.message);
+        alert('Error: ' + e.message);
       } finally {
         saveEvent.disabled = false;
       }

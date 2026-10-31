@@ -63,23 +63,23 @@ export async function onRequestPost(context) {
     };
 
     let events = {};
-    let currentSha = sha;
-    if (!currentSha) {
-      const getRes = await fetch(`https://api.github.com/repos/${repo}/contents/calendar/events.json?ref=${branch}`, { headers });
-      if (getRes.status === 200) {
-        const getJson = await getRes.json();
-        currentSha = getJson.sha;
-        const content = atob(getJson.content.replace(/\n/g, ''));
-        events = JSON.parse(content || '{"events":{}}').events || {};
+    let currentSha = sha || null;
+    const getRes = await fetch(`https://api.github.com/repos/${repo}/contents/calendar/events.json?ref=${branch}`, { headers });
+    if (getRes.status === 200) {
+      const getJson = await getRes.json();
+      currentSha = getJson.sha;
+      try {
+        const content = atob((getJson.content || '').replace(/\n/g, ''));
+        const data = JSON.parse(decodeURIComponent(escape(content)) || '{"events":{}}');
+        events = data.events || {};
+      } catch {
+        const content = atob((getJson.content || '').replace(/\n/g, ''));
+        const data = JSON.parse(content || '{"events":{}}');
+        events = data.events || {};
       }
-    } else {
-      const getRes = await fetch(`https://api.github.com/repos/${repo}/contents/calendar/events.json?ref=${branch}`, { headers });
-      if (getRes.status === 200) {
-        const getJson = await getRes.json();
-        currentSha = getJson.sha;
-        const content = atob(getJson.content.replace(/\n/g, ''));
-        events = JSON.parse(content || '{"events":{}}').events || {};
-      }
+    } else if (getRes.status === 404) {
+      events = {};
+      currentSha = null;
     }
 
     if (!events[date]) events[date] = [];
