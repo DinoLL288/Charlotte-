@@ -1,4 +1,5 @@
 (function () {
+  const defaultPlaylist = 'https://open.spotify.com/playlist/0nd5Ut2ixgw4RfV0EfQHwx';
   const user = localStorage.getItem('charlotte-user');
   if (!user) return;
 
@@ -97,7 +98,7 @@
     socket = new WebSocket(`${protocol}//${location.host}/api/question-room?user=${encodeURIComponent(user)}&sessionDate=2000-01-01`);
     socket.onmessage = event => {
       let message; try { message = JSON.parse(event.data); } catch { return; }
-      if (message.type === 'state') { setPresence(message.online || []); showPlaylist(message.spotifyPlaylist || ''); }
+      if (message.type === 'state') { setPresence(message.online || []); showPlaylist(message.spotifyPlaylist || defaultPlaylist); }
       if (message.type === 'spotify-playlist') showPlaylist(message.url || '');
       if (message.type === 'pong') return;
     };
