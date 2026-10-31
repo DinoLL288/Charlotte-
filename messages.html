@@ -93,10 +93,12 @@
     .note-meta {
       display: flex;
       align-items: center;
+      flex-wrap: wrap;
       gap: 8px;
       color: #3b7db3;
       font-size: 0.9rem;
     }
+    .note-lock { color: #2873a6; font-weight: 700; }
     .note-avatar {
       width: 28px;
       height: 28px;
@@ -139,7 +141,7 @@
       </select>
       <input id="noteTitle" placeholder="Title">
       <textarea id="noteBody" placeholder="Write a note..."></textarea>
-      <p class="composer-hint">Only the person who wrote it can delete it.</p>
+      <p class="composer-hint">Only the writer can delete a note — unless the other person protects it.</p>
       <button class="button" id="addNote">Add note</button>
     </section>
     <div class="notes" id="notesList"></div>
@@ -192,11 +194,21 @@
     }
 
     function canDelete(note) {
+      if (note.locked) return false;
       return isUnknownAuthor(note) || note.author === currentUser;
     }
 
     function canEdit(note) {
-      return Boolean(note.id) && canDelete(note);
+      return Boolean(note.id) && (isUnknownAuthor(note) || note.author === currentUser);
+    }
+
+    function canLock(note) {
+      return Boolean(note.id) && !note.locked &&
+        (isUnknownAuthor(note) || note.author !== currentUser);
+    }
+
+    function canUnlock(note) {
+      return Boolean(note.id) && Boolean(note.locked) && note.lockedBy === currentUser;
     }
 
     function render() {
@@ -210,6 +222,7 @@
           <div class="note-meta">
             <img class="note-avatar" src="${escapeAttr(avatar)}" alt="${escapeAttr(author)}'s profile picture">
             <span>By ${escapeHtml(author)} • ${escapeHtml(note.date || '')}${note.editedAt ? ' • edited ' + escapeHtml(note.editedAt) : ''}</span>
+            ${note.locked ? `<span class="note-lock">🔒 ${note.lockedBy === currentUser ? 'Protected by you' : 'Protected by ' + escapeHtml(note.lockedBy || 'the other person')}</span>` : ''}
           </div>
         `;
 
@@ -248,6 +261,8 @@
             <div class="note-actions">
               ${canEdit(note) ? '<button class="button note-action edit-note" type="button">Edit</button>' : ''}
               ${canDelete(note) ? '<button class="button note-action delete-note" type="button">Delete</button>' : ''}
+              ${canLock(note) ? '<button class="button note-action protect-note" type="button" title="Stop the author from deleting this note">🔒 Protect</button>' : ''}
+              ${canUnlock(note) ? '<button class="button note-action unlock-note" type="button" title="Allow the author to delete this note again">🔓 Unlock</button>' : ''}
             </div>
           </div>
           <p class="note-body">${escapeHtml(note.body)}</p>
@@ -262,6 +277,14 @@
         const deleteButton = el.querySelector('.delete-note');
         if (deleteButton) {
           deleteButton.addEventListener('click', () => deleteNote(note));
+        }
+        const protectButton = el.querySelector('.protect-note');
+        if (protectButton) {
+          protectButton.addEventListener('click', () => setLock(note, true));
+        }
+        const unlockButton = el.querySelector('.unlock-note');
+        if (unlockButton) {
+          unlockButton.addEventListener('click', () => setLock(note, false));
         }
         notesList.appendChild(el);
       });
@@ -343,6 +366,38 @@
       } catch (e) {
         alert(e.message);
         saveButton.disabled = false;
+      }
+    }
+
+    async function setLock(note, lock) {
+      const message = lock
+        ? 'Protect this note so the author cannot delete it?'
+        : 'Unlock this note and let the author delete it again?';
+      if (!confirm(message)) return;
+
+      try {
+        const res = await fetch('/api/notes', {
+          method: 'POST',
+          headers: { 'content-type': 'application/json' },
+          body: JSON.stringify({ action: lock ? 'lock' : 'unlock', id: note.id, currentUser, sha: currentSha })
+        });
+        const json = await res.json();
+        if (!res.ok) throw new Error(json.error || 'Failed to update');
+
+        currentSha = json.sha || currentSha;
+        const updated = json.note || {};
+        if (updated.locked) {
+          note.locked = true;
+          note.lockedBy = updated.lockedBy || currentUser;
+          note.lockedAt = updated.lockedAt || '';
+        } else {
+          delete note.locked;
+          delete note.lockedBy;
+          delete note.lockedAt;
+        }
+        render();
+      } catch (e) {
+        alert(e.message);
       }
     }
 

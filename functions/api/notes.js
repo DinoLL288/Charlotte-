@@ -122,6 +122,12 @@ export async function onRequestPost(context) {
       }
 
       const target = notes[index];
+      if (target.locked) {
+        return new Response(JSON.stringify({ error: 'This note is protected and cannot be deleted' }), {
+          status: 403,
+          headers: { 'content-type': 'application/json' }
+        });
+      }
       if (!isUnknownAuthor(target) && target.author !== currentUser) {
         return new Response(JSON.stringify({ error: 'You can only delete your own notes or notes from unknown authors' }), {
           status: 403,
@@ -175,6 +181,72 @@ export async function onRequestPost(context) {
       target.editedAt = new Date().toLocaleString();
 
       const newSha = await saveNotes(env, notes, sha || currentSha, `Edit note ${id}`);
+      return new Response(JSON.stringify({ ok: true, sha: newSha, note: target }), {
+        status: 200,
+        headers: { 'content-type': 'application/json' }
+      });
+    }
+
+    if (body.action === 'lock' || body.action === 'unlock') {
+      const { id, sha, currentUser } = body;
+      if (!id) {
+        return new Response(JSON.stringify({ error: 'This note cannot be protected' }), {
+          status: 400,
+          headers: { 'content-type': 'application/json' }
+        });
+      }
+
+      const { notes, sha: currentSha } = await getNotes(env);
+      const target = notes.find(entry => entry.id === id);
+      if (!target) {
+        return new Response(JSON.stringify({ error: 'Note not found' }), {
+          status: 404,
+          headers: { 'content-type': 'application/json' }
+        });
+      }
+
+      if (body.action === 'lock') {
+        if (!isUnknownAuthor(target) && target.author === currentUser) {
+          return new Response(JSON.stringify({ error: 'Only the other person can protect this note' }), {
+            status: 403,
+            headers: { 'content-type': 'application/json' }
+          });
+        }
+        if (target.locked) {
+          return new Response(JSON.stringify({ error: 'This note is already protected' }), {
+            status: 409,
+            headers: { 'content-type': 'application/json' }
+          });
+        }
+
+        target.locked = true;
+        target.lockedBy = currentUser || 'Unknown';
+        target.lockedAt = new Date().toLocaleString();
+      } else {
+        if (!target.locked) {
+          return new Response(JSON.stringify({ error: 'This note is not protected' }), {
+            status: 409,
+            headers: { 'content-type': 'application/json' }
+          });
+        }
+        if (target.lockedBy !== currentUser) {
+          return new Response(JSON.stringify({ error: 'Only the person who protected this note can unlock it' }), {
+            status: 403,
+            headers: { 'content-type': 'application/json' }
+          });
+        }
+
+        delete target.locked;
+        delete target.lockedBy;
+        delete target.lockedAt;
+      }
+
+      const newSha = await saveNotes(
+        env,
+        notes,
+        sha || currentSha,
+        `${body.action === 'lock' ? 'Protect' : 'Unprotect'} note ${id}`
+      );
       return new Response(JSON.stringify({ ok: true, sha: newSha, note: target }), {
         status: 200,
         headers: { 'content-type': 'application/json' }
