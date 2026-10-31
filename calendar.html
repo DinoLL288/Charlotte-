@@ -95,6 +95,7 @@
       padding: 6px 8px;
       font-size: 0.9rem;
       text-align: left;
+      overflow-wrap: anywhere;
     }
     .modal {
       position: fixed;
@@ -134,6 +135,9 @@
 <body>
   <div class="top-bar">
     <a class="button" href="index.html">← Back to hub</a>
+  </div>
+  <div class="top-bar" style="left:auto; right:16px;">
+    <a class="button" href="tiktok.html">🎵 TikTok plans</a>
   </div>
   <main class="screen">
     <h1>Calendar</h1>
@@ -184,19 +188,34 @@
       weekdayRow.appendChild(el);
     });
 
+    function jumpToHash() {
+      const match = /^#(\d{4})-(\d{2})-(\d{2})$/.exec(window.location.hash || '');
+      if (!match) return;
+      const year = Number(match[1]);
+      const month = Number(match[2]) - 1;
+      const day = Number(match[3]);
+      const date = new Date(year, month, day);
+      if (!Number.isNaN(date.getTime())) current = new Date(year, month, 1);
+    }
+
     async function loadEvents() {
       try {
         const res = await fetch('/api/calendar');
         const json = await res.json();
         events = json.events || {};
         currentSha = json.sha || null;
-        render();
       } catch (e) {
         events = {};
         currentSha = null;
-        render();
       }
+      jumpToHash();
+      render();
     }
+
+    window.addEventListener('hashchange', () => {
+      jumpToHash();
+      render();
+    });
 
     function render() {
       daysGrid.innerHTML = '';

@@ -1,0 +1,470 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>TikTok Plans</title>
+  <script>
+    if (!localStorage.getItem('charlotte-user')) {
+      window.location.href = 'login.html';
+    }
+  </script>
+  <style>
+    :root { --sky: #a4deff; --deep-blue: #245b85; }
+    * { box-sizing: border-box; }
+    body {
+      margin: 0;
+      min-height: 100vh;
+      font-family: "Trebuchet MS", Arial, sans-serif;
+      background: linear-gradient(145deg, #c8edff, var(--sky) 55%, #8ccfff);
+      color: var(--deep-blue);
+    }
+    .screen {
+      width: min(1100px, 100%);
+      min-height: 100vh;
+      margin: 0 auto;
+      padding: 80px 18px 40px;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 18px;
+    }
+    h1 { margin: 0; color: #fff; font-size: clamp(2rem, 6vw, 3.6rem); text-shadow: 0 3px 14px #428ec080; }
+    .subtitle { margin: 0; color: #fff; font-size: clamp(1rem, 3vw, 1.2rem); text-shadow: 0 2px 8px #428ec080; }
+    .top-bar { position: fixed; top: 16px; left: 16px; z-index: 5; }
+    .button {
+      border: 0;
+      border-radius: 999px;
+      padding: 12px 22px;
+      background: white;
+      color: #2873a6;
+      font-size: 0.98rem;
+      font-weight: 700;
+      text-decoration: none;
+      box-shadow: 0 7px 20px #347eac35;
+      cursor: pointer;
+    }
+    .button:disabled { opacity: 0.6; cursor: not-allowed; }
+    .card {
+      width: min(760px, 94vw);
+      background: #ffffffee;
+      border-radius: 18px;
+      box-shadow: 0 12px 30px #347eac30;
+      padding: clamp(16px, 4vw, 24px);
+      display: flex;
+      flex-direction: column;
+      gap: 12px;
+      text-align: left;
+    }
+    .card > strong { color: #2873a6; font-size: 1.05rem; }
+    .card input, .card textarea {
+      width: 100%;
+      border-radius: 12px;
+      border: 1px solid #b9dcf5;
+      padding: 12px 14px;
+      font-family: inherit;
+      font-size: 0.98rem;
+      background: #fff;
+      color: var(--deep-blue);
+    }
+    .card textarea { resize: vertical; }
+    .row { display: flex; gap: 10px; flex-wrap: wrap; }
+    .row > * { flex: 1 1 170px; }
+    .hint { color: #3b7db3; font-size: 0.88rem; }
+    .status {
+      color: #2873a6;
+      font-size: 0.95rem;
+      min-height: 1.2rem;
+    }
+    .status.error { color: #c0392b; }
+    .plans { width: min(1100px, 94vw); display: flex; flex-direction: column; gap: 18px; }
+    .group h2 {
+      margin: 0 0 10px;
+      color: #fff;
+      text-align: left;
+      font-size: clamp(1.2rem, 3vw, 1.5rem);
+      text-shadow: 0 2px 8px #428ec080;
+    }
+    .plan-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+      gap: 14px;
+      align-items: start;
+    }
+    .plan {
+      background: #ffffffee;
+      border-radius: 16px;
+      box-shadow: 0 12px 30px #347eac30;
+      padding: 16px;
+      display: flex;
+      flex-direction: column;
+      gap: 8px;
+      text-align: left;
+    }
+    .plan-head { display: flex; align-items: flex-start; gap: 8px; }
+    .plan-title { margin: 0; color: #245b85; font-size: 1.05rem; overflow-wrap: anywhere; }
+    .plan-when {
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      align-self: flex-start;
+      background: #e8f6ff;
+      color: #2873a6;
+      border-radius: 999px;
+      padding: 5px 12px;
+      font-size: 0.85rem;
+      font-weight: 700;
+      text-decoration: none;
+    }
+    .plan-when.unplanned { background: #f2f2f2; color: #7d8a94; }
+    .plan-link {
+      color: #2873a6;
+      font-size: 0.88rem;
+      text-decoration: none;
+      overflow-wrap: anywhere;
+      word-break: break-all;
+    }
+    .plan-link:hover { text-decoration: underline; }
+    .plan-note { margin: 0; color: #3b7db3; font-size: 0.92rem; white-space: pre-wrap; overflow-wrap: anywhere; }
+    .plan-by { color: #7fa9c6; font-size: 0.8rem; }
+    .plan-controls {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 8px;
+      align-items: center;
+      border-top: 1px solid #e3f2fc;
+      padding-top: 10px;
+      margin-top: 2px;
+    }
+    .plan-controls input[type="date"],
+    .plan-controls input[type="time"] {
+      border-radius: 9px;
+      border: 1px solid #b9dcf5;
+      padding: 7px 9px;
+      font-family: inherit;
+      font-size: 0.85rem;
+      color: var(--deep-blue);
+      background: #fff;
+    }
+    .mini {
+      border: 0;
+      border-radius: 999px;
+      padding: 8px 13px;
+      background: #e8f6ff;
+      color: #2873a6;
+      font-family: inherit;
+      font-weight: 700;
+      font-size: 0.84rem;
+      text-decoration: none;
+      cursor: pointer;
+    }
+    .mini.danger { background: #ffe9e9; color: #b53b3b; }
+    .empty {
+      color: #fff;
+      text-shadow: 0 1px 6px #428ec080;
+      text-align: center;
+      padding: 10px;
+    }
+  </style>
+</head>
+<body>
+  <div class="top-bar">
+    <a class="button" href="index.html">← Back to hub</a>
+  </div>
+  <main class="screen">
+    <h1>TikTok Plans</h1>
+    <p class="subtitle">Videos we want to dance to</p>
+
+    <section class="card">
+      <strong>Save a TikTok</strong>
+      <form id="planForm">
+        <div style="display:flex; flex-direction:column; gap:10px;">
+          <input id="planUrl" type="url" placeholder="Paste a TikTok link (https://www.tiktok.com/...)" required>
+          <div class="row">
+            <input id="planTitle" placeholder="Name this dance (optional)">
+            <input id="planDate" type="date" aria-label="Dance date">
+            <input id="planTime" type="time" aria-label="Dance time">
+          </div>
+          <textarea id="planNote" rows="2" placeholder="Moves, outfit, who's filming..."></textarea>
+          <div class="row" style="align-items:center; justify-content:space-between;">
+            <span class="hint">Picking a date adds it to the calendar automatically.</span>
+            <button class="button" id="savePlanBtn" type="submit">Save plan</button>
+          </div>
+        </div>
+      </form>
+      <div class="status" id="planStatus"></div>
+    </section>
+
+    <div class="plans" id="plansView"></div>
+  </main>
+
+  <script>
+    const form = document.getElementById('planForm');
+    const urlInput = document.getElementById('planUrl');
+    const titleInput = document.getElementById('planTitle');
+    const dateInput = document.getElementById('planDate');
+    const timeInput = document.getElementById('planTime');
+    const noteInput = document.getElementById('planNote');
+    const saveBtn = document.getElementById('savePlanBtn');
+    const statusEl = document.getElementById('planStatus');
+    const plansView = document.getElementById('plansView');
+
+    let plans = [];
+    let saveQueue = Promise.resolve();
+
+    function currentUser() {
+      return localStorage.getItem('charlotte-user') || 'Unknown';
+    }
+
+    function setStatus(text, isError) {
+      statusEl.textContent = text;
+      statusEl.classList.toggle('error', !!isError);
+    }
+
+    function escapeHtml(text) {
+      const div = document.createElement('div');
+      div.textContent = text == null ? '' : String(text);
+      return div.innerHTML;
+    }
+
+    function todayKey() {
+      const now = new Date();
+      return `${now.getFullYear()}-${String(now.getMonth() + 1).padStart(2, '0')}-${String(now.getDate()).padStart(2, '0')}`;
+    }
+
+    function formatDate(dateKey) {
+      const date = new Date(dateKey + 'T00:00:00');
+      if (Number.isNaN(date.getTime())) return dateKey;
+      return date.toLocaleDateString(undefined, { weekday: 'short', day: 'numeric', month: 'short' });
+    }
+
+    function formatTime(time) {
+      if (!time) return '';
+      const date = new Date('2000-01-01T' + time);
+      if (Number.isNaN(date.getTime())) return time;
+      return date.toLocaleTimeString(undefined, { hour: 'numeric', minute: '2-digit' });
+    }
+
+    function displayUrl(url) {
+      const clean = String(url || '').replace(/^https?:\/\//i, '').replace(/\/$/, '');
+      return clean.length > 48 ? clean.slice(0, 45) + '...' : clean;
+    }
+
+    function enqueue(task) {
+      saveQueue = saveQueue.then(task, task);
+      return saveQueue;
+    }
+
+    async function requestSave(payload) {
+      const res = await fetch('/api/tiktok', {
+        method: 'POST',
+        headers: { 'content-type': 'application/json' },
+        body: JSON.stringify(payload)
+      });
+      const json = await res.json();
+      if (!res.ok) throw new Error(json.error || 'Could not save');
+      plans = Array.isArray(json.plans) ? json.plans : plans;
+      render();
+      if (json.calendarSynced === false) {
+        setStatus('Saved, but the calendar did not update: ' + (json.calendarWarning || 'unknown error'), true);
+      }
+      return json;
+    }
+
+    function render() {
+      plansView.innerHTML = '';
+      if (plans.length === 0) {
+        const empty = document.createElement('div');
+        empty.className = 'empty';
+        empty.textContent = 'No TikTok plans saved yet. Paste a link above to start one.';
+        plansView.appendChild(empty);
+        return;
+      }
+
+      const today = todayKey();
+      const groups = [
+        { title: 'Upcoming', items: plans.filter(p => p.date && p.date >= today).sort((a, b) => (a.date + (a.time || '')).localeCompare(b.date + (b.time || ''))) },
+        { title: 'Not planned yet', items: plans.filter(p => !p.date) },
+        { title: 'Past', items: plans.filter(p => p.date && p.date < today).sort((a, b) => b.date.localeCompare(a.date)) }
+      ];
+
+      groups.forEach(group => {
+        if (group.items.length === 0) return;
+        const section = document.createElement('section');
+        section.className = 'group';
+        const heading = document.createElement('h2');
+        heading.textContent = `${group.title} (${group.items.length})`;
+        section.appendChild(heading);
+        const grid = document.createElement('div');
+        grid.className = 'plan-grid';
+        group.items.forEach(plan => grid.appendChild(renderPlan(plan)));
+        section.appendChild(grid);
+        plansView.appendChild(section);
+      });
+    }
+
+    function renderPlan(plan) {
+      const card = document.createElement('article');
+      card.className = 'plan';
+
+      const head = document.createElement('div');
+      head.className = 'plan-head';
+      head.innerHTML = `<h3 class="plan-title">🎵 ${escapeHtml(plan.title || 'TikTok dance')}</h3>`;
+      card.appendChild(head);
+
+      const when = document.createElement(plan.date ? 'a' : 'span');
+      when.className = 'plan-when' + (plan.date ? '' : ' unplanned');
+      if (plan.date) {
+        when.href = 'calendar.html#' + plan.date;
+        when.title = 'See it on the calendar';
+        const time = formatTime(plan.time);
+        when.textContent = '📅 ' + formatDate(plan.date) + (time ? ' · ' + time : '');
+      } else {
+        when.textContent = '📅 Not planned yet';
+      }
+      card.appendChild(when);
+
+      const link = document.createElement('a');
+      link.className = 'plan-link';
+      link.href = plan.url;
+      link.target = '_blank';
+      link.rel = 'noopener noreferrer';
+      link.textContent = displayUrl(plan.url) + ' ↗';
+      card.appendChild(link);
+
+      if (plan.note) {
+        const note = document.createElement('p');
+        note.className = 'plan-note';
+        note.textContent = plan.note;
+        card.appendChild(note);
+      }
+
+      const by = document.createElement('div');
+      by.className = 'plan-by';
+      by.textContent = 'Added by ' + (plan.author || 'Unknown');
+      card.appendChild(by);
+
+      const controls = document.createElement('div');
+      controls.className = 'plan-controls';
+
+      const dateField = document.createElement('input');
+      dateField.type = 'date';
+      dateField.value = plan.date || '';
+      dateField.title = 'Dance date (saves to calendar)';
+      dateField.addEventListener('change', () => queuePatch(plan.id, { date: dateField.value }));
+      controls.appendChild(dateField);
+
+      const timeField = document.createElement('input');
+      timeField.type = 'time';
+      timeField.value = plan.time || '';
+      timeField.title = 'Dance time';
+      timeField.addEventListener('change', () => queuePatch(plan.id, { time: timeField.value }));
+      controls.appendChild(timeField);
+
+      if (plan.date) {
+        const calLink = document.createElement('a');
+        calLink.className = 'mini';
+        calLink.href = 'calendar.html#' + plan.date;
+        calLink.textContent = 'Calendar';
+        controls.appendChild(calLink);
+      }
+
+      const del = document.createElement('button');
+      del.className = 'mini danger';
+      del.type = 'button';
+      del.textContent = 'Delete';
+      del.addEventListener('click', () => deletePlan(plan));
+      controls.appendChild(del);
+
+      card.appendChild(controls);
+      return card;
+    }
+
+    const patchTimers = new Map();
+    function queuePatch(id, patch) {
+      const plan = plans.find(p => p.id === id);
+      if (!plan) return;
+      Object.assign(plan, patch);
+      clearTimeout(patchTimers.get(id));
+      patchTimers.set(id, setTimeout(() => {
+        patchTimers.delete(id);
+        enqueue(async () => {
+          setStatus('Saving...');
+          try {
+            const json = await requestSave({ action: 'save', plan });
+            if (json.calendarSynced !== false) {
+              setStatus(plan.date ? 'Saved and added to the calendar for ' + formatDate(plan.date) : 'Saved - not on the calendar yet');
+            }
+          } catch (e) {
+            setStatus(e.message, true);
+          }
+        });
+      }, 600));
+    }
+
+    async function deletePlan(plan) {
+      if (!confirm('Delete "' + (plan.title || 'this plan') + '" and its calendar entry?')) return;
+      enqueue(async () => {
+        setStatus('Deleting...');
+        try {
+          const json = await requestSave({ action: 'delete', id: plan.id });
+          if (json.calendarSynced !== false) setStatus('Deleted');
+        } catch (e) {
+          setStatus(e.message, true);
+        }
+      });
+    }
+
+    form.addEventListener('submit', (e) => {
+      e.preventDefault();
+      const url = urlInput.value.trim();
+      if (!url) {
+        setStatus('Paste a TikTok link first', true);
+        return;
+      }
+      const plan = {
+        url,
+        title: titleInput.value.trim(),
+        date: dateInput.value,
+        time: timeInput.value,
+        note: noteInput.value,
+        author: currentUser()
+      };
+
+      saveBtn.disabled = true;
+      setStatus('Saving...');
+      enqueue(async () => {
+        try {
+          const json = await requestSave({ action: 'save', plan });
+          form.reset();
+          if (json.calendarSynced === false) {
+            setStatus('Saved, but the calendar did not update: ' + (json.calendarWarning || 'unknown error'), true);
+          } else {
+            const saved = json.plan || plan;
+            setStatus(saved.date ? 'Saved and added to the calendar for ' + formatDate(saved.date) : 'Saved as an idea - add a date to put it on the calendar');
+          }
+        } catch (err) {
+          setStatus(err.message, true);
+        } finally {
+          saveBtn.disabled = false;
+        }
+      });
+    });
+
+    async function loadPlans() {
+      try {
+        const res = await fetch('/api/tiktok');
+        const json = await res.json();
+        plans = Array.isArray(json.plans) ? json.plans : [];
+        if (json.error) setStatus('Could not load plans: ' + json.error, true);
+      } catch (e) {
+        plans = [];
+        setStatus('Could not load plans: ' + e.message, true);
+      }
+      render();
+    }
+
+    loadPlans();
+  </script>
+</body>
+</html>
