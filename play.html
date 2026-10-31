@@ -35,6 +35,10 @@
   <style>
     .td-online{display:flex;align-items:center;gap:9px;width:max-content;max-width:100%;margin:6px 2px 12px;padding:8px 12px;border:1px solid #e1e9ec;border-radius:999px;color:#6a7480;background:#fffefa;font-size:.8rem;font-weight:800;box-shadow:0 4px 12px #1748660b}.td-online-dot{width:9px;height:9px;flex:none;border-radius:50%;background:#aeb8be;box-shadow:0 0 0 3px #aeb8be20}.td-online.is-ready{border-color:#cae3d1;color:#3b7050;background:#f2fbf3}.td-online.is-ready .td-online-dot{background:#62a978;box-shadow:0 0 0 3px #62a97824}.td-target-badge .td-author-dot{background:#e8f4fa}
   </style>
+  <style>
+    .td-pending-list[hidden]{display:none}.td-pending-list{display:grid;gap:10px;margin:12px 0;padding:16px;border:1px solid #fff;border-radius:22px;background:linear-gradient(145deg,#fff8e7,#f2f9fc);box-shadow:0 9px 24px #17486610}.td-pick-heading{display:flex;align-items:center;gap:11px;margin-bottom:2px}.td-pick-heading>span{display:grid;place-items:center;width:39px;height:39px;border:1px solid #fff;border-radius:14px;background:#fffefa;font-size:1.2rem}.td-pick-heading strong,.td-pick-heading small{display:block}.td-pick-heading strong{color:#174866;font:700 1rem var(--font-display)}.td-pick-heading small{margin-top:3px;color:#70879a;font-size:.78rem}.td-pick-card{display:grid;gap:5px;padding:13px 15px;border:1px solid #fff;border-radius:16px;color:#234b65;background:#ffffffde;text-align:left;box-shadow:0 4px 12px #1748660b;cursor:pointer;transition:transform .18s ease,box-shadow .18s ease}.td-pick-card:hover{transform:translateY(-2px);box-shadow:0 9px 18px #17486618}.td-pick-kind{color:#95752f;font-size:.7rem;font-weight:900;letter-spacing:.1em;text-transform:uppercase}.td-pick-prompt{font:1.03rem/1.45 var(--font-display)}.td-pick-for{color:#71889a;font-size:.76rem;font-weight:700}.td-pick-empty{margin:2px 0;color:#647f91;font-size:.84rem;line-height:1.5}.td-random-pick{justify-self:start;padding:10px 15px;border:1px solid #f0ddaa;border-radius:999px;color:#71591f;background:#fff4d5;font:700 .86rem var(--font-body);cursor:pointer}.td-random-pick:hover{background:#ffedbd}
+    @media(max-width:520px){.td-pending-list{padding:12px;border-radius:18px}.td-random-pick{justify-self:stretch}}
+  </style>
 </head>
 <body>
   <div class="top-bar"><a class="button" href="index.html">← Back to hub</a></div>
@@ -66,6 +70,7 @@
       <div class="td-online" id="tdOnline" role="status"><span class="td-online-dot"></span><span>Checking whether we’re both here…</span></div>
       <div class="td-choice"><button type="button" data-type="truth"><span class="td-choice-icon">💭</span><strong>Truth</strong><small>Tell me something real</small></button><button type="button" data-type="dare"><span class="td-choice-icon">✨</span><strong>Dare</strong><small>Try a tiny silly challenge</small></button></div>
       <article class="td-current" id="tdCurrent" aria-live="polite"><span class="td-label">Our next little prompt</span><p class="td-prompt">Choose how we’re playing, then pick truth or dare.</p></article>
+      <div class="td-pending-list" id="tdPendingChoices" hidden></div>
       <section class="td-rules"><div class="td-section-heading"><span aria-hidden="true">🧸</span><div><h3>Our house rules</h3><p>Made by us, followed by the game.</p></div></div><form id="tdRulesForm"><label class="td-rule-label">Max dares in a row<input type="number" name="maxDaresInRow" min="1" max="10" value="3" required></label><label class="td-rule-label">A dare at least every<input type="number" name="dareAfterTruths" min="1" max="20" value="5" required><span>truths</span></label><button class="small" type="submit">Save our rules ✨</button></form></section>
       <section class="td-custom"><div class="td-section-heading"><span aria-hidden="true">📝</span><div><h3>Write prompts for each other</h3><p>Only we see our saved prompts until our partner draws one.</p></div></div><form id="tdCustomForm"><label class="td-prompt-field">Our prompt<textarea name="prompt" maxlength="300" placeholder="Write a kind, comfy prompt…" required></textarea></label><label>Truth or dare<select name="promptType"><option value="truth">💭 Truth</option><option value="dare">✨ Dare</option></select></label><label>Where can we use it?<select name="mode"><option value="text">💬 Over text</option><option value="call">📞 On a call</option><option value="both">💞 Both</option></select></label><button class="small" type="submit">＋ Add our prompt</button></form><div id="tdCustomList" class="td-history-list"></div></section>
       <section class="td-history"><div class="td-section-heading"><span aria-hidden="true">📚</span><div><h3>Our prompt scrapbook</h3><p>Recently played and who brought each one to us.</p></div></div><div id="tdHistory" class="td-history-list"></div></section>
@@ -139,6 +144,7 @@
       tdRulesForm.elements.maxDaresInRow.value = rules.maxDaresInRow;
       tdRulesForm.elements.dareAfterTruths.value = rules.dareAfterTruths;
       const current = truthDare.current;
+      const pending = truthDare.pending;
       const togetherOnline = roomConnected && ['Charlotte', 'Luke'].every(name => roomOnline.includes(name));
       const onlineStatus = document.getElementById('tdOnline');
       onlineStatus.classList.toggle('is-ready', togetherOnline);
@@ -147,17 +153,30 @@
       const authorBadge = name => name ? `<span class="td-author-badge"><span class="td-author-dot" aria-hidden="true">✍</span>${safe(name)} wrote this</span>` : '';
       const targetBadge = name => name ? `<span class="td-author-badge td-target-badge"><span class="td-author-dot" aria-hidden="true">💌</span>For ${safe(name)}</span>` : '';
       const modeLabel = mode => mode === 'both' ? 'text or call' : mode === 'call' ? 'on a call' : 'over text';
-      tdCurrent.innerHTML = current && !togetherOnline ? '<span class="td-label">🔒 Our room is waiting</span><p class="td-prompt">Our prompt is tucked away until we’re both online together.</p>' : current ? `<span class="td-label"><span class="td-type-badge">${current.type === 'truth' ? '💭 Truth' : '✨ Dare'}</span> · ${safe(modeLabel(current.mode))}</span><p class="td-prompt">${safe(current.prompt)}</p>${authorBadge(current.addedBy)}${targetBadge(current.assignedTo || current.by)}<span class="td-author-badge"><span class="td-author-dot" aria-hidden="true">💌</span>Picked by ${safe(current.by)}</span><button class="small" type="button" id="tdDismiss">Tuck this into our scrapbook ✨</button>` : '<span class="td-label">Our next little prompt</span><p class="td-prompt">Choose how we’re playing, then pick truth or dare.</p>';
+      if (!togetherOnline) tdCurrent.innerHTML = '<span class="td-label">🔒 Our room is waiting</span><p class="td-prompt">Our prompt is tucked away until we’re both online together.</p>';
+      else if (pending?.chooser === user) tdCurrent.innerHTML = `<span class="td-label">${pending.type === 'truth' ? '💭 Truth' : '✨ Dare'} · ${safe(modeLabel(pending.mode))} · for ${safe(pending.assignedTo)}</span><p class="td-prompt">${safe(pending.requestedBy)} picked the game. Choose a prompt just for them 💛</p>`;
+      else if (pending) tdCurrent.innerHTML = `<span class="td-label">A little surprise is on its way</span><p class="td-prompt">${safe(pending.chooser)} is choosing a ${safe(pending.type)} ${safe(modeLabel(pending.mode))} for me… 💌</p>`;
+      else if (current) tdCurrent.innerHTML = `<span class="td-label"><span class="td-type-badge">${current.type === 'truth' ? '💭 Truth' : '✨ Dare'}</span> · ${safe(modeLabel(current.mode))}</span><p class="td-prompt">${safe(current.prompt)}</p>${authorBadge(current.addedBy)}${targetBadge(current.assignedTo || current.by)}<span class="td-author-badge"><span class="td-author-dot" aria-hidden="true">💌</span>Chosen by ${safe(current.pickedBy || current.by)}</span><button class="small" type="button" id="tdDismiss">We’ve read it ✨</button>`;
+      else tdCurrent.innerHTML = '<span class="td-label">Our next little prompt</span><p class="td-prompt">Choose how we’re playing, then pick truth or dare.</p>';
+      const pendingChoices = document.getElementById('tdPendingChoices');
+      const isChooser = togetherOnline && pending && pending.chooser === user;
+      pendingChoices.hidden = !isChooser;
+      if (isChooser) {
+        const unusedIds = new Set(truthDare.usedPrompts || []);
+        const choices = (truthDare.customPrompts || []).filter(item => item.type === pending.type && (pending.mode === 'both' || item.mode === 'both' || item.mode === pending.mode) && !unusedIds.has(item.id));
+        const choicesMarkup = choices.map(item => `<button class="td-pick-card" type="button" data-td-prompt-id="${safe(item.id)}"><span class="td-pick-kind">${item.type === 'truth' ? '💭 Truth' : '✨ Dare'} · ${safe(modeLabel(item.mode))}</span><span class="td-pick-prompt">${safe(item.prompt)}</span><span class="td-pick-for">Just for ${safe(pending.assignedTo)} 💛</span></button>`).join('');
+        pendingChoices.innerHTML = `<div class="td-pick-heading"><span>✍️</span><div><strong>Pick one for ${safe(pending.assignedTo)}</strong><small>Only your own saved prompts are shown here.</small></div></div>${choicesMarkup || '<p class="td-pick-empty">No saved prompts of this kind left in our deck. We can still let the game surprise them.</p>'}<button class="td-random-pick" type="button" data-td-random>🎲 Surprise them with a random pick</button>`;
+      } else pendingChoices.replaceChildren();
       document.getElementById('tdHistory').innerHTML = truthDare.history?.length ? truthDare.history.slice(0, 12).map(item => {
         const addedBy = item.addedBy || truthDare.customPrompts?.find(prompt => prompt.id === item.promptId)?.author || '';
-        return `<div class="td-history-item"><strong>${item.type === 'truth' ? '💭 Truth' : '✨ Dare'} · ${safe(modeLabel(item.mode))}</strong>${safe(item.prompt)}<br>${authorBadge(addedBy)}${targetBadge(item.assignedTo || item.by)}<span class="td-author-badge"><span class="td-author-dot" aria-hidden="true">💌</span>Picked by ${safe(item.by)}</span><small> · ${new Date(item.at).toLocaleDateString()}</small></div>`;
+        return `<div class="td-history-item"><strong>${item.type === 'truth' ? '💭 Truth' : '✨ Dare'} · ${safe(modeLabel(item.mode))}</strong>${safe(item.prompt)}<br>${authorBadge(addedBy)}${targetBadge(item.assignedTo || item.by)}<span class="td-author-badge"><span class="td-author-dot" aria-hidden="true">💌</span>Chosen by ${safe(item.pickedBy || item.by)}</span><small> · ${new Date(item.at).toLocaleDateString()}</small></div>`;
       }).join('') : '<div class="empty">Our played prompts will be saved here, along with who added them.</div>';
       document.getElementById('tdCustomList').innerHTML = truthDare.customPrompts?.length ? truthDare.customPrompts.map(item => { const recipient = item.assignedTo || (item.author === 'Charlotte' ? 'Luke' : 'Charlotte'); return `<div class="td-history-item"><strong>${item.type === 'truth' ? '💭 Truth' : '✨ Dare'} · ${safe(modeLabel(item.mode))}</strong>${safe(item.prompt)}<br>${authorBadge(item.author)}${targetBadge(recipient)}${item.author === user ? `<button class="small danger td-remove" type="button" data-td-remove="${safe(item.id)}" aria-label="Remove custom prompt">Remove</button>` : ''}</div>`; }).join('') : '<div class="td-history-item">No custom prompts yet. Let’s add the first one together ✨</div>';
       const stats = truthDare.stats || { dareStreak: 0, truthsSinceDare: 0 };
       document.querySelectorAll('.td-choice button').forEach(button => {
-        const blocked = !togetherOnline || (button.dataset.type === 'dare' ? stats.dareStreak >= rules.maxDaresInRow : stats.truthsSinceDare >= rules.dareAfterTruths);
+        const blocked = !togetherOnline || Boolean(pending) || (button.dataset.type === 'dare' ? stats.dareStreak >= rules.maxDaresInRow : stats.truthsSinceDare >= rules.dareAfterTruths);
         button.disabled = blocked;
-        button.title = !togetherOnline ? 'We both need to be online to draw a prompt.' : blocked ? (button.dataset.type === 'dare' ? 'Our rule says we need a truth first.' : 'Our rule says we need a dare now.') : '';
+        button.title = !togetherOnline ? 'We both need to be online to draw a prompt.' : pending ? 'We are already choosing a prompt together.' : blocked ? (button.dataset.type === 'dare' ? 'Our rule says we need a truth first.' : 'Our rule says we need a dare now.') : '';
       });
     }
     async function loadTruthDare() {
@@ -172,7 +191,7 @@
         truthDare = json.data; renderTruthDare(); tdStatus.textContent = 'Saved for both of us.';
       } catch (error) { tdStatus.textContent = error.message; await loadTruthDare(); }
     }
-    document.querySelectorAll('.td-choice button').forEach(button => button.addEventListener('click', () => postTruthDare('draw', { promptType: button.dataset.type, mode: tdMode.value })));
+    document.querySelectorAll('.td-choice button').forEach(button => button.addEventListener('click', () => postTruthDare('request-prompt', { promptType: button.dataset.type, mode: tdMode.value })));
     tdRulesForm.addEventListener('submit', event => { event.preventDefault(); postTruthDare('rules', { rules: { maxDaresInRow: tdRulesForm.elements.maxDaresInRow.value, dareAfterTruths: tdRulesForm.elements.dareAfterTruths.value } }); });
     document.getElementById('tdCustomForm').addEventListener('submit', async event => {
       event.preventDefault(); const form = event.currentTarget; const fields = Object.fromEntries(new FormData(form).entries());
@@ -180,6 +199,9 @@
     });
     document.addEventListener('click', event => {
       if (event.target.closest('#tdDismiss')) postTruthDare('clear-current');
+      const prompt = event.target.closest('[data-td-prompt-id]');
+      if (prompt) postTruthDare('select-prompt', { promptId: prompt.dataset.tdPromptId });
+      if (event.target.closest('[data-td-random]')) postTruthDare('select-prompt', { random: true });
       const remove = event.target.closest('[data-td-remove]');
       if (remove) postTruthDare('remove-prompt', { id: remove.dataset.tdRemove });
     });

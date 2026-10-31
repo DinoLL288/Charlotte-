@@ -139,7 +139,7 @@ export class QuestionNightRoom {
   async getTruthDareData() {
     return await this.ctx.storage.get('truthDareData') || {
       rules: { maxDaresInRow: 3, dareAfterTruths: 5 },
-      customPrompts: [], usedPrompts: [], history: [],
+      customPrompts: [], usedPrompts: [], history: [], current: null, pending: null,
       stats: { lastType: '', dareStreak: 0, truthsSinceDare: 0 }
     };
   }
@@ -151,8 +151,18 @@ export class QuestionNightRoom {
     return {
       ...data,
       customPrompts: data.customPrompts.filter(item => item.author === user),
-      current: bothOnline ? data.current || null : null
+      current: bothOnline ? data.current || null : null,
+      pending: data.pending || null
     };
+  }
+
+  getTruthDarePool(data, chooser, target, type, mode) {
+    const modes = mode === 'both' ? ['text', 'call'] : [mode];
+    const presets = modes.flatMap(promptMode => TRUTH_DARE_PROMPTS[promptMode][type].map((prompt, index) => ({
+      id: `preset-${promptMode}-${type}-${index}`, prompt, type, mode: promptMode, preset: true
+    })));
+    const custom = data.customPrompts.filter(item => item.author === chooser && (item.assignedTo === target || (!item.assignedTo && item.author !== target)) && item.type === type && (mode === 'both' || item.mode === 'both' || item.mode === mode));
+    return [...custom, ...presets];
   }
 
   async getPreferences(user) {
@@ -297,33 +307,59 @@ export class QuestionNightRoom {
       if (index < 0) return Response.json({ error: 'Custom prompt not found.' }, { status: 404 });
       if (data.customPrompts[index].author !== user) return Response.json({ error: 'Only the person who added a prompt can remove it.' }, { status: 403 });
       data.customPrompts.splice(index, 1);
-    } else if (body.operation === 'draw') {
+    } else if (body.operation === 'request-prompt') {
       const mode = ['text', 'call', 'both'].includes(body.mode) ? body.mode : '';
       const type = body.promptType === 'dare' ? 'dare' : body.promptType === 'truth' ? 'truth' : '';
       if (!mode || !type) return Response.json({ error: 'Choose text, call, or both, then truth or dare.' }, { status: 400 });
       const online = (await this.getState('2000-01-02')).online;
       if (!online.includes('Charlotte') || !online.includes('Luke')) return Response.json({ error: 'We both need to be online before we draw a prompt.' }, { status: 423 });
+      if (data.pending) return Response.json({ error: 'We already have a prompt waiting for the other person to choose.' }, { status: 409 });
       const { maxDaresInRow, dareAfterTruths } = data.rules;
       if (type === 'dare' && data.stats.dareStreak >= maxDaresInRow) return Response.json({ error: `Let’s do a truth before another dare (our limit is ${maxDaresInRow} dares in a row).` }, { status: 409 });
       if (type === 'truth' && data.stats.truthsSinceDare >= dareAfterTruths) return Response.json({ error: `Our rule says to choose at least one dare every ${dareAfterTruths} truths.` }, { status: 409 });
-      const modes = mode === 'both' ? ['text', 'call'] : [mode];
-      const presets = modes.flatMap(promptMode => TRUTH_DARE_PROMPTS[promptMode][type].map((prompt, index) => ({ id: `preset-${promptMode}-${type}-${index}`, prompt, type, mode: promptMode, preset: true })));
-      const pool = [...data.customPrompts.filter(item => item.type === type && (item.assignedTo === user || (!item.assignedTo && item.author !== user)) && (mode === 'both' || item.mode === 'both' || item.mode === mode)), ...presets];
-      let available = pool.filter(item => !data.usedPrompts.includes(item.id));
-      if (!available.length) {
+      const chooser = user === 'Charlotte' ? 'Luke' : 'Charlotte';
+      const pool = this.getTruthDarePool(data, chooser, user, type, mode);
+      const unusedPool = pool.filter(item => !data.usedPrompts.includes(item.id));
+      if (!unusedPool.length) {
         const ids = new Set(pool.map(item => item.id));
         data.usedPrompts = data.usedPrompts.filter(id => !ids.has(id));
-        available = pool;
       }
-      const selected = available[Math.floor(Math.random() * available.length)];
-      if (!selected) return Response.json({ error: 'No prompts found for that choice.' }, { status: 404 });
+      data.current = null;
+      data.pending = { id: crypto.randomUUID(), requestedBy: user, assignedTo: user, chooser, type, mode, createdAt: new Date().toISOString() };
+    } else if (body.operation === 'select-prompt') {
+      const pending = data.pending;
+      if (!pending) return Response.json({ error: 'There is no prompt waiting for us to choose.' }, { status: 404 });
+      if (pending.chooser !== user) return Response.json({ error: 'This prompt is for the other person to choose.' }, { status: 403 });
+      const online = (await this.getState('2000-01-02')).online;
+      if (!online.includes('Charlotte') || !online.includes('Luke')) return Response.json({ error: 'We both need to be in the game room to choose a prompt.' }, { status: 423 });
+      const { maxDaresInRow, dareAfterTruths } = data.rules;
+      if (pending.type === 'dare' && data.stats.dareStreak >= maxDaresInRow) return Response.json({ error: `Let’s do a truth before another dare (our limit is ${maxDaresInRow} dares in a row).` }, { status: 409 });
+      if (pending.type === 'truth' && data.stats.truthsSinceDare >= dareAfterTruths) return Response.json({ error: `Our rule says to choose at least one dare every ${dareAfterTruths} truths.` }, { status: 409 });
+      const pool = this.getTruthDarePool(data, user, pending.requestedBy, pending.type, pending.mode);
+      let selected;
+      if (body.random === true) {
+        let available = pool.filter(item => !data.usedPrompts.includes(item.id));
+        if (!available.length) {
+          const ids = new Set(pool.map(item => item.id));
+          data.usedPrompts = data.usedPrompts.filter(id => !ids.has(id));
+          available = pool;
+        }
+        selected = available[Math.floor(Math.random() * available.length)];
+      } else {
+        selected = pool.find(item => item.id === body.promptId);
+        if (selected && data.usedPrompts.includes(selected.id)) return Response.json({ error: 'That prompt was already used this round. Choose another one or let us pick randomly.' }, { status: 409 });
+      }
+      if (!selected) return Response.json({ error: 'That prompt is not available for this round.' }, { status: 404 });
       data.usedPrompts.push(selected.id);
-      data.stats.lastType = type;
-      data.stats.dareStreak = type === 'dare' ? data.stats.dareStreak + 1 : 0;
-      data.stats.truthsSinceDare = type === 'truth' ? data.stats.truthsSinceDare + 1 : 0;
-      data.history.unshift({ id: crypto.randomUUID(), promptId: selected.id, prompt: selected.prompt, type, mode: selected.mode, by: user, assignedTo: user, addedBy: selected.author || '', source: selected.preset ? 'preset' : 'custom', at: new Date().toISOString() });
+      data.stats.lastType = pending.type;
+      data.stats.dareStreak = pending.type === 'dare' ? data.stats.dareStreak + 1 : 0;
+      data.stats.truthsSinceDare = pending.type === 'truth' ? data.stats.truthsSinceDare + 1 : 0;
+      data.history.unshift({ id: crypto.randomUUID(), promptId: selected.id, prompt: selected.prompt, type: pending.type, mode: selected.mode, by: pending.requestedBy, assignedTo: pending.assignedTo, pickedBy: user, addedBy: selected.author || '', source: selected.preset ? 'preset' : 'custom', at: new Date().toISOString() });
       data.history = data.history.slice(0, 100);
       data.current = data.history[0];
+      data.pending = null;
+    } else if (body.operation === 'draw') {
+      return Response.json({ error: 'Ask the other person to choose a prompt first.' }, { status: 400 });
     } else if (body.operation === 'clear-current') {
       data.current = null;
     } else return Response.json({ error: 'Unknown Truth or Dare action.' }, { status: 400 });
