@@ -116,7 +116,7 @@ export async function onRequestPost(context) {
       const target = entries[index];
       const author = target.author || '';
       if (author && author !== 'Unknown' && author !== currentUser) {
-        return new Response(JSON.stringify({ error: 'You can only remove your own quiet days' }), {
+        return new Response(JSON.stringify({ error: 'We can only remove quiet days we added' }), {
           status: 403,
           headers: { 'content-type': 'application/json' }
         });

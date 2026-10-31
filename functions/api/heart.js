@@ -69,7 +69,7 @@ export async function onRequestPost({ request, env }) {
       const author = clean(body.author, 40);
       const guess = clean(body.guess, 300);
       if (!entry) return response({ error: 'Question not found' }, 404);
-      if (!['Charlotte', 'Luke'].includes(author) || !guess) return response({ error: 'Write your guess first' }, 400);
+      if (!['Charlotte', 'Luke'].includes(author) || !guess) return response({ error: 'We need a guess before saving' }, 400);
       entry.guesses = entry.guesses || {};
       entry.guesses[author] = guess;
     } else if (body.action === 'delete') {
@@ -102,13 +102,13 @@ export async function onRequestPost({ request, env }) {
           if (!['https:', 'http:'].includes(url.protocol)) throw new Error();
         } catch { return response({ error: 'Use a valid web or map link' }, 400); }
       }
-      if (type === 'jar' && !item.body) return response({ error: 'Write a little thing you love first' }, 400);
-      if (type === 'letters' && (!item.occasion || !item.body)) return response({ error: 'Add an occasion and your letter' }, 400);
-      if (type === 'traditions' && !item.title) return response({ error: 'Give your tradition a name' }, 400);
-      if (type === 'wishes' && !item.title) return response({ error: 'Add something to your wish list' }, 400);
+      if (type === 'jar' && !item.body) return response({ error: 'Write a little thing we love first' }, 400);
+      if (type === 'letters' && (!item.occasion || !item.body)) return response({ error: 'Add an occasion and our letter' }, 400);
+      if (type === 'traditions' && !item.title) return response({ error: 'Give our tradition a name' }, 400);
+      if (type === 'wishes' && !item.title) return response({ error: 'Add something to our wish list' }, 400);
       if (type === 'places' && (!item.place || !item.body)) return response({ error: 'Add a place and a memory' }, 400);
       if (type === 'songs' && (!item.title || !item.artist)) return response({ error: 'Add the song and artist' }, 400);
-      if (type === 'checkins' && !item.feeling) return response({ error: 'Choose how you are feeling' }, 400);
+      if (type === 'checkins' && !item.feeling) return response({ error: 'Choose how we are feeling' }, 400);
       if (type === 'quizzes' && (!item.question || !item.answer)) return response({ error: 'Add a question and its answer' }, 400);
       if (type === 'futureNotes' && (!item.date || !item.body)) return response({ error: 'Choose an opening date and write the note' }, 400);
       if (type === 'futureNotes' && item.date <= new Date().toISOString().slice(0, 10)) return response({ error: 'Choose a future date so the note stays tucked away' }, 400);

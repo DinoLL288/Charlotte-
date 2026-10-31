@@ -28,7 +28,7 @@
       input.placeholder = options.placeholder || '';
       input.value = options.defaultValue || '';
       input.maxLength = options.maxLength || 120;
-      input.setAttribute('aria-label', options.inputLabel || 'Your answer');
+      input.setAttribute('aria-label', options.inputLabel || 'Our answer');
       form.appendChild(input);
     }
 

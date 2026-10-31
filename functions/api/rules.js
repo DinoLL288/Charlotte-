@@ -117,7 +117,7 @@ export async function onRequestPost(context) {
 
       const target = data[section][index];
       if (!isUnknownAuthor(target) && target.author !== currentUser) {
-        return jsonResponse({ error: 'You can only delete your own items or items from unknown authors' }, 403);
+        return jsonResponse({ error: 'We can only delete items we added or items without a saved author' }, 403);
       }
 
       data[section].splice(index, 1);

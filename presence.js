@@ -25,7 +25,7 @@
 
   const presence = document.createElement('div');
   presence.id = 'shared-presence';
-  presence.textContent = 'Checking if Charlotte is here…';
+  presence.textContent = 'Checking our live room…';
   document.body.appendChild(presence);
 
   const widget = document.createElement('div');
@@ -33,9 +33,9 @@
   widget.innerHTML = `
     <section id="shared-music-panel" hidden aria-label="Shared Spotify playlist">
       <h2>Our background music</h2>
-      <p>Set one Spotify playlist for both of you. Each person starts playback in their own Spotify player. To loop it, open the playlist in Spotify and turn on repeat.</p>
-      <form id="shared-music-form"><label for="shared-music-url">Shared Spotify playlist link</label><input id="shared-music-url" name="url" type="url" maxlength="500" placeholder="https://open.spotify.com/playlist/…" required><button class="primary" type="submit">Share playlist</button></form>
-      <a id="shared-music-open" href="https://open.spotify.com/" target="_blank" rel="noopener noreferrer" hidden>Open playlist in Spotify to turn on repeat ↗</a>
+      <p>Our playlist is shared here. We each start playback in our own Spotify player; to loop it, open the playlist in Spotify and turn on repeat.</p>
+      <form id="shared-music-form"><label for="shared-music-url">Link for our Spotify playlist</label><input id="shared-music-url" name="url" type="url" maxlength="500" placeholder="https://open.spotify.com/playlist/…" required><button class="primary" type="submit">Set our playlist</button></form>
+      <a id="shared-music-open" href="https://open.spotify.com/" target="_blank" rel="noopener noreferrer" hidden>Open our playlist in Spotify to turn on repeat ↗</a>
       <p id="shared-music-status" role="status">Connecting…</p>
       <iframe id="shared-music-player" title="Shared Spotify playlist" loading="lazy" allow="autoplay; clipboard-write; encrypted-media; fullscreen; picture-in-picture" hidden></iframe>
     </section>
@@ -79,7 +79,7 @@
       player.hidden = true;
       openLink.hidden = true;
       player.removeAttribute('src');
-      if (!input.value) status.textContent = 'Paste a Spotify playlist link to share it.';
+      if (!input.value) status.textContent = 'Paste a Spotify playlist link to set ours.';
       return;
     }
     input.value = normalized;
@@ -88,7 +88,7 @@
     player.hidden = false;
     openLink.href = normalized;
     openLink.hidden = false;
-    status.textContent = 'Shared playlist loaded. Press play in Spotify on this device.';
+    status.textContent = 'Our playlist is ready in the Spotify player.';
   }
 
   function connect() {
@@ -104,9 +104,9 @@
     socket.onopen = () => {
       clearInterval(syncTimer);
       syncTimer = setInterval(() => { if (socket && socket.readyState === WebSocket.OPEN) socket.send(JSON.stringify({ type: 'ping' })); }, 25000);
-      status.textContent = playlist ? 'Connected. Shared playlist is ready.' : 'Paste a Spotify playlist link to share it.';
+      status.textContent = playlist ? 'Connected. Our playlist is ready.' : 'Paste a Spotify playlist link to set ours.';
     };
-    socket.onclose = () => { clearInterval(syncTimer); setPresence([], false); status.textContent = 'Reconnecting to your shared room…'; reconnectTimer = setTimeout(connect, 2500); };
+    socket.onclose = () => { clearInterval(syncTimer); setPresence([], false); status.textContent = 'Reconnecting to our shared room…'; reconnectTimer = setTimeout(connect, 2500); };
     socket.onerror = () => setPresence([], false);
   }
 
@@ -122,7 +122,7 @@
     if (!socket || socket.readyState !== WebSocket.OPEN) { status.textContent = 'The shared room is reconnecting. Try again in a moment.'; return; }
     socket.send(JSON.stringify({ type: 'spotify-playlist', url }));
     showPlaylist(url);
-    status.textContent = 'Playlist shared with both of you.';
+    status.textContent = 'Our playlist is saved for both of us.';
   });
 
   connect();

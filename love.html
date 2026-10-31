@@ -312,9 +312,9 @@
   <main>
     <section class="screen opening" id="opening">
       <p class="eyebrow">Charlotte &amp; Luke</p>
-      <h1 id="heading">Love you, Charlotte</h1>
-      <p class="subtitle">A little something made just for you.</p>
-      <div class="heart-area" id="heart" aria-label="Love you words arranged in a heart"></div>
+      <h1 id="heading">Our love</h1>
+      <p class="subtitle">A little celebration of us.</p>
+      <div class="heart-area" id="heart" aria-label="Our love arranged in a heart"></div>
       <div class="together" data-together role="timer" aria-label="Time we have been together"></div>
       <p class="together-since">Since 26 October 2026 · 5:46 pm</p>
       <button class="button reveal-button" id="revealButton" type="button">One more thing…</button>
@@ -324,7 +324,7 @@
     <section class="screen memory hidden" id="memory">
       <p class="eyebrow">One more thing</p>
       <h1>A few more of us</h1>
-      <p class="memory-sub">Pulled from our gallery, just for you.</p>
+      <p class="memory-sub">Pulled from our gallery of favorite moments.</p>
       <div class="reel" id="reelWrap">
         <div class="reel-backdrop" id="reelBackdrop" aria-hidden="true"></div>
         <img id="reelPhoto" alt="A photo of us from the gallery">
@@ -356,7 +356,7 @@
     heartPositions.forEach(([x, y], index) => {
       const word = document.createElement("span");
       word.className = "love-word";
-      word.textContent = index % 4 === 0 ? "Love you 🤍" : "Love you";
+      word.textContent = index % 4 === 0 ? "Our love 🤍" : "Us, always";
       word.style.left = x + "%";
       word.style.top = y + "%";
       heart.appendChild(word);

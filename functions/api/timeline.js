@@ -109,7 +109,7 @@ export async function onRequestPost(context) {
       const target = moments[index];
       const author = target.author || '';
       if (author && author !== 'Unknown' && author !== currentUser) {
-        return new Response(JSON.stringify({ error: 'You can only delete your own moments' }), {
+        return new Response(JSON.stringify({ error: 'We can only delete moments we added' }), {
           status: 403,
           headers: { 'content-type': 'application/json' }
         });

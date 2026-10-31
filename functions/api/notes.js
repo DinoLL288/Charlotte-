@@ -129,7 +129,7 @@ export async function onRequestPost(context) {
         });
       }
       if (!isUnknownAuthor(target) && target.author !== currentUser) {
-        return new Response(JSON.stringify({ error: 'You can only delete your own notes or notes from unknown authors' }), {
+        return new Response(JSON.stringify({ error: 'We can only delete notes we wrote or notes without a saved author' }), {
           status: 403,
           headers: { 'content-type': 'application/json' }
         });
@@ -162,7 +162,7 @@ export async function onRequestPost(context) {
       }
 
       if (!isUnknownAuthor(target) && target.author !== currentUser) {
-        return new Response(JSON.stringify({ error: 'You can only edit your own notes or notes from unknown authors' }), {
+        return new Response(JSON.stringify({ error: 'We can only edit notes we wrote or notes without a saved author' }), {
           status: 403,
           headers: { 'content-type': 'application/json' }
         });

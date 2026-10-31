@@ -1,3 +1,5 @@
+const DEFAULT_SPOTIFY_PLAYLIST = 'https://open.spotify.com/playlist/0nd5Ut2ixgw4RfV0EfQHwx';
+
 export class QuestionNightRoom {
   constructor(ctx) {
     this.ctx = ctx;
@@ -29,7 +31,7 @@ export class QuestionNightRoom {
 
     if (request.method === 'GET' && url.searchParams.get('view') === 'questions') {
       const requestedSession = url.searchParams.get('sessionDate') || '';
-      if (!(await this.getState(requestedSession)).open) return Response.json({ error: 'Both people need to be online and ready before questions open' }, { status: 423 });
+      if (!(await this.getState(requestedSession)).open) return Response.json({ error: 'We both need to be online and ready before our questions open' }, { status: 423 });
       const data = await this.getQuestionData();
       const session = data.sessions[requestedSession] || { questionIds: [], questions: {} };
       const questions = session.questionIds.map(id => {
@@ -94,17 +96,17 @@ export class QuestionNightRoom {
       } else if (body.action === 'add') {
         const text = typeof body.question === 'string' ? body.question.trim().slice(0, 300) : '';
         const author = body.author;
-        if (!text || !['Charlotte', 'Luke'].includes(author)) return Response.json({ error: 'Write a question for your partner' }, { status: 400 });
+        if (!text || !['Charlotte', 'Luke'].includes(author)) return Response.json({ error: 'Write a question for our next night' }, { status: 400 });
         if (data.questions.length >= 500) return Response.json({ error: 'The question bank is full' }, { status: 400 });
         data.questions.unshift({ id: crypto.randomUUID(), body: text, author, recipient: author === 'Charlotte' ? 'Luke' : 'Charlotte', createdAt: new Date().toISOString() });
       } else if (body.action === 'delete') {
         const index = data.questions.findIndex(item => item.id === body.id);
         if (index < 0) return Response.json({ error: 'Question not found' }, { status: 404 });
-        if (data.questions[index].author !== body.author) return Response.json({ error: 'You can only remove questions you wrote' }, { status: 403 });
+        if (data.questions[index].author !== body.author) return Response.json({ error: 'That question belongs to the other person’s private list' }, { status: 403 });
         data.questions.splice(index, 1);
       } else if (body.action === 'draw') {
         const date = String(body.sessionDate || '');
-        if (!/^\d{4}-\d{2}-\d{2}$/.test(date) || !(await this.getState(date)).open) return Response.json({ error: 'Both people need to be online and ready first' }, { status: 423 });
+        if (!/^\d{4}-\d{2}-\d{2}$/.test(date) || !(await this.getState(date)).open) return Response.json({ error: 'We both need to be online and ready first' }, { status: 423 });
         const session = data.sessions[date] || { questionIds: [], questions: {} };
         session.questions = session.questions || {};
         const pool = {
@@ -113,21 +115,21 @@ export class QuestionNightRoom {
         };
         const initialRound = !session.questionIds.length;
         const perPerson = initialRound ? 3 : 1;
-        if (initialRound && (pool.Charlotte.length < 3 || pool.Luke.length < 3)) return Response.json({ error: 'Each person needs at least three questions before you start' }, { status: 400 });
-        if (!initialRound && (!pool.Charlotte.length || !pool.Luke.length)) return Response.json({ error: 'You both need another unused question before drawing a pair' }, { status: 400 });
+        if (initialRound && (pool.Charlotte.length < 3 || pool.Luke.length < 3)) return Response.json({ error: 'We each need at least three questions before we start' }, { status: 400 });
+        if (!initialRound && (!pool.Charlotte.length || !pool.Luke.length)) return Response.json({ error: 'We each need another unused question before drawing a pair' }, { status: 400 });
         const selected = ['Charlotte', 'Luke'].flatMap(author => pool[author].sort(() => Math.random() - .5).slice(0, Math.min(perPerson, pool[author].length)));
         if (!selected.length) return Response.json({ error: 'There are no unused questions left for this night' }, { status: 400 });
         selected.forEach(item => { session.questionIds.push(item.id); session.questions[item.id] = { body: item.body, author: item.author }; });
         data.sessions[date] = session;
       } else if (body.action === 'answer') {
         const date = String(body.sessionDate || ''), questionId = String(body.questionId || '');
-        if (!(await this.getState(date)).open) return Response.json({ error: 'Both people need to be online and ready first' }, { status: 423 });
+        if (!(await this.getState(date)).open) return Response.json({ error: 'We both need to be online and ready first' }, { status: 423 });
         const session = data.sessions[date];
         if (!session?.questionIds.includes(questionId)) return Response.json({ error: 'Question session not found' }, { status: 404 });
         const savedQuestion = session.questions?.[questionId];
         const questionAuthor = (typeof savedQuestion === 'object' && savedQuestion?.author) || data.questions.find(item => item.id === questionId)?.author;
         const author = body.author, answer = typeof body.response === 'string' ? body.response.trim().slice(0, 1200) : '';
-        if (!answer || !['Charlotte', 'Luke'].includes(author)) return Response.json({ error: 'Write an answer first' }, { status: 400 });
+        if (!answer || !['Charlotte', 'Luke'].includes(author)) return Response.json({ error: 'Add an answer before saving it' }, { status: 400 });
         if (questionAuthor && author === questionAuthor) return Response.json({ error: 'The person who wrote the question asks it; their partner answers' }, { status: 403 });
         data.responses[date] = data.responses[date] || {};
         data.responses[date][questionId] = data.responses[date][questionId] || {};
@@ -209,7 +211,7 @@ export class QuestionNightRoom {
     const bothOnline = online.has('Charlotte') && online.has('Luke');
     const open = bothOnline && ready.Charlotte === true && ready.Luke === true;
     const music = await this.ctx.storage.get('sharedMusic') || { trackId: '', position: 0, paused: true, updatedAt: Date.now() };
-    const spotifyPlaylist = await this.ctx.storage.get('spotifyPlaylist') || '';
+    const spotifyPlaylist = await this.ctx.storage.get('spotifyPlaylist') || DEFAULT_SPOTIFY_PLAYLIST;
     return { type: 'state', sessionDate, online: [...online], ready, open, music, spotifyPlaylist };
   }
 

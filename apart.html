@@ -442,7 +442,7 @@
       </div>
 
       <label for="apartNote">A note (optional)
-        <input id="apartNote" maxlength="300" placeholder="Anything you want to say…">
+        <input id="apartNote" maxlength="300" placeholder="A note for us…">
       </label>
 
       <div class="form-actions">
@@ -555,7 +555,7 @@
         statusCard.classList.remove('is-on');
         statusEyebrow.textContent = 'Having trouble';
         statusTitle.textContent = 'Quiet days could not load';
-        statusText.textContent = 'Check your connection and refresh to try again.';
+        statusText.textContent = 'Our connection dropped. Refresh and try again.';
         return;
       }
 
@@ -568,7 +568,7 @@
         const author = active.author || 'Someone';
         statusEyebrow.textContent = 'Quiet days are on';
         statusTitle.textContent = author + ' is taking a little space';
-        statusText.textContent = 'No visits until ' + longDate(active.until) + '. It is not about you — it is just a few quiet days.';
+        statusText.textContent = 'We’re taking a few quiet days until ' + longDate(active.until) + '.';
         return;
       }
 

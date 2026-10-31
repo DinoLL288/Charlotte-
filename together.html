@@ -45,9 +45,9 @@
 </head>
 <body>
   <div class="top-bar"><a class="button" href="index.html">← Back to hub</a></div>
-  <header class="hero"><p class="eyebrow">A small collection of us</p><h1>Little things, together</h1><p>Keep the sweet details, the plans, and the places that make your story yours.</p></header>
+  <header class="hero"><p class="eyebrow">A small collection of us</p><h1>Little things, together</h1><p>Keep the sweet details, plans, and places that belong to our story.</p></header>
   <main class="shell">
-    <a class="small-button" href="play.html">🎲 Visit Play &amp; ask for your question ritual and little games →</a>
+    <a class="small-button" href="play.html">🎲 Our question ritual and little games →</a>
     <a class="small-button" href="question-night.html">💬 Open Question night →</a>
     <a class="small-button" href="our-life.html">🧩 Visit Things we make together →</a>
     <nav class="tabs" aria-label="Shared keepsakes">
@@ -64,49 +64,49 @@
     </nav>
 
     <section class="panel is-active" id="panel-jar">
-      <h2>Little things I love about you</h2><p class="intro">Drop a kind thought in the jar. When you need one, draw a little reminder.</p>
-      <form class="composer" data-type="jar"><textarea name="body" maxlength="300" placeholder="The way you always…" required></textarea><button class="button" type="submit">Add to the jar</button></form>
+      <h2>Little things we love about each other</h2><p class="intro">Drop a kind thought in our jar. When either of us needs one, draw a little reminder.</p>
+      <form class="composer" data-type="jar"><textarea name="body" maxlength="300" placeholder="The way we always…" required></textarea><button class="button" type="submit">Add to the jar</button></form>
       <blockquote class="surprise" id="surprise" hidden></blockquote><div class="entry-actions"><button class="small-button" id="drawNote" type="button">Draw a little reminder</button></div><div class="entries" id="list-jar"></div>
     </section>
 
     <section class="panel" id="panel-letters">
       <h2>Open when…</h2><p class="intro">Write a note for a particular kind of day. The letter is here whenever that moment comes.</p>
-      <form class="composer" data-type="letters"><input name="occasion" maxlength="100" placeholder="Open when you’ve had a hard day" required><textarea name="body" maxlength="1500" placeholder="What would you like her to hear?" required></textarea><button class="button" type="submit">Save this letter</button></form><div class="entries" id="list-letters"></div>
+      <form class="composer" data-type="letters"><input name="occasion" maxlength="100" placeholder="Open when one of us has had a hard day" required><textarea name="body" maxlength="1500" placeholder="What should we remember in that moment?" required></textarea><button class="button" type="submit">Save this letter</button></form><div class="entries" id="list-letters"></div>
     </section>
 
     <section class="panel" id="panel-traditions">
-      <h2>Our little traditions</h2><p class="intro">Save the small rituals you want to keep coming back to.</p>
-      <form class="composer" data-type="traditions"><input name="title" maxlength="100" placeholder="Sunday evening call" required><input name="rhythm" maxlength="100" placeholder="Every Sunday · whenever it works"><input name="date" type="date" aria-label="Next date (optional)"><textarea name="body" maxlength="500" placeholder="What makes this one yours? (optional)"></textarea><button class="button" type="submit">Keep this tradition</button></form><div class="entries" id="list-traditions"></div>
+      <h2>Our little traditions</h2><p class="intro">Save the small rituals we want to keep coming back to.</p>
+      <form class="composer" data-type="traditions"><input name="title" maxlength="100" placeholder="Sunday evening call" required><input name="rhythm" maxlength="100" placeholder="Every Sunday · whenever it works"><input name="date" type="date" aria-label="Next date (optional)"><textarea name="body" maxlength="500" placeholder="What makes this one ours? (optional)"></textarea><button class="button" type="submit">Keep this tradition</button></form><div class="entries" id="list-traditions"></div>
     </section>
 
     <section class="panel" id="panel-wishes">
-      <h2>Things we’d love to do</h2><p class="intro">Collect date ideas, little adventures, and things you want to try together.</p>
+      <h2>Things we’d love to do</h2><p class="intro">Collect date ideas, little adventures, and things we want to try together.</p>
       <form class="composer" data-type="wishes"><input name="title" maxlength="100" placeholder="Watch the sunset at the beach" required><select name="category" aria-label="Date idea type"><option value="">Any kind of wish</option><option value="at-home">Cosy at home</option><option value="out">An outing</option></select><textarea name="body" maxlength="500" placeholder="Details or who suggested it (optional)"></textarea><button class="button" type="submit">Add to our list</button></form><div class="entries" id="list-wishes"></div>
     </section>
 
     <section class="panel" id="panel-places">
-      <h2>Places that hold a memory</h2><p class="intro">Pin a place by name and save what happened there. The map link opens directions in your maps app.</p>
-      <form class="composer" data-type="places"><input name="place" maxlength="120" placeholder="The little café on the corner" required><input name="url" type="url" maxlength="500" placeholder="Map link (optional)"><textarea name="body" maxlength="700" placeholder="What do you remember about it?" required></textarea><button class="button" type="submit">Save this place</button></form><div class="entries" id="list-places"></div>
+      <h2>Places that hold a memory</h2><p class="intro">Pin a place by name and save what happened there. The map link opens directions in our maps app.</p>
+      <form class="composer" data-type="places"><input name="place" maxlength="120" placeholder="The little café on the corner" required><input name="url" type="url" maxlength="500" placeholder="Map link (optional)"><textarea name="body" maxlength="700" placeholder="What do we remember about it?" required></textarea><button class="button" type="submit">Save this place</button></form><div class="entries" id="list-places"></div>
     </section>
 
     <section class="panel" id="panel-datepick">
-      <h2>Pick a date idea</h2><p class="intro">Can’t decide? Let the wish list choose one for you. Add date ideas to the wish list first.</p>
+      <h2>Pick a date idea</h2><p class="intro">Can’t decide? Let our wish list choose one for us. Add a few date ideas first.</p>
       <div class="composer"><label for="dateMood">What sounds good?</label><select id="dateMood"><option value="all">Surprise me</option><option value="at-home">Something cosy at home</option><option value="out">An outing</option></select><button class="button" id="pickDate" type="button">Pick for us</button></div>
       <blockquote class="surprise" id="datePickResult" hidden></blockquote>
     </section>
 
     <section class="panel" id="panel-songs">
-      <h2>Our soundtrack</h2><p class="intro">Save songs that remind you of each other, with the story behind them.</p>
-      <form class="composer" data-type="songs"><input name="title" maxlength="120" placeholder="Song title" required><input name="artist" maxlength="120" placeholder="Artist" required><input name="url" type="url" maxlength="500" placeholder="Spotify or music link (optional)"><textarea name="body" maxlength="500" placeholder="What does this song remind you of?"></textarea><button class="button" type="submit">Add to our soundtrack</button></form><div class="entries" id="list-songs"></div>
+      <h2>Our soundtrack</h2><p class="intro">Save songs that remind us of each other, with the story behind them.</p>
+      <form class="composer" data-type="songs"><input name="title" maxlength="120" placeholder="Song title" required><input name="artist" maxlength="120" placeholder="Artist" required><input name="url" type="url" maxlength="500" placeholder="Spotify or music link (optional)"><textarea name="body" maxlength="500" placeholder="What does this song remind us of?"></textarea><button class="button" type="submit">Add to our soundtrack</button></form><div class="entries" id="list-songs"></div>
     </section>
 
     <section class="panel" id="panel-checkins">
-      <h2>A little check-in</h2><p class="intro">Share how you’re feeling when you want to. This is just a gentle snapshot, not a scorecard.</p>
-      <form class="composer" data-type="checkins"><select name="feeling" required aria-label="How are you feeling?"><option value="">How are you feeling?</option><option>Pretty good</option><option>Okay</option><option>A bit low</option><option>Stressed</option><option>Need some quiet</option></select><textarea name="body" maxlength="700" placeholder="Anything you want to share? (optional)"></textarea><button class="button" type="submit">Share check-in</button></form><div class="entries" id="list-checkins"></div>
+      <h2>A little check-in</h2><p class="intro">Share how we’re feeling whenever we want. This is a gentle snapshot, not a scorecard.</p>
+      <form class="composer" data-type="checkins"><select name="feeling" required aria-label="How are we feeling?"><option value="">How are we feeling?</option><option>Pretty good</option><option>Okay</option><option>A bit low</option><option>Stressed</option><option>Need some quiet</option></select><textarea name="body" maxlength="700" placeholder="Anything we want to share? (optional)"></textarea><button class="button" type="submit">Share check-in</button></form><div class="entries" id="list-checkins"></div>
     </section>
 
     <section class="panel" id="panel-quizzes">
-      <h2>Little quiz about us</h2><p class="intro">Make a playful question for each other. The answer stays tucked away until someone opens it.</p>
+      <h2>Little quiz about us</h2><p class="intro">Make a playful question for us. The answer stays tucked away until one of us opens it.</p>
       <form class="composer" data-type="quizzes"><input name="question" maxlength="180" placeholder="What was the first film we watched together?" required><input name="answer" maxlength="300" placeholder="The answer" required><button class="button" type="submit">Add a question</button></form><div class="entries" id="list-quizzes"></div>
     </section>
 
@@ -152,8 +152,8 @@
       const feeling = type === 'checkins' ? `<p class="meta">${escapeHtml(item.feeling)}</p>` : '';
       const otherUser = currentUser === 'Charlotte' ? 'Luke' : 'Charlotte';
       const quizAnswer = type === 'quizzes' ? `<details><summary>Reveal both guesses and the answer</summary><p>Charlotte guessed: ${escapeHtml((item.guesses || {}).Charlotte || '—')}</p><p>Luke guessed: ${escapeHtml((item.guesses || {}).Luke || '—')}</p><p><strong>Answer:</strong> ${escapeHtml(item.answer)}</p></details>` : '';
-      const quizGuesses = type === 'quizzes' ? `<p class="meta">Your guess: ${escapeHtml((item.guesses || {})[currentUser] || 'Not guessed yet')} · ${otherUser} ${((item.guesses || {})[otherUser] ? 'has guessed' : 'has not guessed yet')}</p>` : '';
-      const quizGuessForm = type === 'quizzes' ? `<form class="quiz-guess" data-id="${escapeHtml(item.id)}"><input name="guess" maxlength="300" value="${escapeHtml((item.guesses || {})[currentUser] || '')}" placeholder="${escapeHtml(currentUser)}, make your guess" required><button class="small-button" type="submit">Save my guess</button></form>` : '';
+      const quizGuesses = type === 'quizzes' ? `<p class="meta">My guess: ${escapeHtml((item.guesses || {})[currentUser] || 'Not guessed yet')} · ${otherUser} ${((item.guesses || {})[otherUser] ? 'has guessed' : 'has not guessed yet')}</p>` : '';
+      const quizGuessForm = type === 'quizzes' ? `<form class="quiz-guess" data-id="${escapeHtml(item.id)}"><input name="guess" maxlength="300" value="${escapeHtml((item.guesses || {})[currentUser] || '')}" placeholder="My guess" required><button class="small-button" type="submit">Save my guess</button></form>` : '';
       const future = type === 'futureNotes' ? (item.date > localDateKey() ? `<p class="meta">Opens ${escapeHtml(new Date(item.date + 'T00:00:00').toLocaleDateString(undefined, { dateStyle: 'long' }))}</p>` : `<p>${escapeHtml(item.body)}</p>`) : '';
       const songLink = type === 'songs' && item.url ? `<a class="small-button" target="_blank" rel="noopener" href="${escapeHtml(item.url)}">Listen</a>` : '';
       const checkinBody = type === 'checkins' && item.body ? `<p>${escapeHtml(item.body)}</p>` : '';
@@ -205,7 +205,7 @@
     document.addEventListener('click', async event => {
       const remove = event.target.closest('[data-delete]');
       if (remove) {
-        const ok = await siteDialog.confirm('Remove this from your shared collection?', { title: 'Let this one go?' });
+        const ok = await siteDialog.confirm('Remove this from our shared collection?', { title: 'Let this one go?' });
         if (ok) await mutate({ action: 'delete', type: remove.dataset.delete, id: remove.dataset.id });
       }
       const done = event.target.closest('[data-done]');
@@ -224,12 +224,12 @@
       const filter = document.getElementById('dateMood').value;
       const ideas = (data.wishes || []).filter(item => !item.done && (filter === 'all' || item.category === filter));
       const result = document.getElementById('datePickResult');
-      result.textContent = ideas.length ? 'Tonight’s little plan: ' + ideas[Math.floor(Math.random() * ideas.length)].title : 'No ideas in this category yet — add a few to your wish list, then let fate choose.';
+      result.textContent = ideas.length ? 'Tonight’s little plan: ' + ideas[Math.floor(Math.random() * ideas.length)].title : 'No ideas in this category yet — let’s add a few to our wish list, then let fate choose.';
       result.hidden = false;
     });
 
     fetch('/api/heart').then(async res => {
-      const json = await res.json(); if (!res.ok) throw new Error(json.error || 'Could not load your collection');
+      const json = await res.json(); if (!res.ok) throw new Error(json.error || 'Could not load our collection');
       Object.assign(data, json.data || {}); render();
     }).catch(error => { statusEl.textContent = error.message; render(); });
   </script>
