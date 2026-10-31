@@ -74,14 +74,14 @@ export async function onRequestGet(context) {
     } else {
       const res = await fetch(`https://api.github.com/repos/${repo}/contents/gallery?ref=${branch}`, { headers });
       if (res.status === 404) {
-        return new Response(JSON.stringify({ photos: [], folders: ['General'] }), {
+        return new Response(JSON.stringify({ photos: [], folders: ['Old Photos', 'General'] }), {
           status: 200,
           headers: { 'content-type': 'application/json' }
         });
       }
       const json = await res.json();
       if (!Array.isArray(json)) {
-        return new Response(JSON.stringify({ photos: [], folders: ['General'] }), {
+        return new Response(JSON.stringify({ photos: [], folders: ['Old Photos', 'General'] }), {
           status: 200,
           headers: { 'content-type': 'application/json' }
         });
@@ -91,12 +91,14 @@ export async function onRequestGet(context) {
         .filter(f => f.type === 'dir')
         .map(f => f.name)
         .sort();
-      if (folders.length === 0) folders.push('General');
+      if (!folders.includes('General')) folders.push('General');
       
-      // Also check for files in root
       const hasRootFiles = json.some(f => f.type === 'file');
       if (hasRootFiles && !folders.includes('Old Photos')) {
         folders.unshift('Old Photos');
+      } else if (!hasRootFiles && folders.length === 1 && folders[0] === 'General') {
+        // Still show Old Photos in case
+        if (!folders.includes('Old Photos')) folders.unshift('Old Photos');
       }
 
       return new Response(JSON.stringify({ photos: [], folders }), {
