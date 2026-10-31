@@ -23,8 +23,8 @@ A little site for Charlotte. Now split into a hub with multiple sections.
 The real-time features use a small Cloudflare Durable Object Worker alongside the Pages Functions. Question prompts and answers are stored in its private persistent storage rather than the repository data file:
 
 1. From the repository root, deploy the room Worker with `npx wrangler deploy --config question-room-worker/wrangler.toml`.
-2. In Cloudflare Pages, open the project settings and add a **Durable Object** binding named `QUESTION_ROOM`, selecting the `QuestionNightRoom` namespace from the deployed Worker.
-3. Redeploy the Pages project so the binding becomes available to its Functions.
+2. The root `wrangler.toml` defines the production `QUESTION_ROOM` binding for the `charlotte-question-room` Worker.
+3. Deploy the Pages project with `npx wrangler pages deploy . --project-name charlotte --branch main` so the binding is attached to the Functions.
 
 Question prompts stay hidden until both Charlotte and Luke have the Question night page open and both press **I’m ready**. The shared music widget stores one Spotify playlist link in the Durable Object and shows that playlist to both accounts. Each listener starts playback in their own Spotify embed; open the playlist in Spotify and turn on repeat to loop it. Spotify's embed does not expose repeat or cross-account playback synchronization controls.
 
