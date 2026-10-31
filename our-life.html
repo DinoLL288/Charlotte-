@@ -17,7 +17,7 @@
     <section class="panel"><h2>Our shared project</h2><p class="intro">Keep a small record of something you’re making or learning together.</p><form class="composer" data-type="projects"><input name="title" maxlength="120" placeholder="What are we making or learning?" required><textarea name="body" maxlength="1000" placeholder="The idea, next little step, or notes" required></textarea><button class="button">Start a project</button></form><div class="entries" id="list-projects"></div></section>
     <p class="page-status" id="pageStatus" role="status"></p>
   </main>
-  <script src="dialog.js"></script>
+  <script src="dialog.js"></script><script src="avatar.js"></script>
   <script>
     const user=localStorage.getItem('charlotte-user')||'Unknown';const data={recipes:[],shelf:[],awards:[],projects:[]};let busy=false;const status=document.getElementById('pageStatus');
     function esc(s){const e=document.createElement('span');e.textContent=s||'';return e.innerHTML;}

@@ -10,7 +10,7 @@
     .hero { padding:78px 20px 66px;text-align:center;color:white;background:linear-gradient(160deg,#0d2c44,#2a78a8) }
     .hero .eyebrow{color:var(--gold-soft)}.hero h1{margin:10px 0;font-size:clamp(2.2rem,7vw,3.5rem);font-weight:400}.hero p:last-child{max-width:54ch;margin:0 auto;color:#e6f3fc;line-height:1.6}
     .top-bar{position:absolute;top:16px;left:16px;z-index:2}.shell{width:min(920px,100%);margin:-30px auto 60px;padding:0 18px;position:relative}
-    .tabs{display:flex;gap:8px;overflow:auto;padding:10px;border-radius:18px;background:rgba(255,255,255,.93);box-shadow:0 14px 36px #143f5f22}.tab{flex:none;border:0;border-radius:999px;padding:10px 15px;color:#315d78;background:transparent;font:inherit;font-weight:700;cursor:pointer}.tab[aria-selected=true]{color:#fff;background:#143f5f}
+    .tabs{display:flex;gap:8px;overflow:auto;padding:10px;border-radius:18px;background:rgba(255,255,255,.93);box-shadow:0 14px 36px #143f5f22}.tab{flex:none;border:0;border-radius:999px;padding:10px 15px;color:#315d78;background:transparent;font:inherit;font-weight:700;cursor:pointer;text-decoration:none}.tab[aria-selected=true]{color:#fff;background:#143f5f}
     .panel{display:none;margin-top:18px;padding:clamp(20px,4vw,32px);border:1px solid white;border-radius:24px;background:rgba(255,253,247,.97);box-shadow:0 20px 55px #143f5f22}.panel.active{display:block}.panel h2{margin:0;color:#123a58;font-size:1.8rem}.intro{margin:8px 0 22px;color:#5c7c93;line-height:1.55}
     .composer{display:grid;gap:11px;padding:18px;border-radius:17px;background:#f1f8fc}.composer input,.composer textarea,.composer select{width:100%;padding:12px 14px;border:1px solid #c8dceb;border-radius:11px;color:var(--ink);background:#fff;font:inherit}.composer textarea{min-height:100px;resize:vertical}.composer .button{justify-self:start}
     .entries{display:grid;grid-template-columns:repeat(auto-fit,minmax(min(100%,250px),1fr));gap:12px;margin-top:18px}.card{padding:18px;border:1px solid #e1ecf2;border-radius:17px;background:linear-gradient(145deg,#fff,#f8fbfd)}.card h3{margin:0 0 8px;color:#123a58;font:700 1.18rem var(--font-display)}.card p{margin:7px 0;color:#486a83;line-height:1.55;white-space:pre-wrap;overflow-wrap:anywhere}.small{border:1px solid #d5e3ec;border-radius:999px;padding:8px 12px;color:#24516e;background:#fff;font:inherit;font-weight:700;cursor:pointer}.danger{color:#754936}.actions{display:flex;gap:8px;margin-top:12px}.empty{grid-column:1/-1;padding:24px;border:1px dashed #bfd5e3;border-radius:16px;text-align:center;color:#5c7c93}
@@ -20,24 +20,15 @@
 </head>
 <body>
   <div class="top-bar"><a class="button" href="together.html">← Little things</a></div>
-  <header class="hero"><p class="eyebrow">A room for our rituals</p><h1>Play &amp; ask</h1><p>Questions for Friday, little games, and the things only the two of you understand.</p></header>
+  <header class="hero"><p class="eyebrow">A room for our rituals</p><h1>Play &amp; ask</h1><p>Little games and the things only the two of you understand.</p></header>
   <main class="shell">
     <nav class="tabs" aria-label="Play and ask">
-      <button class="tab" aria-selected="true" data-tab="questions">💬 Question ritual</button>
-      <button class="tab" aria-selected="false" data-tab="jokes">🗝️ Inside jokes</button>
+      <a class="tab" href="question-night.html">💬 Question night</a>
+      <button class="tab" aria-selected="true" data-tab="jokes">🗝️ Inside jokes</button>
       <button class="tab" aria-selected="false" data-tab="bingo">🎉 Us bingo</button>
       <button class="tab" aria-selected="false" data-tab="hunt">🕵️ Clue hunt</button>
     </nav>
-    <section class="panel active" id="panel-questions">
-      <h2>Our question ritual</h2><p class="intro">Write questions during the week. They stay hidden until your chosen day and time, then draw three or more to ask each other.</p>
-      <form class="composer" id="timeForm"><label for="openDay">Questions open every</label><select id="openDay"><option value="0">Sunday</option><option value="1">Monday</option><option value="2">Tuesday</option><option value="3">Wednesday</option><option value="4">Thursday</option><option value="5">Friday</option><option value="6">Saturday</option></select><label for="openTime">at</label><input id="openTime" type="time" value="19:00" required><button class="button" type="submit">Save opening time</button></form>
-      <p class="page-status" id="fridayStatus" role="status"></p>
-      <form class="composer" data-type="fridayQuestions"><textarea name="body" maxlength="300" placeholder="What is something small that made you happy this week?" required></textarea><button class="button" type="submit">Add a question</button></form>
-      <details class="card" style="margin-top:14px"><summary>Manage the question bank (may reveal prompts)</summary><div class="entries" id="manageQuestions"></div></details>
-      <div class="locked" id="locked"><strong>Still tucked away 🌙</strong><span id="lockDetail"></span><div id="questionCount"></div></div>
-      <div id="openQuestions" hidden><div class="actions"><button class="button" id="drawThree" type="button">Draw this week's three</button><button class="small" id="drawMore" type="button" hidden>Draw another</button></div><div id="drawnQuestions"></div><div id="list-fridayQuestions"></div><details style="margin-top:18px"><summary>Past question nights</summary><div id="questionHistory"></div></details></div>
-    </section>
-    <section class="panel" id="panel-jokes">
+    <section class="panel active" id="panel-jokes">
       <h2>Inside-joke dictionary</h2><p class="intro">Save the phrases, nicknames, and tiny stories that make sense to you two.</p>
       <form class="composer" data-type="insideJokes"><input name="title" maxlength="120" placeholder="The phrase or nickname" required><textarea name="body" maxlength="700" placeholder="How did this become our thing?" required></textarea><button class="button" type="submit">Save the joke</button></form><div class="entries" id="list-insideJokes"></div>
     </section>
@@ -52,41 +43,18 @@
     <p class="page-status" id="pageStatus" role="status"></p>
   </main>
   <script src="dialog.js"></script>
+  <script src="avatar.js"></script>
   <script>
     const user = localStorage.getItem('charlotte-user') || 'Unknown';
-    const data = { fridayQuestions: [], insideJokes: [], bingo: [], hunts: [], questionSessions: {}, questionResponses: {} };
+    const data = { insideJokes: [], bingo: [], hunts: [] };
     const pageStatus = document.getElementById('pageStatus');
-    let schedule = { day: 5, time: '19:00', configuredAt: '' }; let busy = false;
-    function dateKey(d) { return d.getFullYear()+'-'+String(d.getMonth()+1).padStart(2,'0')+'-'+String(d.getDate()).padStart(2,'0'); }
-    function scheduleTime(d) { const [h,m]=schedule.time.split(':').map(Number); d.setHours(h,m,0,0); return d; }
-    function currentSession() {
-      if (!schedule.configuredAt) return null;
-      const now=new Date(); const delta=(now.getDay()-schedule.day+7)%7; const candidate=scheduleTime(new Date(now)); candidate.setDate(candidate.getDate()-delta);
-      if(candidate>now) candidate.setDate(candidate.getDate()-7);
-      if(candidate.toISOString()<schedule.configuredAt) return null;
-      return dateKey(candidate);
-    }
-    function nextOpening() { const now=new Date(); const next=scheduleTime(new Date(now)); next.setDate(next.getDate()+((schedule.day-now.getDay()+7)%7)); if(next<=now)next.setDate(next.getDate()+7); return next; }
+    let busy = false;
     function safe(value) { const el = document.createElement('span'); el.textContent = value || ''; return el.innerHTML; }
     document.querySelectorAll('.tab').forEach(button => button.addEventListener('click', () => {
       document.querySelectorAll('.tab').forEach(tab => tab.setAttribute('aria-selected', String(tab === button)));
       document.querySelectorAll('.panel').forEach(panel => panel.classList.toggle('active', panel.id === 'panel-' + button.dataset.tab));
     }));
     function render() {
-      const sessionDate = currentSession(); const unlocked = Boolean(sessionDate);
-      document.getElementById('locked').hidden = unlocked;
-      document.getElementById('openQuestions').hidden = !unlocked;
-      const count = data.fridayQuestions.length;
-      document.getElementById('questionCount').textContent = count + (count === 1 ? ' question waiting' : ' questions waiting');
-      document.getElementById('lockDetail').textContent = schedule.configuredAt ? `Your questions open ${nextOpening().toLocaleString([], { weekday:'long', hour:'numeric', minute:'2-digit' })}.` : 'Choose your weekly day and time above, then save it to start your question ritual.';
-      const session = sessionDate && data.questionSessions[sessionDate]; const ids = session ? session.questionIds : [];
-      document.getElementById('drawThree').hidden = Boolean(session);
-      document.getElementById('drawThree').disabled = count < 3;
-      document.getElementById('drawMore').hidden = !session || ids.length >= count;
-      document.getElementById('list-fridayQuestions').innerHTML = unlocked && session ? ids.map(id => { const item=data.fridayQuestions.find(q=>q.id===id); const question=(item&&item.body)||(session.questions||{})[id]; if(!question)return ''; const answers=(data.questionResponses[sessionDate]||{})[id]||{}; const mine=answers[user]||''; return `<article class="card"><p class="prompt">${safe(question)}</p><form class="answer-form" data-id="${safe(id)}"><textarea name="response" maxlength="1200" placeholder="${safe(user)}, write your answer…" required>${safe(mine)}</textarea><button class="small" type="submit">Save my answer</button></form><p>Charlotte: ${safe(answers.Charlotte||'Not answered yet')}</p><p>Luke: ${safe(answers.Luke||'Not answered yet')}</p></article>`; }).join('') : '';
-      document.getElementById('drawnQuestions').innerHTML = '';
-      document.getElementById('questionHistory').innerHTML = Object.keys(data.questionSessions).filter(key=>key!==sessionDate).sort().reverse().map(key=>`<article class="card"><h3>${safe(new Date(key+'T00:00:00').toLocaleDateString([], {dateStyle:'long'}))}</h3>${data.questionSessions[key].questionIds.map(id=>{const q=data.fridayQuestions.find(x=>x.id===id);const question=(q&&q.body)||(data.questionSessions[key].questions||{})[id];const a=(data.questionResponses[key]||{})[id]||{};return question?`<p><strong>${safe(question)}</strong></p><p>Charlotte: ${safe(a.Charlotte||'—')}</p><p>Luke: ${safe(a.Luke||'—')}</p>`:''}).join('')}</article>`).join('') || '<p>No previous question nights yet.</p>';
-      document.getElementById('manageQuestions').innerHTML = data.fridayQuestions.length ? data.fridayQuestions.map(item => `<article class="card"><p>${safe(item.body)}</p><button class="small danger" data-remove="fridayQuestions" data-id="${safe(item.id)}">Remove question</button></article>`).join('') : '<div class="empty">The question bank is empty so far.</div>';
       document.getElementById('list-insideJokes').innerHTML = data.insideJokes.length ? data.insideJokes.map(item => `<article class="card"><h3>${safe(item.title)}</h3><p>${safe(item.body)}</p><p>Added by ${safe(item.author)}</p><button class="small danger" data-remove="insideJokes" data-id="${safe(item.id)}">Remove</button></article>`).join('') : '<div class="empty">Save the first phrase that makes you both laugh.</div>';
       document.getElementById('list-bingo').innerHTML = data.bingo.length ? data.bingo.map(item => `<button class="bingo-square ${item.done ? 'done' : ''}" data-bingo="${safe(item.id)}" aria-pressed="${Boolean(item.done)}">${safe(item.title)}</button>`).join('') : '<div class="empty">Add a few squares to start your board.</div>';
       document.getElementById('list-hunts').innerHTML = data.hunts.length ? data.hunts.map(item => { const i = Math.min(item.revealed || 0, item.clues.length - 1); return `<article class="card"><h3>${safe(item.title)}</h3><p>${safe(item.clues[i])}</p><p class="meta">Clue ${i + 1} of ${item.clues.length}</p>${i + 1 < item.clues.length ? `<button class="small" data-hunt="${safe(item.id)}" data-next="${i + 1}">Reveal next clue</button>` : '<p class="meta">You found the end ✨</p>'}<button class="small danger" data-remove="hunts" data-id="${safe(item.id)}">Remove</button></article>`; }).join('') : '<div class="empty">Make a little trail for a surprise.</div>';
@@ -96,22 +64,17 @@
       try { const res = await fetch('/api/heart',{method:'POST',headers:{'content-type':'application/json'},body:JSON.stringify(body)}); const json=await res.json(); if(!res.ok) throw new Error(json.error||'Could not save'); Object.assign(data,json.data||{}); render(); pageStatus.textContent='Saved.'; return true; }
       catch(e){pageStatus.textContent=e.message;return false;} finally{busy=false;}
     }
-    document.getElementById('timeForm').addEventListener('submit', async e => { e.preventDefault(); const day=Number(document.getElementById('openDay').value); const time=document.getElementById('openTime').value; if (await post({action:'configure',type:'fridayQuestions',day,openTime:time})) { schedule={day,time,configuredAt:new Date().toISOString()}; pageStatus.textContent='Questions will open '+['Sunday','Monday','Tuesday','Wednesday','Thursday','Friday','Saturday'][day]+' at '+time+'.'; render(); } });
     document.querySelectorAll('.composer[data-type]').forEach(form => form.addEventListener('submit', async e => {
       e.preventDefault(); const fd=new FormData(form); const fields=Object.fromEntries(fd.entries());
       if(form.dataset.type==='hunts') fields.clues=fields.clues.split(/\r?\n/).map(x=>x.trim()).filter(Boolean);
       if(await post({action:'add',type:form.dataset.type,item:{...fields,author:user}})) form.reset();
     }));
-    document.getElementById('drawThree').addEventListener('click', async () => { const sessionDate=currentSession(); if(sessionDate) await post({action:'draw',type:'fridayQuestions',sessionDate}); });
-    document.getElementById('drawMore').addEventListener('click', async () => { const sessionDate=currentSession(); if(sessionDate) await post({action:'draw',type:'fridayQuestions',sessionDate}); });
-    document.addEventListener('submit', async e => { const form=e.target.closest('.answer-form'); if(!form)return; e.preventDefault(); const sessionDate=currentSession(); const response=new FormData(form).get('response'); await post({action:'answer',type:'fridayQuestions',sessionDate,questionId:form.dataset.id,author:user,response}); });
     document.addEventListener('click', async e => {
       const remove=e.target.closest('[data-remove]'); if(remove && await siteDialog.confirm('Remove this from your shared collection?',{title:'Let this one go?'})) await post({action:'delete',type:remove.dataset.remove,id:remove.dataset.id});
       const square=e.target.closest('[data-bingo]'); if(square){const item=data.bingo.find(x=>x.id===square.dataset.bingo);if(item)await post({action:'update',type:'bingo',id:item.id,done:!item.done});}
       const hunt=e.target.closest('[data-hunt]'); if(hunt) await post({action:'update',type:'hunts',id:hunt.dataset.hunt,revealed:Number(hunt.dataset.next)});
     });
-    fetch('/api/heart').then(async res=>{const json=await res.json();if(!res.ok)throw new Error(json.error||'Could not load');Object.assign(data,json.data||{});schedule=data.questionSchedule||schedule;document.getElementById('openTime').value=schedule.time;document.getElementById('openDay').value=String(schedule.day);render();}).catch(e=>{pageStatus.textContent=e.message;render();});
-    setInterval(render,30000);
+    fetch('/api/heart').then(async res=>{const json=await res.json();if(!res.ok)throw new Error(json.error||'Could not load');Object.assign(data,json.data||{});render();}).catch(e=>{pageStatus.textContent=e.message;render();});
   </script>
 </body>
 </html>

@@ -15,6 +15,18 @@ A little site for Charlotte. Now split into a hub with multiple sections.
 - `functions/api/heart.js` - Saves shared keepsakes to `heart/heart.json` through the configured GitHub token
 - `play.html` - Scheduled question ritual, inside jokes, bingo, and clue hunts
 - `our-life.html` - Shared recipes, books and films, monthly awards, and projects
+- `question-night.html` - A scheduled weekly question room that reveals only when both people are online and ready
+- `presence.js` - Shared online indicator and a shared Spotify playlist player
+
+### Live question room and shared music
+
+The real-time features use a small Cloudflare Durable Object Worker alongside the Pages Functions. Question prompts and answers are stored in its private persistent storage rather than the repository data file:
+
+1. From the repository root, deploy the room Worker with `npx wrangler deploy --config question-room-worker/wrangler.toml`.
+2. In Cloudflare Pages, open the project settings and add a **Durable Object** binding named `QUESTION_ROOM`, selecting the `QuestionNightRoom` namespace from the deployed Worker.
+3. Redeploy the Pages project so the binding becomes available to its Functions.
+
+Question prompts stay hidden until both Charlotte and Luke have the Question night page open and both press **I’m ready**. The shared music widget stores one Spotify playlist link in the Durable Object and shows that playlist to both accounts. Each listener starts playback in their own Spotify embed; open the playlist in Spotify and turn on repeat to loop it. Spotify's embed does not expose repeat or cross-account playback synchronization controls.
 
 ## Gallery photo uploads (Cloudflare Pages)
 

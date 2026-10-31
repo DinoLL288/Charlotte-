@@ -75,4 +75,8 @@
       if (img) img.src = src;
     })
     .catch(() => {});
+
+  const presenceScript = document.createElement('script');
+  presenceScript.src = 'presence.js';
+  document.body.appendChild(presenceScript);
 })();

@@ -1,5 +1,5 @@
-const TYPES = new Set(['jar', 'letters', 'traditions', 'wishes', 'places', 'songs', 'checkins', 'quizzes', 'futureNotes', 'fridayQuestions', 'insideJokes', 'bingo', 'hunts', 'recipes', 'shelf', 'awards', 'projects']);
-const LIMITS = { jar: 300, letters: 1500, traditions: 500, wishes: 500, places: 700, songs: 500, checkins: 700, quizzes: 700, futureNotes: 1500, fridayQuestions: 300, insideJokes: 700, bingo: 150, hunts: 700, recipes: 1500, shelf: 700, awards: 500, projects: 1000 };
+const TYPES = new Set(['jar', 'letters', 'traditions', 'wishes', 'places', 'songs', 'checkins', 'quizzes', 'futureNotes', 'insideJokes', 'bingo', 'hunts', 'recipes', 'shelf', 'awards', 'projects']);
+const LIMITS = { jar: 300, letters: 1500, traditions: 500, wishes: 500, places: 700, songs: 500, checkins: 700, quizzes: 700, futureNotes: 1500, insideJokes: 700, bingo: 150, hunts: 700, recipes: 1500, shelf: 700, awards: 500, projects: 1000 };
 
 function response(data, status = 200) {
   return new Response(JSON.stringify(data), { status, headers: { 'content-type': 'application/json', 'cache-control': 'no-store' } });
@@ -44,10 +44,16 @@ async function write(env, data, sha, message) {
 
 function clean(value, limit) { return typeof value === 'string' ? value.trim().slice(0, limit) : ''; }
 
-export async function onRequestGet({ env }) {
+export async function onRequestGet({ env, request }) {
   try {
     const { data, sha } = await read(env);
-    return response({ data, sha });
+    const url = new URL(request.url);
+    const visible = { ...data };
+    delete visible.fridayQuestions;
+    delete visible.questionSessions;
+    delete visible.questionResponses;
+    delete visible.questionSchedule;
+    return response({ data: visible, sha });
   } catch (error) { return response({ error: error.message }, 500); }
 }
 
@@ -58,36 +64,7 @@ export async function onRequestPost({ request, env }) {
     if (!TYPES.has(type)) return response({ error: 'Unknown keepsake type' }, 400);
     const { data, sha } = await read(env);
     const list = Array.isArray(data[type]) ? data[type] : [];
-    if (body.action === 'configure' && type === 'fridayQuestions') {
-      const day = Number(body.day);
-      if (!Number.isInteger(day) || day < 0 || day > 6 || !/^([01]\d|2[0-3]):[0-5]\d$/.test(String(body.openTime || ''))) return response({ error: 'Choose a valid opening day and time' }, 400);
-      data.questionSchedule = { day, time: body.openTime, configuredAt: new Date().toISOString() };
-    } else if (body.action === 'draw' && type === 'fridayQuestions') {
-      const sessionDate = String(body.sessionDate || '');
-      if (!/^\d{4}-\d{2}-\d{2}$/.test(sessionDate)) return response({ error: 'Invalid question session' }, 400);
-      const sessions = data.questionSessions && typeof data.questionSessions === 'object' ? data.questionSessions : {};
-      const session = sessions[sessionDate] || { questionIds: [], questions: {} };
-      session.questions = session.questions || {};
-      const pool = list.filter(item => !session.questionIds.includes(item.id));
-      const requested = session.questionIds.length ? 1 : 3;
-      if (!session.questionIds.length && list.length < 3) return response({ error: 'Add at least three questions before starting' }, 400);
-      const selected = pool.sort(() => Math.random() - 0.5).slice(0, Math.min(requested, pool.length));
-      selected.forEach(item => { session.questionIds.push(item.id); session.questions[item.id] = item.body; });
-      sessions[sessionDate] = session;
-      data.questionSessions = sessions;
-    } else if (body.action === 'answer' && type === 'fridayQuestions') {
-      const sessionDate = String(body.sessionDate || '');
-      const questionId = String(body.questionId || '');
-      const session = data.questionSessions && data.questionSessions[sessionDate];
-      const answer = clean(body.response, 1200);
-      const author = clean(body.author, 40);
-      if (!session || !session.questionIds.includes(questionId)) return response({ error: 'Question session not found' }, 404);
-      if (!answer || !['Charlotte', 'Luke'].includes(author)) return response({ error: 'Write an answer first' }, 400);
-      data.questionResponses = data.questionResponses || {};
-      data.questionResponses[sessionDate] = data.questionResponses[sessionDate] || {};
-      data.questionResponses[sessionDate][questionId] = data.questionResponses[sessionDate][questionId] || {};
-      data.questionResponses[sessionDate][questionId][author] = answer;
-    } else if (body.action === 'guess' && type === 'quizzes') {
+    if (body.action === 'guess' && type === 'quizzes') {
       const entry = list.find(item => item.id === body.id);
       const author = clean(body.author, 40);
       const guess = clean(body.guess, 300);
@@ -136,7 +113,6 @@ export async function onRequestPost({ request, env }) {
       if (type === 'futureNotes' && (!item.date || !item.body)) return response({ error: 'Choose an opening date and write the note' }, 400);
       if (type === 'futureNotes' && item.date <= new Date().toISOString().slice(0, 10)) return response({ error: 'Choose a future date so the note stays tucked away' }, 400);
       if (type === 'wishes' && !['', 'at-home', 'out'].includes(item.category)) return response({ error: 'Choose a valid date idea category' }, 400);
-      if (type === 'fridayQuestions' && !item.body) return response({ error: 'Write a question first' }, 400);
       if (type === 'insideJokes' && (!item.title || !item.body)) return response({ error: 'Add the phrase and its story' }, 400);
       if (type === 'bingo' && !item.title) return response({ error: 'Write a bingo square first' }, 400);
       if (type === 'hunts' && (!item.title || item.clues.length < 2)) return response({ error: 'Add a hunt name and at least two clues' }, 400);
@@ -152,6 +128,11 @@ export async function onRequestPost({ request, env }) {
     } else return response({ error: 'Unknown action' }, 400);
 
     const nextSha = await write(env, data, sha, `Update shared ${type}`);
-    return response({ ok: true, data, sha: nextSha });
+    const visible = { ...data };
+    delete visible.fridayQuestions;
+    delete visible.questionSessions;
+    delete visible.questionResponses;
+    delete visible.questionSchedule;
+    return response({ ok: true, data: visible, sha: nextSha });
   } catch (error) { return response({ error: error.message }, 500); }
 }

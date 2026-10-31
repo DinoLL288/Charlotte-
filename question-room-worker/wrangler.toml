@@ -1,0 +1,11 @@
+name = "charlotte-question-room"
+main = "index.js"
+compatibility_date = "2026-10-31"
+
+[[durable_objects.bindings]]
+name = "QUESTION_ROOM"
+class_name = "QuestionNightRoom"
+
+[[migrations]]
+tag = "v1"
+new_sqlite_classes = ["QuestionNightRoom"]
