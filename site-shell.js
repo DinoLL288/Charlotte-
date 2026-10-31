@@ -50,5 +50,8 @@
   });
 
   window.addEventListener('popstate', () => startPage(`${location.pathname}${location.search}${location.hash}`));
+  window.addEventListener('storage', event => {
+    if (event.key === 'charlotte-user' && !event.newValue) location.replace('login.html');
+  });
   frame.src = safePath(initialPage);
 })();
