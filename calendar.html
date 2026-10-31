@@ -96,7 +96,10 @@
       font-size: 0.9rem;
       text-align: left;
       overflow-wrap: anywhere;
+      cursor: pointer;
+      transition: background 0.15s ease;
     }
+    .event:hover { background: #d8efff; }
     .modal {
       position: fixed;
       inset: 0;
@@ -129,7 +132,23 @@
       display: flex;
       gap: 10px;
       justify-content: flex-end;
+      align-items: center;
     }
+    .button.danger {
+      background: #ffe9e9;
+      color: #b53b3b;
+      margin-right: auto;
+    }
+    .modal-hint {
+      display: none;
+      font-size: 0.85rem;
+      color: #3b7db3;
+      background: #e8f6ff;
+      border-radius: 10px;
+      padding: 8px 10px;
+      line-height: 1.35;
+    }
+    .modal-hint.visible { display: block; }
   </style>
 </head>
 <body>
@@ -153,12 +172,14 @@
 
   <div class="modal" id="eventModal">
     <div class="modal-card">
-      <h3 style="margin:0; color:#2873a6;">Add event</h3>
+      <h3 style="margin:0; color:#2873a6;" id="eventModalTitle">Add event</h3>
+      <div class="modal-hint" id="eventHint"></div>
       <input id="eventTitle" placeholder="Title">
       <textarea id="eventTime" rows="2" placeholder="Time / details"></textarea>
       <div class="modal-actions">
-        <button class="button" id="cancelEvent">Cancel</button>
-        <button class="button" id="saveEvent">Save</button>
+        <button class="button danger" id="deleteEvent" type="button" style="display:none;">Delete</button>
+        <button class="button" id="cancelEvent" type="button">Cancel</button>
+        <button class="button" id="saveEvent" type="button">Save</button>
       </div>
     </div>
   </div>
@@ -175,9 +196,13 @@
     const eventTime = document.getElementById('eventTime');
     const cancelEvent = document.getElementById('cancelEvent');
     const saveEvent = document.getElementById('saveEvent');
+    const deleteEvent = document.getElementById('deleteEvent');
+    const modalTitle = document.getElementById('eventModalTitle');
+    const eventHint = document.getElementById('eventHint');
 
     let current = new Date();
     let selectedDate = null;
+    let editing = null;
     let events = {};
     let currentSha = null;
 
@@ -240,11 +265,13 @@
         const el = document.createElement('div');
         el.className = 'day';
         el.innerHTML = `<div class="day-header"><span class="day-number">${d}</span><button class="add-btn">+</button></div>`;
-        el.querySelector('.add-btn').addEventListener('click', () => openModal(dateKey));
-        (events[dateKey] || []).forEach(ev => {
+        el.querySelector('.add-btn').addEventListener('click', () => openAdd(dateKey));
+        (events[dateKey] || []).forEach((ev, index) => {
           const evEl = document.createElement('div');
           evEl.className = 'event';
+          evEl.title = 'Click to edit';
           evEl.innerHTML = `<strong>${escapeHtml(ev.title)}</strong>${ev.time ? '<br>' + escapeHtml(ev.time) : ''}${ev.author ? '<br><small>By ' + escapeHtml(ev.author) + '</small>' : ''}`;
+          evEl.addEventListener('click', () => openEdit(dateKey, index));
           el.appendChild(evEl);
         });
         daysGrid.appendChild(el);
@@ -257,37 +284,127 @@
       return div.innerHTML;
     }
 
-    function openModal(key) {
-      selectedDate = key;
-      eventTitle.value = '';
-      eventTime.value = '';
+    function showModal() {
       modal.classList.add('active');
+      eventTitle.focus();
     }
 
-    cancelEvent.addEventListener('click', () => modal.classList.remove('active'));
+    function closeModal() {
+      modal.classList.remove('active');
+      editing = null;
+      selectedDate = null;
+      deleteEvent.style.display = 'none';
+      eventHint.classList.remove('visible');
+    }
+
+    function openAdd(key) {
+      selectedDate = key;
+      editing = null;
+      modalTitle.textContent = 'Add event';
+      eventTitle.value = '';
+      eventTime.value = '';
+      deleteEvent.style.display = 'none';
+      eventHint.classList.remove('visible');
+      showModal();
+    }
+
+    function openEdit(key, index) {
+      const ev = events[key] && events[key][index];
+      if (!ev) return;
+      selectedDate = key;
+      editing = { date: key, index, id: ev.id || '', event: ev };
+      modalTitle.textContent = 'Edit event';
+      eventTitle.value = ev.title || '';
+      eventTime.value = ev.time || '';
+
+      const isTikTok = ev.source === 'tiktok';
+      deleteEvent.style.display = isTikTok ? 'none' : '';
+      if (isTikTok) {
+        eventHint.textContent = 'This event came from a TikTok plan. You can tweak it here, but it will reset if the plan changes. Edit the plan to change it for good.';
+        eventHint.classList.add('visible');
+      } else {
+        eventHint.classList.remove('visible');
+      }
+      showModal();
+    }
+
+    cancelEvent.addEventListener('click', closeModal);
+    modal.addEventListener('click', (e) => {
+      if (e.target === modal) closeModal();
+    });
+    document.addEventListener('keydown', (e) => {
+      if (e.key === 'Escape' && modal.classList.contains('active')) closeModal();
+    });
+
     saveEvent.addEventListener('click', async () => {
-      if (!selectedDate) return;
+      if (!selectedDate && !editing) return;
       const title = eventTitle.value.trim();
-      if (!title) return;
-      const event = { title, time: eventTime.value.trim(), author: localStorage.getItem('charlotte-user') || 'Unknown', date: new Date().toLocaleString() };
+      if (!title) {
+        eventTitle.focus();
+        return;
+      }
+      const author = localStorage.getItem('charlotte-user') || 'Unknown';
+      const event = { title, time: eventTime.value.trim(), author, date: new Date().toLocaleString() };
       saveEvent.disabled = true;
       try {
+        const target = editing ? { ...editing } : null;
+        const isEdit = !!target;
+        const addDate = selectedDate;
+        const payload = isEdit
+          ? { action: 'update', date: target.date, index: target.index, id: target.id, event }
+          : { date: addDate, event };
+
         const res = await fetch('/api/calendar', {
           method: 'POST',
           headers: { 'content-type': 'application/json' },
-          body: JSON.stringify({ date: selectedDate, event, sha: currentSha })
+          body: JSON.stringify(payload)
         });
         const json = await res.json();
         if (!res.ok) throw new Error(json.error || 'Failed to save');
         currentSha = json.sha || currentSha;
-        if (!events[selectedDate]) events[selectedDate] = [];
-        events[selectedDate].push(event);
-        modal.classList.remove('active');
+
+        if (isEdit) {
+          const list = events[target.date] || [];
+          if (list[target.index]) {
+            list[target.index] = { ...list[target.index], title, time: event.time, id: list[target.index].id || json.id, editedAt: new Date().toISOString() };
+          }
+        } else {
+          if (!events[addDate]) events[addDate] = [];
+          events[addDate].push({ ...event, id: json.id });
+        }
+        closeModal();
         render();
       } catch (e) {
         alert('Error: ' + e.message);
       } finally {
         saveEvent.disabled = false;
+      }
+    });
+
+    deleteEvent.addEventListener('click', async () => {
+      if (!editing) return;
+      const target = { ...editing };
+      const label = target.event.title || 'this event';
+      if (!confirm('Delete "' + label + '"?')) return;
+      deleteEvent.disabled = true;
+      try {
+        const res = await fetch('/api/calendar', {
+          method: 'POST',
+          headers: { 'content-type': 'application/json' },
+          body: JSON.stringify({ action: 'delete', date: target.date, index: target.index, id: target.id })
+        });
+        const json = await res.json();
+        if (!res.ok) throw new Error(json.error || 'Failed to delete');
+        currentSha = json.sha || currentSha;
+        const list = events[target.date] || [];
+        list.splice(target.index, 1);
+        if (list.length === 0) delete events[target.date];
+        closeModal();
+        render();
+      } catch (e) {
+        alert('Error: ' + e.message);
+      } finally {
+        deleteEvent.disabled = false;
       }
     });
 
