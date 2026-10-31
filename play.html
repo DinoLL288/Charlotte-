@@ -24,6 +24,8 @@
   </style>
   <style>
     .card-sticker{float:right;position:relative;z-index:1;display:grid;place-items:center;width:38px;height:38px;margin:-3px -3px 6px 8px;border-radius:14px;background:#fff0c7;font-size:1.1rem}.card:before{display:none}.memory-author{clear:both;padding-top:8px;color:#8a6d2b!important;font-size:.84rem;font-weight:700}.revealed-clue{clear:both;padding:14px 16px;border:1px dashed #c6dce7;border-radius:15px;background:#fffefa}.bingo-square:focus-visible,.tab:focus-visible{outline:3px solid #c9a24a;outline-offset:3px}.bingo-square.done{transform:scale(.98)}
+    #panel-truthdare h2:before{content:"🎲";display:grid;place-items:center;width:48px;height:48px;border-radius:16px;background:#fff0c7;font-size:1.4rem}.td-toolbar{display:flex;flex-wrap:wrap;align-items:center;gap:12px;margin:16px 0}.td-toolbar select,.td-rules input,.td-custom input,.td-custom textarea{padding:11px 13px;border:1px solid #c8dceb;border-radius:13px;background:#fffefa;color:#234b65;font:inherit}.td-rules,.td-custom,.td-current,.td-history{margin-top:18px;padding:18px;border:1px solid #e4edf0;border-radius:20px;background:linear-gradient(145deg,#f0f9ff,#fff9e9)}.td-rules form,.td-custom form{display:flex;align-items:end;flex-wrap:wrap;gap:10px}.td-rules label{display:grid;gap:6px;color:#486a83;font-size:.88rem;font-weight:700}.td-custom textarea{width:100%;min-height:85px;resize:vertical}.td-custom form{display:grid;grid-template-columns:1fr 1fr}.td-custom label{display:grid;gap:6px;color:#486a83;font-size:.88rem;font-weight:700}.td-custom label:first-child,.td-custom textarea,.td-custom button{grid-column:1/-1}.td-choice{display:flex;flex-wrap:wrap;gap:9px}.td-choice button{min-width:130px;padding:13px 20px;border:1px solid #fff;border-radius:999px;color:#fff;background:linear-gradient(135deg,#19435e,#3481a2);font:700 1rem var(--font-body);box-shadow:0 8px 18px #1849652b;cursor:pointer}.td-choice button[data-type="dare"]{background:linear-gradient(135deg,#936c2c,#d2a34d)}.td-current{min-height:100px;display:grid;align-content:center;text-align:center}.td-current .td-prompt{margin:8px auto;max-width:48ch;color:#173f5c;font:1.5rem/1.5 var(--font-display)}.td-current .td-label{color:#8a6d2b;font-size:.76rem;font-weight:800;letter-spacing:.14em;text-transform:uppercase}.td-rules small,.td-custom small{color:#688398}.td-history-list{display:grid;gap:8px;margin-top:12px}.td-history-item{padding:11px 13px;border-radius:13px;background:#ffffffb8;color:#486a83}.td-history-item strong{color:#174866}.td-remove{float:right}.td-status{min-height:1.4em;color:#73591f;font-weight:700}
+    @media(max-width:520px){.td-custom form{grid-template-columns:1fr}.td-custom label,.td-custom textarea,.td-custom button{grid-column:1}.td-choice button{flex:1}}
   </style>
 </head>
 <body>
@@ -34,6 +36,7 @@
       <button class="tab" aria-selected="true" data-tab="jokes">🗝️ Our inside jokes</button>
       <button class="tab" aria-selected="false" data-tab="bingo">🎉 Us bingo</button>
       <button class="tab" aria-selected="false" data-tab="hunt">🕵️ Clue hunt</button>
+      <button class="tab" aria-selected="false" data-tab="truthdare">🎲 Truth or dare</button>
       <a class="tab" href="question-night.html">💬 Question night</a>
     </nav>
     <section class="panel active" id="panel-jokes">
@@ -47,6 +50,16 @@
     <section class="panel" id="panel-hunt">
       <h2>Little clue hunts</h2><p class="intro">Set up a tiny trail for a surprise. We’ll reveal each clue one at a time.</p>
       <form class="composer" data-type="hunts"><input name="title" maxlength="100" placeholder="A little surprise for one of us" required><textarea name="clues" maxlength="3000" placeholder="Write one clue per line (at least two)" required></textarea><button class="button" type="submit">Make the hunt</button></form><div class="entries" id="list-hunts"></div>
+    </section>
+    <section class="panel" id="panel-truthdare">
+      <h2>Truth or dare</h2>
+      <p class="intro">A little game for us, whether we’re texting or on a call. Skip or change anything, any time; a pass never needs an explanation.</p>
+      <div class="td-toolbar"><label for="tdMode">We’re playing by</label><select id="tdMode"><option value="text">Text</option><option value="call">Call</option></select><span class="td-status" id="tdStatus" role="status">Loading our game…</span></div>
+      <div class="td-choice"><button type="button" data-type="truth">💭 Give us a truth</button><button type="button" data-type="dare">✨ Give us a dare</button></div>
+      <article class="td-current" id="tdCurrent" aria-live="polite"><span class="td-label">Our next prompt</span><p class="td-prompt">Choose text or call, then pick truth or dare.</p></article>
+      <section class="td-rules"><h3>Our rules</h3><p class="intro">We can adjust these together. The game also enforces them when choosing prompts.</p><form id="tdRulesForm"><label class="td-rule-label">Dares in a row, max <input type="number" name="maxDaresInRow" min="1" max="10" value="3" required></label><label class="td-rule-label">Choose at least one dare every <input type="number" name="dareAfterTruths" min="1" max="20" value="5" required> truths</label><button class="small" type="submit">Save our rules</button></form></section>
+      <section class="td-custom"><h3>Add our own prompt</h3><p class="intro">Custom prompts are shared with both of us and only show up in their matching text/call deck.</p><form id="tdCustomForm"><label>Prompt<textarea name="prompt" maxlength="300" placeholder="Write a kind, comfortable prompt…" required></textarea></label><label>Truth or dare<select name="promptType"><option value="truth">Truth</option><option value="dare">Dare</option></select></label><label>Use for<select name="mode"><option value="text">Text</option><option value="call">Call</option></select></label><button class="small" type="submit">＋ Save our prompt</button></form><div id="tdCustomList" class="td-history-list"></div></section>
+      <section class="td-history"><h3>Our recent prompts</h3><p class="intro">Prompts won’t repeat until that text/call and truth/dare deck has been used up.</p><div id="tdHistory" class="td-history-list"></div></section>
     </section>
     <p class="page-status" id="pageStatus" role="status"></p>
   </main>
@@ -83,6 +96,54 @@
       const hunt=e.target.closest('[data-hunt]'); if(hunt) await post({action:'update',type:'hunts',id:hunt.dataset.hunt,revealed:Number(hunt.dataset.next)});
     });
     fetch('/api/heart').then(async res=>{const json=await res.json();if(!res.ok)throw new Error(json.error||'Could not load');Object.assign(data,json.data||{});render();}).catch(e=>{pageStatus.textContent=e.message;render();});
+
+    let truthDare = null;
+    const tdStatus = document.getElementById('tdStatus');
+    const tdCurrent = document.getElementById('tdCurrent');
+    const tdMode = document.getElementById('tdMode');
+    const tdRulesForm = document.getElementById('tdRulesForm');
+    function renderTruthDare() {
+      if (!truthDare) return;
+      const rules = truthDare.rules || { maxDaresInRow: 3, dareAfterTruths: 5 };
+      tdRulesForm.elements.maxDaresInRow.value = rules.maxDaresInRow;
+      tdRulesForm.elements.dareAfterTruths.value = rules.dareAfterTruths;
+      const current = truthDare.current;
+      tdCurrent.innerHTML = current ? `<span class="td-label">${safe(current.type)} · ${safe(current.mode)} · ${safe(current.by)} picked</span><p class="td-prompt">${safe(current.prompt)}</p><button class="small" type="button" id="tdDismiss">Got it ✨</button>` : '<span class="td-label">Our next prompt</span><p class="td-prompt">Choose text or call, then pick truth or dare.</p>';
+      document.getElementById('tdHistory').innerHTML = truthDare.history?.length ? truthDare.history.slice(0, 12).map(item => `<div class="td-history-item"><strong>${safe(item.type)} · ${safe(item.mode)}</strong> — ${safe(item.prompt)}<br><small>Picked by ${safe(item.by)} · ${new Date(item.at).toLocaleDateString()}</small></div>`).join('') : '<div class="empty">Our played prompts will show up here.</div>';
+      document.getElementById('tdCustomList').innerHTML = truthDare.customPrompts?.length ? truthDare.customPrompts.map(item => `<div class="td-history-item"><strong>${safe(item.type)} · ${safe(item.mode)}</strong> — ${safe(item.prompt)}<small> · added by ${safe(item.author)}</small>${item.author === user ? `<button class="small danger td-remove" type="button" data-td-remove="${safe(item.id)}" aria-label="Remove custom prompt">Remove</button>` : ''}</div>`).join('') : '<div class="td-history-item">No custom prompts yet. We can add our own above.</div>';
+      const stats = truthDare.stats || { dareStreak: 0, truthsSinceDare: 0 };
+      document.querySelectorAll('.td-choice button').forEach(button => {
+        const blocked = button.dataset.type === 'dare' ? stats.dareStreak >= rules.maxDaresInRow : stats.truthsSinceDare >= rules.dareAfterTruths;
+        button.disabled = blocked;
+        button.title = blocked ? (button.dataset.type === 'dare' ? 'Our rule says we need a truth first.' : 'Our rule says we need a dare now.') : '';
+      });
+    }
+    async function loadTruthDare() {
+      try { const response = await fetch('/api/question-room?view=truth-dare', { cache: 'no-store' }); const json = await response.json(); if (!response.ok) throw new Error(json.error || 'Could not load our game.'); truthDare = json; renderTruthDare(); tdStatus.textContent = 'Our game is saved and synced.'; }
+      catch (error) { tdStatus.textContent = error.message; }
+    }
+    async function postTruthDare(operation, extra = {}) {
+      tdStatus.textContent = 'Saving…';
+      try {
+        const response = await fetch('/api/question-room', { method: 'POST', headers: { 'content-type': 'application/json' }, body: JSON.stringify({ action: 'truth-dare', operation, user, ...extra }) });
+        const json = await response.json(); if (!response.ok) throw new Error(json.error || 'Could not save our game.');
+        truthDare = json.data; renderTruthDare(); tdStatus.textContent = 'Saved for both of us.';
+      } catch (error) { tdStatus.textContent = error.message; await loadTruthDare(); }
+    }
+    document.querySelectorAll('.td-choice button').forEach(button => button.addEventListener('click', () => postTruthDare('draw', { promptType: button.dataset.type, mode: tdMode.value })));
+    tdRulesForm.addEventListener('submit', event => { event.preventDefault(); postTruthDare('rules', { rules: { maxDaresInRow: tdRulesForm.elements.maxDaresInRow.value, dareAfterTruths: tdRulesForm.elements.dareAfterTruths.value } }); });
+    document.getElementById('tdCustomForm').addEventListener('submit', async event => {
+      event.preventDefault(); const form = event.currentTarget; const fields = Object.fromEntries(new FormData(form).entries());
+      await postTruthDare('add-prompt', fields); if (tdStatus.textContent.startsWith('Saved')) form.reset();
+    });
+    document.addEventListener('click', event => {
+      if (event.target.closest('#tdDismiss')) postTruthDare('clear-current');
+      const remove = event.target.closest('[data-td-remove]');
+      if (remove) postTruthDare('remove-prompt', { id: remove.dataset.tdRemove });
+    });
+    document.querySelector('[data-tab="truthdare"]').addEventListener('click', loadTruthDare);
+    loadTruthDare();
+    setInterval(() => { if (document.getElementById('panel-truthdare').classList.contains('active')) loadTruthDare(); }, 6000);
   </script>
 </body>
 </html>

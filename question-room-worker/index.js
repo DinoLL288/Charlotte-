@@ -1,5 +1,36 @@
 const DEFAULT_SPOTIFY_PLAYLIST = 'https://open.spotify.com/playlist/0nd5Ut2ixgw4RfV0EfQHwx';
 
+const TRUTH_DARE_PROMPTS = {
+  text: {
+    truth: [
+      'What tiny thing I do always makes you smile?', 'What song feels a little like us?', 'What is a small moment together you wish you could replay?',
+      'What is something you would love us to try on our next date?', 'What is your favorite way for me to show I care?', 'What silly thing are you secretly very good at?',
+      'What is one thing you have been looking forward to lately?', 'Which photo of us makes you happiest, and why?', 'What is a cozy evening together in your imagination?',
+      'What is something you appreciate about how we talk to each other?', 'What snack would you pick for our perfect movie night?', 'What is a little dream you would like us to make time for?'
+    ],
+    dare: [
+      'Send me a photo of something nearby that matches your mood.', 'Write me a three-line love note using three emojis I choose.', 'Send a voice note saying one kind thing about yourself.',
+      'Pick a song for us and send me the link with a one-sentence review.', 'Draw a tiny picture of our ideal date and send it.', 'Send me your best dramatic reaction to an imaginary plot twist.',
+      'Make up a two-line theme song for us and type it out.', 'Choose a color; send me three things around you in that color.', 'Send me a wholesome meme that feels like us.',
+      'Give our next date a movie title and a tagline.', 'Send a voice note reading a very ordinary sentence like a movie trailer.', 'Invent a ridiculous award and tell me what I win it for.'
+    ]
+  },
+  call: {
+    truth: [
+      'What was your first impression of me?', 'What small thing helps you feel cared for when we are apart?', 'What is one favorite memory from one of our calls?',
+      'What would you like more of in our time together?', 'What is a place you would enjoy exploring with me?', 'What is something new you learned about yourself recently?',
+      'What kind of date feels most relaxing to you?', 'What is something about us that makes you proud?', 'What is one thing you would like me to ask you more often?',
+      'Which shared memory makes you laugh the most?', 'What is a comfort show, game, or song you would share with me?', 'What is one small goal you would like us to cheer each other on with?'
+    ],
+    dare: [
+      'Give me your best impression of a sleepy cat for five seconds.', 'Hum a song and let me guess it.', 'Describe your favorite snack like a fancy restaurant critic.',
+      'Show me an object nearby and make up its dramatic backstory.', 'Say something sweet about yourself in your most confident voice.', 'Make up a silly handshake using only words and sound effects.',
+      'Tell a tiny story about our next adventure in three sentences.', 'Do your best game-show host introduction for me.', 'Pick an emoji and explain why it is today’s official us emoji.',
+      'Invent a new holiday for us and describe how we celebrate it.', 'Try to make me laugh using only a very serious voice.', 'Give a 10-second tour of one favorite thing in your room, if you feel comfortable.'
+    ]
+  }
+};
+
 export class QuestionNightRoom {
   constructor(ctx) {
     this.ctx = ctx;
@@ -31,6 +62,10 @@ export class QuestionNightRoom {
 
     if (request.method === 'GET' && url.searchParams.get('view') === 'bathroom') {
       return Response.json(await this.getBathroomData(), { headers: { 'cache-control': 'no-store' } });
+    }
+
+    if (request.method === 'GET' && url.searchParams.get('view') === 'truth-dare') {
+      return Response.json(await this.getTruthDareData(), { headers: { 'cache-control': 'no-store' } });
     }
 
     if (request.method === 'GET' && url.searchParams.get('view') === 'questions') {
@@ -93,9 +128,18 @@ export class QuestionNightRoom {
     return await this.ctx.storage.get('bathroomData') || { status: {}, events: [] };
   }
 
+  async getTruthDareData() {
+    return await this.ctx.storage.get('truthDareData') || {
+      rules: { maxDaresInRow: 3, dareAfterTruths: 5 },
+      customPrompts: [], usedPrompts: [], history: [],
+      stats: { lastType: '', dareStreak: 0, truthsSinceDare: 0 }
+    };
+  }
+
   async mutateQuestions(request) {
     try {
       const body = await request.json();
+      if (body.action === 'truth-dare') return this.mutateTruthDare(body);
       const data = await this.getQuestionData();
       if (body.action === 'bathroom') {
         const user = body.user;
@@ -165,6 +209,62 @@ export class QuestionNightRoom {
     } catch (error) {
       return Response.json({ error: error.message || 'Could not save the question room' }, { status: 500 });
     }
+  }
+
+  async mutateTruthDare(body) {
+    const data = await this.getTruthDareData();
+    const user = ['Charlotte', 'Luke'].includes(body.user) ? body.user : '';
+    if (!user) return Response.json({ error: 'Choose our own profile first' }, { status: 400 });
+    if (body.operation === 'rules') {
+      const maxDaresInRow = Number(body.rules?.maxDaresInRow);
+      const dareAfterTruths = Number(body.rules?.dareAfterTruths);
+      if (!Number.isInteger(maxDaresInRow) || maxDaresInRow < 1 || maxDaresInRow > 10 || !Number.isInteger(dareAfterTruths) || dareAfterTruths < 1 || dareAfterTruths > 20) {
+        return Response.json({ error: 'Rules must be between 1 and 10 dares in a row, and 1 and 20 truths between dares.' }, { status: 400 });
+      }
+      data.rules = { maxDaresInRow, dareAfterTruths };
+    } else if (body.operation === 'add-prompt') {
+      const prompt = String(body.prompt || '').trim().slice(0, 300);
+      const type = body.promptType === 'dare' ? 'dare' : body.promptType === 'truth' ? 'truth' : '';
+      const mode = body.mode === 'call' ? 'call' : body.mode === 'text' ? 'text' : '';
+      if (!prompt || !type || !mode) return Response.json({ error: 'Add a truth or dare and choose text or call.' }, { status: 400 });
+      if (data.customPrompts.length >= 300) return Response.json({ error: 'Our custom prompt list is full.' }, { status: 400 });
+      data.customPrompts.unshift({ id: crypto.randomUUID(), prompt, type, mode, author: user, createdAt: new Date().toISOString() });
+    } else if (body.operation === 'remove-prompt') {
+      const index = data.customPrompts.findIndex(item => item.id === body.id);
+      if (index < 0) return Response.json({ error: 'Custom prompt not found.' }, { status: 404 });
+      if (data.customPrompts[index].author !== user) return Response.json({ error: 'Only the person who added a prompt can remove it.' }, { status: 403 });
+      data.customPrompts.splice(index, 1);
+    } else if (body.operation === 'draw') {
+      const mode = body.mode === 'call' ? 'call' : body.mode === 'text' ? 'text' : '';
+      const type = body.promptType === 'dare' ? 'dare' : body.promptType === 'truth' ? 'truth' : '';
+      if (!mode || !type) return Response.json({ error: 'Choose text or call, then truth or dare.' }, { status: 400 });
+      const { maxDaresInRow, dareAfterTruths } = data.rules;
+      if (type === 'dare' && data.stats.dareStreak >= maxDaresInRow) return Response.json({ error: `Let’s do a truth before another dare (our limit is ${maxDaresInRow} dares in a row).` }, { status: 409 });
+      if (type === 'truth' && data.stats.truthsSinceDare >= dareAfterTruths) return Response.json({ error: `Our rule says to choose at least one dare every ${dareAfterTruths} truths.` }, { status: 409 });
+      const presets = TRUTH_DARE_PROMPTS[mode][type].map((prompt, index) => ({ id: `preset-${mode}-${type}-${index}`, prompt, type, mode, preset: true }));
+      const pool = [...data.customPrompts.filter(item => item.mode === mode && item.type === type), ...presets];
+      let available = pool.filter(item => !data.usedPrompts.includes(item.id));
+      if (!available.length) {
+        const ids = new Set(pool.map(item => item.id));
+        data.usedPrompts = data.usedPrompts.filter(id => !ids.has(id));
+        available = pool;
+      }
+      const selected = available[Math.floor(Math.random() * available.length)];
+      if (!selected) return Response.json({ error: 'No prompts found for that choice.' }, { status: 404 });
+      data.usedPrompts.push(selected.id);
+      data.stats.lastType = type;
+      data.stats.dareStreak = type === 'dare' ? data.stats.dareStreak + 1 : 0;
+      data.stats.truthsSinceDare = type === 'truth' ? data.stats.truthsSinceDare + 1 : 0;
+      data.history.unshift({ id: crypto.randomUUID(), promptId: selected.id, prompt: selected.prompt, type, mode, by: user, at: new Date().toISOString() });
+      data.history = data.history.slice(0, 100);
+      data.current = data.history[0];
+    } else if (body.operation === 'clear-current') {
+      data.current = null;
+    } else return Response.json({ error: 'Unknown Truth or Dare action.' }, { status: 400 });
+
+    await this.ctx.storage.put('truthDareData', data);
+    await this.broadcastRefresh();
+    return Response.json({ ok: true, data });
   }
 
   async webSocketMessage(socket, message) {
