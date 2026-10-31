@@ -26,7 +26,7 @@ The real-time features use a small Cloudflare Durable Object Worker alongside th
 2. The root `wrangler.toml` defines the production `QUESTION_ROOM` binding for the `charlotte-question-room` Worker.
 3. Deploy the Pages project with `npx wrangler pages deploy . --project-name charlotte --branch main` so the binding is attached to the Functions.
 
-Question prompts stay hidden until both Charlotte and Luke have the Question night page open and both press **I’m ready**. The shared music widget stores one Spotify playlist link in the Durable Object and shows that playlist to both accounts. Each listener starts playback in their own Spotify embed; open the playlist in Spotify and turn on repeat to loop it. Spotify's embed does not expose repeat or cross-account playback synchronization controls.
+Each person has a private question queue; the other person can see its count but not its text until both are online and press **I’m ready**. A round starts with three questions from each person, with each author asking and their partner answering. Questions and responses persist in the Durable Object, and saved answers include their answer date and time. The shared music widget stores one Spotify playlist link in the Durable Object and shows that playlist to both accounts. Each listener starts playback in their own Spotify embed; open the playlist in Spotify and turn on repeat to loop it. Spotify's embed does not expose repeat or cross-account playback synchronization controls.
 
 ## Gallery photo uploads (Cloudflare Pages)
 

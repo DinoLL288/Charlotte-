@@ -6,6 +6,7 @@
   <style>
     .hero{padding:80px 20px 68px;text-align:center;color:#fff;background:linear-gradient(160deg,#0d2c44,#2a78a8)}.hero .eyebrow{color:var(--gold-soft)}.hero h1{margin:10px 0;font-size:clamp(2.3rem,7vw,3.7rem);font-weight:400}.hero p:last-child{max-width:54ch;margin:auto;color:#e6f3fc;line-height:1.6}.top-bar{position:absolute;top:16px;left:16px;z-index:2}.shell{width:min(820px,100%);margin:-32px auto 60px;padding:0 18px;position:relative}.panel{margin-top:16px;padding:clamp(20px,4vw,30px);border:1px solid white;border-radius:24px;background:rgba(255,253,247,.97);box-shadow:0 20px 50px #143f5f22}.panel h2{margin:0;color:#123a58;font-size:1.65rem}.intro{margin:7px 0 18px;color:#5c7c93;line-height:1.55}.composer{display:grid;gap:10px;padding:17px;border-radius:16px;background:#f1f8fc}.composer input,.composer textarea,.composer select,.answer-form textarea{width:100%;padding:12px 14px;border:1px solid #c8dceb;border-radius:11px;background:white;color:var(--ink);font:inherit}.composer textarea,.answer-form textarea{min-height:90px;resize:vertical}.composer .button{justify-self:start}.presence{display:grid;grid-template-columns:repeat(2,1fr);gap:10px;margin:18px 0}.person{padding:13px 16px;border:1px solid #d7e6ef;border-radius:14px;background:white;color:#506e83}.person.is-online{border-color:#b7d7a5;background:#f0f8eb;color:#3f6a30}.person strong{display:block;color:#123a58}.presence-note{padding:17px;border-radius:15px;color:#684f1d;background:#fff5d9;line-height:1.5}.presence-note.is-open{color:#315d2b;background:#edf7e7}.status{min-height:1.5em;margin:12px 0;color:#5c7c93}.prompt-card{margin-top:12px;padding:18px;border:1px solid #d8e6ee;border-radius:16px;background:white}.prompt-card h3{margin:0 0 10px;color:#123a58;font:700 1.2rem var(--font-display)}.answers{margin:10px 0;color:#486a83;white-space:pre-wrap;overflow-wrap:anywhere}.actions{display:flex;gap:8px;flex-wrap:wrap;margin:12px 0}.small{border:1px solid #d5e3ec;border-radius:999px;padding:8px 12px;color:#24516e;background:white;font:inherit;font-weight:700;cursor:pointer}.small.danger{color:#754936}.empty{padding:20px;border:1px dashed #bfd5e3;border-radius:15px;text-align:center;color:#5c7c93}.count{color:#8a6d2b;font-weight:700}.bank-row{display:flex;justify-content:space-between;gap:10px;align-items:center;padding:10px 0;border-bottom:1px solid #e4edf2;color:#486a83}.bank-row:last-child{border-bottom:0}.bank-row button:disabled{opacity:.5;cursor:not-allowed}.question-session{margin-top:16px}.history-card{margin:12px 0;padding:14px;border:1px solid #e1ecf2;border-radius:14px}.history-card p{white-space:pre-wrap}
     .button{border:1px solid #143f5f;border-radius:999px;padding:11px 18px;color:#fff;background:#143f5f;font:inherit;font-weight:700;line-height:1.25;box-shadow:0 7px 20px #143f5f24;cursor:pointer;transition:transform .2s ease,box-shadow .2s ease,background .2s ease}.button:hover{transform:translateY(-1px);background:#1b5178;box-shadow:0 10px 24px #143f5f33}.button:focus-visible{outline:3px solid var(--gold);outline-offset:3px}.button:disabled{opacity:.55;cursor:not-allowed;transform:none;box-shadow:none}
+    .question-counts{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:10px;margin:16px 0}.question-count{padding:13px;border:1px solid #d7e6ef;border-radius:14px;background:#fff;color:#486a83}.question-count strong{display:block;margin-bottom:4px;color:#123a58}.question-count.is-mine{border-color:#b7d7a5;background:#f5faef}.question-count span{font-size:.88rem}.bank-row .question-text{flex:1;white-space:pre-wrap;overflow-wrap:anywhere}.bank-row{align-items:flex-start}.answer-meta{color:#8a6d2b;font-size:.8rem}.history-card p{line-height:1.6}
     @media(max-width:520px){.hero{padding-top:90px}.presence{grid-template-columns:1fr}}
   </style>
 </head>
@@ -25,22 +26,23 @@
       <div class="actions"><button class="button" id="readyButton" type="button" disabled>I’m ready</button><span class="status" id="connectionStatus" role="status"></span></div>
     </section>
     <section class="panel">
-      <h2>Add questions for each other</h2><p class="intro">Write three or more. The question text stays hidden on this page until you both open the room.</p>
-      <form class="composer" id="questionForm"><textarea name="body" maxlength="300" placeholder="What’s a small thing you wish we did together more often?" required></textarea><button class="button" type="submit">Add a question</button></form>
-      <p class="status" id="bankCount">Loading question bank…</p>
-      <details><summary>Manage the question bank</summary><p class="intro">Removing a question won’t erase any answers already saved for it.</p><div id="questionBank"></div></details>
+      <h2>Questions I want to ask you</h2><p class="intro">Write questions for your partner. Your question text stays private to you until you’re both online and ready. You can see each other’s counts, but not each other’s saved questions.</p>
+      <div class="question-counts"><div class="question-count" id="count-charlotte"><strong>Charlotte → Luke</strong><span>Loading…</span></div><div class="question-count" id="count-luke"><strong>Luke → Charlotte</strong><span>Loading…</span></div></div>
+      <form class="composer" id="questionForm"><textarea name="body" maxlength="300" placeholder="What’s a small thing you wish we did together more often?" required></textarea><button class="button" type="submit">Save a question for you to ask</button></form>
+      <p class="status" id="bankCount" role="status">Loading your saved questions…</p>
+      <details><summary>Your private saved questions</summary><p class="intro">These stay saved for you to ask later. Removing one won’t erase any saved answers.</p><div id="questionBank"></div></details>
     </section>
     <section class="panel" id="sessionPanel" hidden>
-      <h2>This question night</h2><p class="intro">Draw three to start, then add more if you like. Both answers save as you go.</p>
-      <div class="actions"><button class="button" id="drawButton" type="button">Draw three questions</button><button class="small" id="drawMoreButton" type="button" hidden>Draw another</button></div>
+      <h2>This question night</h2><p class="intro">Each person asks the questions they wrote, and their partner answers. Start with three questions from each of you; you can add more afterward.</p>
+      <div class="actions"><button class="button" id="drawButton" type="button">Start with three each</button><button class="small" id="drawMoreButton" type="button" hidden>Ask one more each</button></div>
       <div id="sessionQuestions"></div>
-      <details class="question-session"><summary>Past question nights and answers</summary><div id="questionHistory"></div></details>
     </section>
+    <section class="panel" id="historyPanel"><h2>Saved questions &amp; answers</h2><p class="intro">Your question nights stay here by the night they happened, with the date each answer was saved.</p><div id="questionHistory">Loading saved question nights…</div></section>
   </main>
   <script src="dialog.js"></script><script src="avatar.js"></script>
   <script>
     const user = localStorage.getItem('charlotte-user') || 'Unknown';
-    const data = { questionCount: 0, questionItems: [], questionSessions: {}, questionResponses: {} };
+    const data = { questionCounts: { Charlotte: 0, Luke: 0 }, questionItems: [], questionSessions: {}, questionResponses: {}, historySessions: {}, historyResponses: {} };
     let schedule = null, roomState = { online: [], ready: {}, open: false }, socket = null, socketKey = '', reconnectTimer = null, pingTimer = null, currentQuestions = [], loading = false;
     const enc = value => { const el=document.createElement('span');el.textContent=value||'';return el.innerHTML; };
     const days = ['Sunday','Monday','Tuesday','Wednesday','Thursday','Friday','Saturday'];
@@ -54,21 +56,25 @@
     function roomKey(){return scheduledSession()||dateKey(new Date());}
     function nextOpening(){if(!schedule)return null;const n=new Date(),[h,m]=schedule.time.split(':').map(Number);n.setHours(h,m,0,0);n.setDate(n.getDate()+((schedule.day-n.getDay()+7)%7));if(n<=new Date())n.setDate(n.getDate()+7);return n;}
     function showStatus(id,text){document.getElementById(id).textContent=text;}
+    function answerText(answer){return typeof answer==='string'?answer:(answer?.text||'');}
+    function answerDate(answer){if(typeof answer!=='object'||!answer?.answeredAt)return '';const date=new Date(answer.answeredAt);return Number.isNaN(date.getTime())?'':date.toLocaleString([], {dateStyle:'medium',timeStyle:'short'});}
+    function answerDateLabel(answer,session){const exact=answerDate(answer);if(exact)return `Answered ${exact}`;return answerText(answer)?`Answered during the question night on ${new Date(session+'T00:00:00').toLocaleDateString([], {dateStyle:'medium'})} (exact date not recorded)`:'';}
+    function otherPerson(name){return name==='Charlotte'?'Luke':'Charlotte';}
+    function renderCounts(){for(const name of ['Charlotte','Luke']){const box=document.getElementById('count-'+name.toLowerCase()),count=data.questionCounts[name]||0;box.classList.toggle('is-mine',name===user);box.querySelector('span').textContent=`${count} question${count===1?'':'s'} saved for ${otherPerson(name)}${name===user?' (you)':''}`;}const mine=data.questionCounts[user]||0;document.getElementById('bankCount').textContent=`You have ${mine} question${mine===1?'':'s'} saved privately to ask ${otherPerson(user)}.`;}
     function lockQuestions(){
       currentQuestions=[];data.questionResponses={};
       document.getElementById('sessionQuestions').replaceChildren();
-      document.getElementById('questionHistory').replaceChildren();
       document.getElementById('sessionPanel').hidden=true;
       loadMeta().catch(()=>{});
     }
     async function loadMeta(){
-      const res=await fetch('/api/question-room?view=meta');const json=await res.json();if(!res.ok)throw new Error(json.error||'Could not load question settings');
-      schedule=json.questionSchedule;data.questionCount=json.questionCount||0;data.questionItems=json.questionItems||[];data.questionSessions=json.questionSessions||{};
+      const res=await fetch('/api/question-room?view=meta&user='+encodeURIComponent(user));const json=await res.json();if(!res.ok)throw new Error(json.error||'Could not load question settings');
+      schedule=json.questionSchedule;data.questionCounts=json.questionCounts||{Charlotte:0,Luke:0};data.questionItems=json.questionItems||[];data.questionSessions=json.questionSessions||{};
       if(schedule){document.getElementById('openDay').value=String(schedule.day);document.getElementById('openTime').value=schedule.time;}
-      document.getElementById('bankCount').textContent=`${data.questionCount} question${data.questionCount===1?'':'s'} in your shared bank.`;
-      renderBank();connectRoom();
+      renderCounts();renderBank();connectRoom();
       showStatus('scheduleStatus',schedule?`Your usual time is ${days[schedule.day]} at ${new Date('2000-01-02T'+schedule.time).toLocaleTimeString([], {hour:'numeric',minute:'2-digit'})}.`:'Choose a day and time to start your question ritual.');
     }
+    async function loadHistory(){const res=await fetch('/api/question-room?view=history');const json=await res.json();if(!res.ok)throw new Error(json.error||'Could not load saved answers');data.historySessions=json.questionSessions||{};data.historyResponses=json.questionResponses||{};renderHistory();}
     function connectRoom(force=false){
       if(force&&socket){socket.onclose=null;socket.close();socket=null;socketKey='';}
       const key=roomKey();if(socket&&socketKey===key&&socket.readyState<2)return;
@@ -77,7 +83,7 @@
       const protocol=location.protocol==='https:'?'wss:':'ws:';
       socket=new WebSocket(`${protocol}//${location.host}/api/question-room?user=${encodeURIComponent(user)}&sessionDate=${encodeURIComponent(key)}`);
       socket.onopen=()=>{showStatus('connectionStatus','Live room connected.');pingTimer=setInterval(()=>{if(socket&&socket.readyState===1)socket.send(JSON.stringify({type:'ping'}));},20000);};
-      socket.onmessage=event=>{let message;try{message=JSON.parse(event.data);}catch{return;}if(message.type==='state'){roomState=message;renderRoom();if(message.open)loadQuestions();else lockQuestions();}if(message.type==='refresh'){loadMeta().then(()=>{if(roomState.open)loadQuestions();}).catch(error=>showStatus('connectionStatus',error.message));}};
+      socket.onmessage=event=>{let message;try{message=JSON.parse(event.data);}catch{return;}if(message.type==='state'){roomState=message;renderRoom();if(message.open)loadQuestions();else lockQuestions();}if(message.type==='refresh'){loadMeta().then(()=>loadHistory()).then(()=>{if(roomState.open)loadQuestions();}).catch(error=>showStatus('connectionStatus',error.message));}};
       socket.onerror=()=>showStatus('connectionStatus','Trying to reconnect…');
       socket.onclose=()=>{clearInterval(pingTimer);roomState={online:[],ready:{},open:false};lockQuestions();renderRoom();showStatus('connectionStatus','Room disconnected. Reconnecting…');reconnectTimer=setTimeout(connectRoom,2500);};
     }
@@ -98,29 +104,47 @@
       try{const res=await fetch('/api/question-room?view=questions&sessionDate='+encodeURIComponent(session));const json=await res.json();if(!res.ok)throw new Error(json.error||'The shared questions are still locked');currentQuestions=json.questions||[];data.questionSessions=json.questionSessions||{};data.questionResponses=json.questionResponses||{};renderQuestions(session);}
       catch(e){showStatus('connectionStatus',e.message);}finally{loading=false;}
     }
-    function renderBank(){const open=roomState.open;document.getElementById('questionBank').innerHTML=data.questionItems.length?data.questionItems.map(item=>`<div class="bank-row"><span>${open?(currentQuestions.find(q=>q.id===item.id)?.body||'Saved question'):'Question from '+enc(item.author||'one of you')}</span><button class="small danger" data-remove-question="${enc(item.id)}">Remove</button></div>`).join(''):'<div class="empty">No questions yet. Add at least three to begin.</div>';}
+    function renderBank(){document.getElementById('questionBank').innerHTML=data.questionItems.length?data.questionItems.map(item=>`<div class="bank-row"><span class="question-text">${enc(item.body)}</span><button class="small danger" data-remove-question="${enc(item.id)}">Remove</button></div>`).join(''):'<div class="empty">You haven’t saved any questions for your partner yet.</div>';}
     function renderQuestions(session){
       const selected=data.questionSessions[session]?.questionIds||[];const snapshots=data.questionSessions[session]?.questions||{};
       const viewQuestions=selected.map(id=>currentQuestions.find(q=>q.id===id)||{id,body:snapshots[id]}).filter(q=>q.body);
       const responses=data.questionResponses[session]||{};
-      document.getElementById('drawButton').hidden=selected.length>0;document.getElementById('drawButton').disabled=data.questionCount<3;
-      document.getElementById('drawMoreButton').hidden=!selected.length||selected.length>=data.questionCount;
-      document.getElementById('sessionQuestions').innerHTML=viewQuestions.map((q,i)=>{const pair=responses[q.id]||{};return `<article class="prompt-card"><h3>${i+1}. ${enc(q.body)}</h3><form class="answer-form" data-id="${enc(q.id)}"><textarea name="response" maxlength="1200" placeholder="${enc(user)}, write your answer…" required>${enc(pair[user]||'')}</textarea><button class="small" type="submit">Save my answer</button></form><p class="answers"><strong>Charlotte:</strong> ${enc(pair.Charlotte||'Not answered yet')}</p><p class="answers"><strong>Luke:</strong> ${enc(pair.Luke||'Not answered yet')}</p></article>`;}).join('')||'<div class="empty">You’re both ready. Draw three questions to start.</div>';
-      const history=Object.keys(data.questionSessions).filter(key=>key!==session).sort().reverse();
-      document.getElementById('questionHistory').innerHTML=history.map(key=>{const archive=data.questionSessions[key],answers=data.questionResponses[key]||{};return `<article class="history-card"><h3>${enc(new Date(key+'T00:00:00').toLocaleDateString([], {dateStyle:'long'}))}</h3>${archive.questionIds.map(id=>{const q=currentQuestions.find(x=>x.id===id);const text=(q&&q.body)||(archive.questions||{})[id];const pair=answers[id]||{};return text?`<p><strong>${enc(text)}</strong><br>Charlotte: ${enc(pair.Charlotte||'—')}<br>Luke: ${enc(pair.Luke||'—')}</p>`:''}).join('')}</article>`;}).join('')||'<p>No previous question nights yet.</p>';
-      renderBank();
+      const counts=data.questionCounts,hasThreeEach=counts.Charlotte>=3&&counts.Luke>=3;
+      document.getElementById('drawButton').hidden=selected.length>0;document.getElementById('drawButton').disabled=!hasThreeEach;
+      const used={Charlotte:0,Luke:0};viewQuestions.forEach(q=>{if(used[q.author]!==undefined)used[q.author]++;});
+      const hasMore=(counts.Charlotte-used.Charlotte)>0&&(counts.Luke-used.Luke)>0;
+      document.getElementById('drawMoreButton').hidden=!selected.length||!hasMore;
+      document.getElementById('sessionQuestions').innerHTML=viewQuestions.map((q,i)=>{
+        const asker=q.author||'one of you',recipient=otherPerson(asker),pair=responses[q.id]||{},saved=pair[recipient],text=answerText(saved),answered=answerDateLabel(saved,session);
+        const answerBlock=user===recipient?`<form class="answer-form" data-id="${enc(q.id)}"><textarea name="response" maxlength="1200" placeholder="${enc(user)}, write your answer…" required>${enc(text)}</textarea><button class="small" type="submit">Save my answer</button></form>`:`<p class="answers">${enc(recipient)} will answer this one.</p>`;
+        const savedBlock=text?`<p class="answers"><strong>${enc(recipient)}’s answer:</strong> ${enc(text)}${answered?`<br><span class="answer-meta">${enc(answered)}</span>`:''}</p>`:'';
+        return `<article class="prompt-card"><p class="count">${enc(asker)} asks ${enc(recipient)}</p><h3>${i+1}. ${enc(q.body)}</h3>${savedBlock}${answerBlock}</article>`;
+      }).join('')||'<div class="empty">You’re both ready. Start with three questions from each of you.</div>';
+      renderHistory();
+    }
+    function renderHistory(){
+      const history=Object.keys(data.historySessions).sort().reverse();
+      document.getElementById('questionHistory').innerHTML=history.map(key=>{
+        const archive=data.historySessions[key],answers=data.historyResponses[key]||{};
+        const entries=(archive.questionIds||[]).map((id,index)=>{
+          const q=archive.questions?.[id]||{},pair=answers[id]||{},asker=q.author||'one of you',recipient=otherPerson(asker),answer=pair[recipient],text=answerText(answer),answered=answerDateLabel(answer,key);
+          const oldAnswers=['Charlotte','Luke'].filter(name=>name!==recipient&&answerText(pair[name])).map(name=>`<br>${enc(name)}’s saved answer: ${enc(answerText(pair[name]))}${answerDateLabel(pair[name],key)?` <span class="answer-meta">(${enc(answerDateLabel(pair[name],key))})</span>`:''}`).join('');
+          return q.body?`<p><strong>${index+1}. ${enc(asker)} asks ${enc(recipient)}:</strong> ${enc(q.body)}<br><strong>${enc(recipient)}’s answer:</strong> ${enc(text||'Not answered yet')}${answered?`<br><span class="answer-meta">${enc(answered)}</span>`:''}${oldAnswers}</p>`:'';
+        }).join('');
+        return `<article class="history-card"><h3>${enc(new Date(key+'T00:00:00').toLocaleDateString([], {dateStyle:'long'}))}</h3>${entries||'<p>No saved questions for this night.</p>'}</article>`;
+      }).join('')||'<p>No question nights have been saved yet.</p>';
     }
     async function postRoom(payload){const res=await fetch('/api/question-room',{method:'POST',headers:{'content-type':'application/json'},body:JSON.stringify(payload)});const json=await res.json();if(!res.ok)throw new Error(json.error||'Could not save');return json;}
-    async function refreshAfterMutation(){await loadMeta();if(roomState.open)await loadQuestions();if(socket&&socket.readyState===1)socket.send(JSON.stringify({type:'refresh'}));}
+    async function refreshAfterMutation(){await loadMeta();await loadHistory();if(roomState.open)await loadQuestions();if(socket&&socket.readyState===1)socket.send(JSON.stringify({type:'refresh'}));}
     document.getElementById('scheduleForm').addEventListener('submit',async e=>{e.preventDefault();const day=Number(document.getElementById('openDay').value),time=document.getElementById('openTime').value;try{await postRoom({action:'configure',day,openTime:time});showStatus('scheduleStatus','Usual time saved. Both of you will still need to be online and ready.');await loadMeta();connectRoom(true);currentRoomKey=roomKey();}catch(error){showStatus('scheduleStatus',error.message);}});
     document.getElementById('questionForm').addEventListener('submit',async e=>{e.preventDefault();try{await postRoom({action:'add',question:new FormData(e.target).get('body'),author:user});e.target.reset();await refreshAfterMutation();showStatus('bankCount','Question saved. It stays hidden until you’re both ready.');}catch(error){showStatus('bankCount',error.message);}});
     document.getElementById('readyButton').addEventListener('click',()=>{if(socket&&socket.readyState===1)socket.send(JSON.stringify({type:'ready',ready:!roomState.ready[user]}));});
     document.getElementById('drawButton').addEventListener('click',async()=>{try{await postRoom({action:'draw',sessionDate:scheduledSession()});await loadQuestions();if(socket&&socket.readyState===1)socket.send(JSON.stringify({type:'refresh'}));}catch(error){showStatus('connectionStatus',error.message);}});
     document.getElementById('drawMoreButton').addEventListener('click',async()=>{try{await postRoom({action:'draw',sessionDate:scheduledSession()});await loadQuestions();if(socket&&socket.readyState===1)socket.send(JSON.stringify({type:'refresh'}));}catch(error){showStatus('connectionStatus',error.message);}});
-    document.addEventListener('submit',async e=>{const form=e.target.closest('.answer-form');if(!form)return;e.preventDefault();try{await postRoom({action:'answer',sessionDate:scheduledSession(),questionId:form.dataset.id,author:user,response:new FormData(form).get('response')});await loadQuestions();if(socket&&socket.readyState===1)socket.send(JSON.stringify({type:'refresh'}));}catch(error){showStatus('connectionStatus',error.message);}});
-    document.addEventListener('click',async e=>{const button=e.target.closest('[data-remove-question]');if(!button)return;if(!await siteDialog.confirm('Remove this question from the bank?',{title:'Remove question'}))return;try{await postRoom({action:'delete',id:button.dataset.removeQuestion});await refreshAfterMutation();}catch(error){showStatus('bankCount',error.message);}});
+    document.addEventListener('submit',async e=>{const form=e.target.closest('.answer-form');if(!form)return;e.preventDefault();try{await postRoom({action:'answer',sessionDate:scheduledSession(),questionId:form.dataset.id,author:user,response:new FormData(form).get('response')});await loadQuestions();await loadHistory();if(socket&&socket.readyState===1)socket.send(JSON.stringify({type:'refresh'}));}catch(error){showStatus('connectionStatus',error.message);}});
+    document.addEventListener('click',async e=>{const button=e.target.closest('[data-remove-question]');if(!button)return;if(!await siteDialog.confirm('Remove this question from your private list?',{title:'Remove question'}))return;try{await postRoom({action:'delete',id:button.dataset.removeQuestion,author:user});await refreshAfterMutation();}catch(error){showStatus('bankCount',error.message);}});
     let currentRoomKey='';setInterval(()=>{const key=roomKey();if(key!==currentRoomKey){currentRoomKey=key;connectRoom();}else if(roomState.open)loadQuestions();renderRoom();},15000);
-    loadMeta().then(()=>{currentRoomKey=roomKey();}).catch(error=>{showStatus('connectionStatus',error.message);});
+    loadMeta().then(()=>{currentRoomKey=roomKey();return loadHistory();}).catch(error=>{showStatus('connectionStatus',error.message);});
   </script>
 </body>
 </html>
