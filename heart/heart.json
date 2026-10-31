@@ -76,5 +76,26 @@
       "category": "",
       "month": "2026-10"
     }
+  ],
+  "projects": [
+    {
+      "id": "85b5b305-5674-480b-93d7-42f7fc258f5f",
+      "author": "Luke",
+      "createdAt": "2026-10-31T13:49:07.677Z",
+      "title": "Hass",
+      "body": "The gizmo, the test is on monday",
+      "occasion": "",
+      "rhythm": "",
+      "place": "",
+      "date": "",
+      "url": "",
+      "artist": "",
+      "feeling": "",
+      "question": "",
+      "answer": "",
+      "category": "",
+      "month": "",
+      "progress": 0
+    }
   ]
 }
