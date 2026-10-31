@@ -74,7 +74,10 @@
       display: flex;
       flex-direction: column;
       gap: 8px;
+      cursor: pointer;
+      transition: box-shadow 0.15s ease;
     }
+    .day:hover { box-shadow: 0 12px 28px #347eac40; }
     .day.muted { opacity: 0.5; }
     .day-header {
       display: flex;
@@ -160,7 +163,7 @@
   </div>
   <main class="screen">
     <h1>Calendar</h1>
-    <p class="subtitle">Events & dates</p>
+    <p class="subtitle">Click a day to add · click an event to edit</p>
     <div class="calendar-header">
       <button class="button" id="prevMonth">←</button>
       <h2 id="monthLabel"></h2>
@@ -264,14 +267,25 @@
         const dateKey = `${year}-${String(month + 1).padStart(2, '0')}-${String(d).padStart(2, '0')}`;
         const el = document.createElement('div');
         el.className = 'day';
-        el.innerHTML = `<div class="day-header"><span class="day-number">${d}</span><button class="add-btn">+</button></div>`;
-        el.querySelector('.add-btn').addEventListener('click', () => openAdd(dateKey));
+        el.innerHTML = `<div class="day-header"><span class="day-number">${d}</span><button class="add-btn" title="Add event">+</button></div>`;
+        el.title = 'Click to add an event';
+        el.addEventListener('click', (e) => {
+          if (e.target.closest('.event') || e.target.closest('.add-btn')) return;
+          openAdd(dateKey);
+        });
+        el.querySelector('.add-btn').addEventListener('click', (e) => {
+          e.stopPropagation();
+          openAdd(dateKey);
+        });
         (events[dateKey] || []).forEach((ev, index) => {
           const evEl = document.createElement('div');
           evEl.className = 'event';
           evEl.title = 'Click to edit';
           evEl.innerHTML = `<strong>${escapeHtml(ev.title)}</strong>${ev.time ? '<br>' + escapeHtml(ev.time) : ''}${ev.author ? '<br><small>By ' + escapeHtml(ev.author) + '</small>' : ''}`;
-          evEl.addEventListener('click', () => openEdit(dateKey, index));
+          evEl.addEventListener('click', (e) => {
+            e.stopPropagation();
+            openEdit(dateKey, index);
+          });
           el.appendChild(evEl);
         });
         daysGrid.appendChild(el);
