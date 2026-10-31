@@ -146,6 +146,92 @@
       .hero-scroll { margin-top: 24px; }
     }
 
+    /* ---------- Quiet days banner ---------- */
+
+    .quiet-banner {
+      position: relative;
+      z-index: 3;
+      width: min(680px, calc(100% - 40px));
+      margin: -34px auto 0;
+      display: flex;
+      align-items: center;
+      gap: 14px;
+      padding: 16px 20px;
+      border-radius: 20px;
+      text-decoration: none;
+      color: #123a58;
+      background: rgba(255, 253, 247, 0.97);
+      border: 1px solid rgba(201, 162, 74, 0.55);
+      box-shadow: 0 18px 44px rgba(20, 63, 95, 0.22);
+      text-align: left;
+      transition: transform 0.22s ease, box-shadow 0.22s ease;
+    }
+
+    .quiet-banner[hidden] { display: none; }
+
+    .quiet-banner:hover,
+    .quiet-banner:focus-visible {
+      transform: translateY(-3px);
+      box-shadow: 0 24px 52px rgba(20, 63, 95, 0.28);
+    }
+
+    .quiet-banner:focus-visible {
+      outline: 3px solid var(--gold);
+      outline-offset: 3px;
+    }
+
+    .quiet-icon {
+      flex: none;
+      display: grid;
+      place-items: center;
+      width: 42px;
+      height: 42px;
+      border-radius: 50%;
+      font-size: 1.25rem;
+      background: linear-gradient(145deg, #eef6fc, #dceefb);
+      border: 1px solid rgba(201, 162, 74, 0.35);
+    }
+
+    .quiet-text {
+      display: flex;
+      flex-direction: column;
+      gap: 2px;
+      min-width: 0;
+    }
+
+    .quiet-label {
+      font-size: 0.7rem;
+      font-weight: 700;
+      letter-spacing: 0.16em;
+      text-transform: uppercase;
+      color: #8a6d2b;
+    }
+
+    .quiet-detail {
+      font-family: var(--display);
+      font-size: 1.08rem;
+      font-weight: 700;
+      line-height: 1.3;
+    }
+
+    .quiet-arrow {
+      margin-left: auto;
+      flex: none;
+      color: #8a6d2b;
+      font-size: 1.1rem;
+      opacity: 0.55;
+    }
+
+    @media (max-width: 520px) {
+      .quiet-banner {
+        margin-top: -24px;
+        padding: 14px 16px;
+        gap: 11px;
+      }
+      .quiet-icon { width: 36px; height: 36px; font-size: 1.05rem; }
+      .quiet-detail { font-size: 0.98rem; }
+    }
+
     /* ---------- Explore ---------- */
 
     .explore {
@@ -281,10 +367,19 @@
     </div>
   </header>
 
+  <a class="quiet-banner" id="quietBanner" href="apart.html" hidden>
+    <span class="quiet-icon" aria-hidden="true">🌙</span>
+    <span class="quiet-text">
+      <span class="quiet-label" id="quietLabel">Quiet days</span>
+      <span class="quiet-detail" id="quietDetail"></span>
+    </span>
+    <span class="quiet-arrow" aria-hidden="true">→</span>
+  </a>
+
   <main class="explore" id="explore">
     <p class="eyebrow">Explore</p>
     <h2>Where shall we go?</h2>
-    <p class="explore-sub">Seven little rooms, all ours. Leave a note, plan a date, add a photo, or read what we promised each other.</p>
+    <p class="explore-sub">Eight little rooms, all ours. Leave a note, plan a date, add a photo, or read what we promised each other.</p>
 
     <div class="hub-grid">
       <a class="hub-card" href="love.html">
@@ -322,11 +417,78 @@
         <span class="card-title">Our timeline</span>
         <span class="card-sub">The story so far, in pictures</span>
       </a>
+      <a class="hub-card" href="apart.html">
+        <span class="card-top"><span class="card-icon" aria-hidden="true">🌙</span><span class="card-arrow" aria-hidden="true">→</span></span>
+        <span class="card-title">Quiet days</span>
+        <span class="card-sub">When one of us needs some space</span>
+      </a>
     </div>
   </main>
 
   <footer>Charlotte &amp; Luke · made with care</footer>
 
+  <script>
+    (function () {
+      const banner = document.getElementById('quietBanner');
+      const label = document.getElementById('quietLabel');
+      const detail = document.getElementById('quietDetail');
+      if (!banner || !label || !detail) return;
+
+      function pad(value) {
+        return value < 10 ? '0' + value : String(value);
+      }
+
+      function todayString() {
+        const now = new Date();
+        return now.getFullYear() + '-' + pad(now.getMonth() + 1) + '-' + pad(now.getDate());
+      }
+
+      function toDate(value) {
+        const parts = String(value || '').split('-').map(Number);
+        return new Date(parts[0], parts[1] - 1, parts[2]);
+      }
+
+      function longDate(value) {
+        return toDate(value).toLocaleDateString(undefined, {
+          weekday: 'long',
+          day: 'numeric',
+          month: 'long'
+        });
+      }
+
+      fetch('/api/apart')
+        .then(function (res) { return res.ok ? res.json() : null; })
+        .then(function (json) {
+          if (!json || !Array.isArray(json.entries) || !json.entries.length) return;
+
+          const today = todayString();
+          const active = json.entries
+            .filter(function (entry) {
+              return entry.from <= today && today <= entry.until;
+            })
+            .sort(function (a, b) { return a.until.localeCompare(b.until); })[0];
+          const upcoming = json.entries
+            .filter(function (entry) { return entry.from > today; })
+            .sort(function (a, b) { return a.from.localeCompare(b.from); })[0];
+
+          if (active) {
+            label.textContent = 'Quiet days are on';
+            detail.textContent = 'No visits until ' + longDate(active.until);
+          } else if (upcoming) {
+            const who = upcoming.author && upcoming.author !== 'Unknown' ? upcoming.author : 'Someone';
+            label.textContent = 'Quiet days ahead';
+            detail.textContent = who + "'s quiet days start " + longDate(upcoming.from);
+          } else {
+            return;
+          }
+
+          banner.hidden = false;
+        })
+        .catch(function () {
+          // No API yet — leave the banner hidden.
+        });
+    })();
+  </script>
   <script src="together.js"></script>
   <script src="avatar.js"></script>
 </body>

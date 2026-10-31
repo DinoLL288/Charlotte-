@@ -1,0 +1,714 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Quiet days</title>
+  <script>
+    if (!localStorage.getItem('charlotte-user')) {
+      window.location.href = 'login.html';
+    }
+  </script>
+  <style>
+    :root {
+      --ink: #10344f;
+      --navy: #143f5f;
+      --ocean: #2a78a8;
+      --gold: #c9a24a;
+      --gold-soft: #ecd7a0;
+      --display: Georgia, "Times New Roman", serif;
+    }
+
+    * { box-sizing: border-box; }
+
+    body {
+      margin: 0;
+      min-height: 100vh;
+      color: var(--ink);
+    }
+
+    /* ---------- Night sky opening ---------- */
+
+    .hero {
+      position: relative;
+      padding: 100px 20px 76px;
+      text-align: center;
+      color: #fff;
+      overflow: hidden;
+      isolation: isolate;
+      background:
+        radial-gradient(760px 320px at 50% -8%, rgba(236, 215, 160, 0.26) 0%, rgba(236, 215, 160, 0) 70%),
+        linear-gradient(180deg, #0d2c44 0%, #16405f 46%, #2a78a8 100%);
+    }
+
+    .hero::before {
+      content: "";
+      position: absolute;
+      inset: 0;
+      z-index: -1;
+      opacity: 0.85;
+      background-image:
+        radial-gradient(1.6px 1.6px at 12% 22%, rgba(255, 255, 255, 0.85) 50%, rgba(255, 255, 255, 0) 51%),
+        radial-gradient(1.2px 1.2px at 28% 12%, rgba(255, 255, 255, 0.6) 50%, rgba(255, 255, 255, 0) 51%),
+        radial-gradient(1.4px 1.4px at 44% 30%, rgba(236, 215, 160, 0.8) 50%, rgba(236, 215, 160, 0) 51%),
+        radial-gradient(1.1px 1.1px at 63% 16%, rgba(255, 255, 255, 0.7) 50%, rgba(255, 255, 255, 0) 51%),
+        radial-gradient(1.7px 1.7px at 78% 28%, rgba(255, 255, 255, 0.75) 50%, rgba(255, 255, 255, 0) 51%),
+        radial-gradient(1.2px 1.2px at 89% 10%, rgba(236, 215, 160, 0.7) 50%, rgba(236, 215, 160, 0) 51%),
+        radial-gradient(1.3px 1.3px at 56% 6%, rgba(255, 255, 255, 0.55) 50%, rgba(255, 255, 255, 0) 51%),
+        radial-gradient(1.2px 1.2px at 34% 34%, rgba(255, 255, 255, 0.45) 50%, rgba(255, 255, 255, 0) 51%);
+    }
+
+    .hero::after {
+      content: "";
+      position: absolute;
+      inset: 0;
+      z-index: -1;
+      background: linear-gradient(180deg, rgba(5, 20, 33, 0) 40%, rgba(17, 54, 82, 0.55) 100%);
+    }
+
+    .hero .eyebrow {
+      color: var(--gold-soft);
+      text-shadow: 0 2px 12px rgba(3, 15, 26, 0.6);
+    }
+
+    .hero h1 {
+      margin: 12px 0 8px;
+      font-family: var(--display);
+      font-weight: 400;
+      font-size: clamp(2.4rem, 7vw, 4rem);
+      line-height: 1.05;
+      text-shadow: 0 4px 26px rgba(3, 15, 26, 0.55);
+    }
+
+    .hero p.subtitle {
+      margin: 0 auto;
+      max-width: 42ch;
+      color: #e6f3fc;
+      font-size: clamp(0.98rem, 2.6vw, 1.1rem);
+      line-height: 1.6;
+      text-shadow: 0 2px 12px rgba(3, 15, 26, 0.6);
+    }
+
+    .top-bar {
+      position: absolute;
+      top: 16px;
+      left: 16px;
+      z-index: 5;
+    }
+
+    /* ---------- Layout ---------- */
+
+    .screen {
+      width: min(760px, 100%);
+      margin: 0 auto;
+      padding: 0 18px 64px;
+      display: flex;
+      flex-direction: column;
+      gap: 18px;
+    }
+
+    .card {
+      background: rgba(255, 253, 247, 0.95);
+      border: 1px solid rgba(255, 255, 255, 0.95);
+      border-radius: 24px;
+      box-shadow: 0 24px 56px rgba(20, 63, 95, 0.2);
+      padding: clamp(18px, 4vw, 28px);
+      -webkit-backdrop-filter: blur(10px);
+      backdrop-filter: blur(10px);
+    }
+
+    .status-card {
+      margin-top: -38px;
+      position: relative;
+      z-index: 2;
+      text-align: center;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 6px;
+    }
+
+    .status-card .eyebrow { color: #8a6d2b; }
+
+    .status-card h2 {
+      margin: 4px 0 0;
+      font-family: var(--display);
+      font-size: clamp(1.55rem, 4.4vw, 2.1rem);
+      font-weight: 700;
+      color: #123a58;
+      line-height: 1.2;
+    }
+
+    .status-card p {
+      margin: 0;
+      max-width: 46ch;
+      color: #3f637e;
+      line-height: 1.65;
+      font-size: 0.96rem;
+    }
+
+    .status-card.is-on {
+      border-color: rgba(201, 162, 74, 0.55);
+      box-shadow: 0 24px 56px rgba(20, 63, 95, 0.2), inset 0 0 0 1px rgba(236, 215, 160, 0.5);
+    }
+
+    /* ---------- Form ---------- */
+
+    .composer h2 {
+      margin: 0 0 4px;
+      font-family: var(--display);
+      font-size: 1.5rem;
+      font-weight: 700;
+      color: #123a58;
+    }
+
+    .form-hint {
+      margin: 0 0 16px;
+      color: #5c7c93;
+      font-size: 0.9rem;
+    }
+
+    .form-row {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 12px;
+    }
+
+    @media (max-width: 520px) {
+      .form-row { grid-template-columns: 1fr; }
+    }
+
+    .composer label {
+      display: flex;
+      flex-direction: column;
+      gap: 6px;
+      margin-bottom: 12px;
+      font-size: 0.72rem;
+      font-weight: 700;
+      letter-spacing: 0.16em;
+      text-transform: uppercase;
+      color: #6a5230;
+    }
+
+    .composer input {
+      width: 100%;
+      border-radius: 12px;
+      border: 1px solid #c8dceb;
+      background: #fff;
+      padding: 11px 13px;
+      font-family: inherit;
+      font-size: 0.97rem;
+      color: var(--ink);
+      letter-spacing: normal;
+      text-transform: none;
+    }
+
+    .composer input:focus {
+      outline: 2px solid rgba(201, 162, 74, 0.65);
+      outline-offset: 1px;
+      border-color: var(--gold);
+    }
+
+    .form-actions {
+      display: flex;
+      align-items: center;
+      gap: 14px;
+      flex-wrap: wrap;
+      margin-top: 4px;
+    }
+
+    .button {
+      border: 0;
+      border-radius: 999px;
+      padding: 12px 24px;
+      background: #143f5f;
+      color: #fff;
+      font-family: inherit;
+      font-size: 0.95rem;
+      font-weight: 700;
+      letter-spacing: 0.02em;
+      cursor: pointer;
+      box-shadow: 0 10px 26px rgba(20, 63, 95, 0.28);
+      transition: transform 0.2s ease, box-shadow 0.2s ease, background 0.2s ease;
+      text-decoration: none;
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+    }
+
+    .button:hover {
+      transform: translateY(-2px);
+      background: #1b5178;
+      box-shadow: 0 14px 30px rgba(20, 63, 95, 0.34);
+    }
+
+    .button:focus-visible {
+      outline: 3px solid var(--gold);
+      outline-offset: 3px;
+    }
+
+    .button:disabled { opacity: 0.6; cursor: progress; transform: none; }
+
+    .status {
+      font-size: 0.86rem;
+      color: #5c7c93;
+      min-height: 1.2em;
+    }
+
+    /* ---------- Entries ---------- */
+
+    .section-head {
+      display: flex;
+      align-items: baseline;
+      justify-content: space-between;
+      gap: 12px;
+      margin: 10px 2px 0;
+    }
+
+    .section-head h2 {
+      margin: 0;
+      font-family: var(--display);
+      font-size: 1.5rem;
+      font-weight: 700;
+      color: #123a58;
+    }
+
+    .section-head span {
+      font-size: 0.78rem;
+      letter-spacing: 0.12em;
+      text-transform: uppercase;
+      color: #6a8aa0;
+      font-weight: 700;
+    }
+
+    .entries {
+      display: flex;
+      flex-direction: column;
+      gap: 12px;
+    }
+
+    .entry {
+      background: rgba(255, 253, 247, 0.95);
+      border: 1px solid rgba(255, 255, 255, 0.95);
+      border-radius: 20px;
+      box-shadow: 0 14px 34px rgba(20, 63, 95, 0.13);
+      padding: 18px 20px;
+      display: flex;
+      flex-direction: column;
+      gap: 8px;
+    }
+
+    .entry.is-active {
+      border-color: rgba(201, 162, 74, 0.55);
+      background: linear-gradient(180deg, rgba(255, 250, 238, 0.98), rgba(255, 253, 247, 0.95));
+    }
+
+    .entry.is-past { opacity: 0.72; }
+
+    .entry-top {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      flex-wrap: wrap;
+    }
+
+    .chip {
+      display: inline-flex;
+      align-items: center;
+      padding: 5px 11px;
+      border-radius: 999px;
+      font-size: 0.68rem;
+      font-weight: 700;
+      letter-spacing: 0.12em;
+      text-transform: uppercase;
+    }
+
+    .chip.is-active { background: #f0e2bb; color: #6b5220; }
+    .chip.is-upcoming { background: #dceefb; color: #1f5d85; }
+    .chip.is-past { background: #e9eef2; color: #5f7e93; }
+
+    .range {
+      font-family: var(--display);
+      font-size: clamp(1.05rem, 2.8vw, 1.22rem);
+      font-weight: 700;
+      color: #123a58;
+    }
+
+    .entry .note {
+      margin: 0;
+      color: #2c4f68;
+      line-height: 1.65;
+      white-space: pre-wrap;
+      overflow-wrap: anywhere;
+    }
+
+    .entry-meta {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      margin-top: 2px;
+      padding-top: 10px;
+      border-top: 1px solid #e7e0cf;
+      color: #5f7e93;
+      font-size: 0.84rem;
+    }
+
+    .entry-meta img {
+      width: 28px;
+      height: 28px;
+      border-radius: 50%;
+      object-fit: cover;
+      background: #e8f3fb;
+      flex: none;
+    }
+
+    .entry-meta .delete-entry {
+      margin-left: auto;
+      border: 0;
+      background: transparent;
+      color: #8a6d2b;
+      font-family: inherit;
+      font-size: 0.82rem;
+      font-weight: 700;
+      letter-spacing: 0.04em;
+      cursor: pointer;
+      padding: 6px 8px;
+      border-radius: 8px;
+    }
+
+    .entry-meta .delete-entry:hover { background: #f3ead4; color: #6b5220; }
+
+    .empty {
+      text-align: center;
+      padding: 30px 24px;
+      border-radius: 20px;
+      background: rgba(255, 255, 255, 0.55);
+      border: 1px dashed rgba(255, 255, 255, 0.9);
+      color: #486a83;
+    }
+
+    .empty strong {
+      display: block;
+      font-family: var(--display);
+      font-size: 1.25rem;
+      color: #123a58;
+      margin-bottom: 4px;
+    }
+
+    @media (max-width: 520px) {
+      .hero { padding: 88px 16px 66px; }
+      .status-card { margin-top: -30px; }
+      .entry { padding: 16px; }
+    }
+
+    @media (prefers-reduced-motion: reduce) {
+      *, *::before, *::after {
+        animation-duration: 0.01ms !important;
+        transition-duration: 0.01ms !important;
+      }
+    }
+  </style>
+  <link rel="stylesheet" href="theme.css">
+</head>
+<body>
+  <div class="top-bar">
+    <a class="button" href="index.html">← Back to hub</a>
+  </div>
+
+  <header class="hero">
+    <p class="eyebrow">A little space</p>
+    <h1>Quiet days</h1>
+    <p class="subtitle">Some days need a little room. Mark them here so we both know, and nobody takes it personally.</p>
+  </header>
+
+  <main class="screen">
+    <section class="card status-card" id="statusCard">
+      <p class="eyebrow" id="statusEyebrow">Right now</p>
+      <h2 id="statusTitle">No quiet days marked</h2>
+      <p id="statusText">When one of us needs a little space, add the days below.</p>
+    </section>
+
+    <form class="card composer" id="apartForm">
+      <h2>Mark quiet days</h2>
+      <p class="form-hint">Pick the first and last day. Both are included. Only the person who adds them can remove them.</p>
+
+      <div class="form-row">
+        <label for="fromDate">First day
+          <input id="fromDate" type="date" required>
+        </label>
+        <label for="untilDate">Last day
+          <input id="untilDate" type="date" required>
+        </label>
+      </div>
+
+      <label for="apartNote">A note (optional)
+        <input id="apartNote" maxlength="300" placeholder="Anything you want to say…">
+      </label>
+
+      <div class="form-actions">
+        <button class="button" id="saveApart" type="submit">Save quiet days</button>
+        <span class="status" id="formStatus" role="status"></span>
+      </div>
+    </form>
+
+    <div class="section-head">
+      <h2>Marked days</h2>
+      <span id="entryCount"></span>
+    </div>
+    <div class="entries" id="entries"></div>
+  </main>
+
+  <script>
+    const form = document.getElementById('apartForm');
+    const fromDate = document.getElementById('fromDate');
+    const untilDate = document.getElementById('untilDate');
+    const apartNote = document.getElementById('apartNote');
+    const saveApart = document.getElementById('saveApart');
+    const formStatus = document.getElementById('formStatus');
+    const entriesEl = document.getElementById('entries');
+    const entryCount = document.getElementById('entryCount');
+    const statusCard = document.getElementById('statusCard');
+    const statusEyebrow = document.getElementById('statusEyebrow');
+    const statusTitle = document.getElementById('statusTitle');
+    const statusText = document.getElementById('statusText');
+
+    const currentUser = localStorage.getItem('charlotte-user') || 'Unknown';
+    const profilePics = {};
+    let entries = [];
+    let currentSha = null;
+
+    function pad(value) {
+      return value < 10 ? '0' + value : String(value);
+    }
+
+    function todayString() {
+      const now = new Date();
+      return now.getFullYear() + '-' + pad(now.getMonth() + 1) + '-' + pad(now.getDate());
+    }
+
+    function toDate(value) {
+      const parts = String(value || '').split('-').map(Number);
+      return new Date(parts[0], parts[1] - 1, parts[2]);
+    }
+
+    function longDate(value) {
+      return toDate(value).toLocaleDateString(undefined, {
+        weekday: 'long',
+        day: 'numeric',
+        month: 'long',
+        year: 'numeric'
+      });
+    }
+
+    function longRange(entry) {
+      return entry.from === entry.until
+        ? longDate(entry.from)
+        : longDate(entry.from) + ' – ' + longDate(entry.until);
+    }
+
+    function statusOf(entry) {
+      const today = todayString();
+      if (today >= entry.from && today <= entry.until) return 'active';
+      if (today < entry.from) return 'upcoming';
+      return 'past';
+    }
+
+    function escapeHtml(text) {
+      const div = document.createElement('div');
+      div.textContent = text == null ? '' : text;
+      return div.innerHTML;
+    }
+
+    function fallbackAvatar(name) {
+      return 'https://ui-avatars.com/api/?name=' + encodeURIComponent(name || 'Unknown') + '&background=e8f3fb&color=143f5f&size=96';
+    }
+
+    async function loadProfilePic(name) {
+      if (!name || name === 'Unknown' || Object.prototype.hasOwnProperty.call(profilePics, name)) return;
+      const cached = localStorage.getItem('charlotte-avatar-' + name);
+      if (cached) profilePics[name] = cached;
+      try {
+        const res = await fetch('/api/profile?user=' + encodeURIComponent(name));
+        const json = await res.json();
+        if (json.url) {
+          profilePics[name] = json.url;
+          localStorage.setItem('charlotte-avatar-' + name, json.url);
+        }
+      } catch (e) {
+        // keep whatever we have
+      }
+    }
+
+    function sortedEntries() {
+      const order = { active: 0, upcoming: 1, past: 2 };
+      return entries.slice().sort((a, b) => {
+        const sa = order[statusOf(a)];
+        const sb = order[statusOf(b)];
+        if (sa !== sb) return sa - sb;
+        return (b.from || '').localeCompare(a.from || '');
+      });
+    }
+
+    function renderStatus() {
+      const active = sortedEntries().find(entry => statusOf(entry) === 'active');
+      const upcoming = sortedEntries().find(entry => statusOf(entry) === 'upcoming');
+
+      statusCard.classList.toggle('is-on', Boolean(active));
+
+      if (active) {
+        const author = active.author || 'Someone';
+        statusEyebrow.textContent = 'Quiet days are on';
+        statusTitle.textContent = author + ' is taking a little space';
+        statusText.textContent = 'No visits until ' + longDate(active.until) + '. It is not about you — it is just a few quiet days.';
+        return;
+      }
+
+      if (upcoming) {
+        const author = upcoming.author || 'Someone';
+        statusEyebrow.textContent = 'Coming up';
+        statusTitle.textContent = 'Quiet days ahead';
+        statusText.textContent = author + "'s quiet days start " + longDate(upcoming.from) + '.';
+        return;
+      }
+
+      statusEyebrow.textContent = 'Right now';
+      statusTitle.textContent = entries.length ? 'No quiet days coming up' : 'No quiet days marked';
+      statusText.textContent = entries.length
+        ? 'Everything is back to normal.'
+        : 'When one of us needs a little space, add the days below.';
+    }
+
+    function renderEntries() {
+      entriesEl.innerHTML = '';
+
+      const ordered = sortedEntries();
+      entryCount.textContent = ordered.length === 1 ? '1 set of days' : ordered.length + ' sets of days';
+
+      if (!ordered.length) {
+        const empty = document.createElement('div');
+        empty.className = 'empty';
+        empty.innerHTML = '<strong>Nothing marked yet</strong>Add the first quiet days above.';
+        entriesEl.appendChild(empty);
+        return;
+      }
+
+      ordered.forEach(entry => {
+        const status = statusOf(entry);
+        const author = entry.author || 'Unknown';
+        const avatar = profilePics[author] || fallbackAvatar(author);
+        const canDelete = !entry.author || entry.author === 'Unknown' || entry.author === currentUser;
+
+        const chipLabel = status === 'active' ? 'On now' : status === 'upcoming' ? 'Upcoming' : 'Past';
+
+        const article = document.createElement('article');
+        article.className = 'entry is-' + status;
+        article.innerHTML = `
+          <div class="entry-top">
+            <span class="chip is-${status}">${chipLabel}</span>
+            <span class="range">${escapeHtml(longRange(entry))}</span>
+          </div>
+          ${entry.note ? `<p class="note">${escapeHtml(entry.note)}</p>` : ''}
+          <div class="entry-meta">
+            <img src="${escapeHtml(avatar)}" alt="${escapeHtml(author)}'s profile picture">
+            <span>Added by ${escapeHtml(author)}</span>
+            ${canDelete ? '<button class="delete-entry" type="button">Remove</button>' : ''}
+          </div>
+        `;
+
+        const deleteButton = article.querySelector('.delete-entry');
+        if (deleteButton) {
+          deleteButton.addEventListener('click', () => deleteEntry(entry));
+        }
+
+        entriesEl.appendChild(article);
+      });
+    }
+
+    function render() {
+      renderStatus();
+      renderEntries();
+    }
+
+    async function postApart(body) {
+      const res = await fetch('/api/apart', {
+        method: 'POST',
+        headers: { 'content-type': 'application/json' },
+        body: JSON.stringify(body)
+      });
+      const json = await res.json();
+      if (!res.ok) throw new Error(json.error || 'Something went wrong');
+      if (json.sha) currentSha = json.sha;
+      if (Array.isArray(json.entries)) entries = json.entries;
+      return json;
+    }
+
+    async function loadEntries() {
+      try {
+        const res = await fetch('/api/apart');
+        const json = await res.json();
+        entries = Array.isArray(json.entries) ? json.entries : [];
+        currentSha = json.sha || null;
+        await Promise.all([...new Set(entries.map(entry => entry.author || 'Unknown'))].map(loadProfilePic));
+      } catch (e) {
+        entries = [];
+        currentSha = null;
+      }
+      render();
+    }
+
+    async function deleteEntry(entry) {
+      if (!confirm('Remove these quiet days?')) return;
+      try {
+        await postApart({ action: 'delete', id: entry.id, currentUser, sha: currentSha });
+        render();
+      } catch (e) {
+        alert(e.message);
+      }
+    }
+
+    form.addEventListener('submit', async event => {
+      event.preventDefault();
+
+      const from = fromDate.value;
+      const until = untilDate.value;
+
+      if (!from || !until) {
+        formStatus.textContent = 'Pick both days first';
+        return;
+      }
+
+      if (until < from) {
+        formStatus.textContent = 'The last day must be on or after the first';
+        return;
+      }
+
+      saveApart.disabled = true;
+      formStatus.textContent = 'Saving…';
+
+      try {
+        await postApart({
+          entry: { from, until, note: apartNote.value.trim(), author: currentUser },
+          sha: currentSha
+        });
+
+        await loadProfilePic(currentUser);
+        form.reset();
+        fromDate.value = todayString();
+        untilDate.value = todayString();
+        formStatus.textContent = 'Saved 🤍';
+        render();
+      } catch (e) {
+        formStatus.textContent = e.message;
+      } finally {
+        saveApart.disabled = false;
+      }
+    });
+
+    fromDate.value = todayString();
+    untilDate.value = todayString();
+
+    loadEntries();
+  </script>
+  <script src="avatar.js"></script>
+</body>
+</html>
