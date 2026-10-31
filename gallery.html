@@ -210,7 +210,7 @@
     function renderFolders() {
       folderCheckboxes.innerHTML = '';
       folders.forEach(f => {
-        if (f === 'Old Photos') return;
+        if (f === 'Old Photos' || f === 'General') return;
         const label = document.createElement('label');
         label.style.display = 'flex';
         label.style.alignItems = 'center';
@@ -222,7 +222,7 @@
         const cb = document.createElement('input');
         cb.type = 'checkbox';
         cb.value = f;
-        cb.checked = f === 'General';
+        cb.checked = false;
         label.appendChild(cb);
         label.appendChild(document.createTextNode(f));
         folderCheckboxes.appendChild(label);
@@ -232,13 +232,48 @@
 
     function renderGalleryView() {
       folderView.innerHTML = '';
-      folders.forEach(folder => {
+      // Move General to front if exists
+      const ordered = [...folders];
+      const genIdx = ordered.indexOf('General');
+      if (genIdx > 0) {
+        ordered.splice(genIdx, 1);
+        ordered.unshift('General');
+      }
+      ordered.forEach((folder, idx) => {
         const section = document.createElement('section');
         section.style.width = 'min(1100px, 94vw)';
-        section.innerHTML = `<h2 style="color:#fff; text-shadow:0 2px 8px #428ec080; text-align:left;">${folder}</h2>`;
+        section.style.display = 'flex';
+        section.style.flexDirection = 'column';
+        section.style.gap = '10px';
+        
+        const header = document.createElement('button');
+        header.type = 'button';
+        header.style.background = 'rgba(255,255,255,0.9)';
+        header.style.border = 'none';
+        header.style.borderRadius = '12px';
+        header.style.padding = '10px 16px';
+        header.style.color = '#2873a6';
+        header.style.fontWeight = '700';
+        header.style.cursor = 'pointer';
+        header.style.boxShadow = '0 6px 16px #347eac20';
+        header.style.textAlign = 'left';
+        header.textContent = (folder === 'General') ? 'General (All Photos)' : folder;
+        
         const grid = document.createElement('div');
         grid.className = 'grid';
         grid.dataset.folder = folder;
+        grid.style.display = idx === 0 ? 'grid' : 'none';
+        grid.style.transition = 'all 0.2s ease';
+        
+        header.addEventListener('click', () => {
+          // Collapse others, open this one
+          folderView.querySelectorAll('.grid').forEach(g => {
+            g.style.display = 'none';
+          });
+          grid.style.display = 'grid';
+        });
+        
+        section.appendChild(header);
         section.appendChild(grid);
         folderView.appendChild(section);
         loadFolderPhotos(folder, grid);
@@ -247,6 +282,58 @@
 
     async function loadFolderPhotos(folder, grid) {
       try {
+        if (folder === 'General' || folder === 'All Photos') {
+          // Aggregate all photos from all folders
+          const allPhotos = [];
+          const seen = new Set();
+          
+          // Load Old Photos (root)
+          try {
+            const resRoot = await fetch('/api/gallery?folder=' + encodeURIComponent('root'));
+            const jsonRoot = await resRoot.json();
+            if (jsonRoot.photos) {
+              jsonRoot.photos.forEach(p => {
+                if (!seen.has(p.url)) {
+                  seen.add(p.url);
+                  allPhotos.push(p);
+                }
+              });
+            }
+          } catch(e) {}
+          
+          // Load each other folder
+          for (const f of folders) {
+            if (f === 'General' || f === 'Old Photos') continue;
+            try {
+              const resF = await fetch('/api/gallery?folder=' + encodeURIComponent(f));
+              const jsonF = await resF.json();
+              if (jsonF.photos) {
+                jsonF.photos.forEach(p => {
+                  if (!seen.has(p.url)) {
+                    seen.add(p.url);
+                    allPhotos.push(p);
+                  }
+                });
+              }
+            } catch(e) {}
+          }
+          
+          if (allPhotos.length > 0) {
+            allPhotos.forEach(photo => {
+              const tile = document.createElement('div');
+              tile.className = 'tile';
+              tile.style.cursor = 'pointer';
+              const img = document.createElement('img');
+              img.src = photo.url;
+              img.alt = 'Gallery photo';
+              tile.appendChild(img);
+              tile.dataset.uploadedBy = photo.uploadedBy || 'Unknown';
+              grid.appendChild(tile);
+            });
+            return;
+          }
+        }
+        
         let param = folder;
         if (folder === 'Old Photos') param = 'root';
         const res = await fetch('/api/gallery?folder=' + encodeURIComponent(param));
