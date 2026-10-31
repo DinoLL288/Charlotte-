@@ -145,7 +145,7 @@ export class QuestionNightRoom {
   async getPreferences(user) {
     const preferences = await this.ctx.storage.get('profilePreferences') || {};
     return {
-      theme: 'blue', accent: '#347fa3', birthdayReminders: true,
+      theme: 'blue', accent: '#347fa3',
       reminderLeadDays: 1, reminderTime: '09:00', textSize: 'normal',
       reducedMotion: false, compactLayout: false, showReactions: true, showPresence: true,
       ...(preferences[user] || {}), birthdayReminders: true
