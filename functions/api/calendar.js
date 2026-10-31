@@ -42,6 +42,15 @@ function findEventIndex(list, id, fallbackIndex) {
   return -1;
 }
 
+function normalizeTime(value) {
+  const match = /^(\d{1,2}):(\d{2})$/.exec(String(value || '').trim());
+  if (!match) return '';
+  const hours = Number(match[1]);
+  const minutes = Number(match[2]);
+  if (hours > 23 || minutes > 59) return '';
+  return `${String(hours).padStart(2, '0')}:${match[2]}`;
+}
+
 export async function onRequestGet(context) {
   try {
     const { env } = context;
@@ -125,6 +134,7 @@ export async function onRequestPost(context) {
         ...old,
         id: eventId,
         title,
+        startTime: normalizeTime(body.event && body.event.startTime),
         time: String((body.event && body.event.time) || '').trim(),
         editedBy: String((body.event && body.event.author) || 'Unknown'),
         editedAt: new Date().toISOString()
@@ -157,6 +167,7 @@ export async function onRequestPost(context) {
         ...body.event,
         id: eventId,
         title,
+        startTime: normalizeTime(body.event && body.event.startTime),
         time: String((body.event && body.event.time) || '').trim(),
         author: String((body.event && body.event.author) || 'Unknown')
       });

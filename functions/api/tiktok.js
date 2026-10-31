@@ -142,11 +142,11 @@ async function syncCalendar(env, plan) {
   }
 
   if (plan.date) {
-    const time = [plan.time ? 'Dance at ' + plan.time : '', plan.url].filter(Boolean).join(' · ');
     if (!events[plan.date]) events[plan.date] = [];
     events[plan.date].push({
       title: 'TikTok: ' + (plan.title || 'Dance idea'),
-      time,
+      startTime: /^\d{1,2}:\d{2}$/.test(plan.time || '') ? plan.time : '',
+      time: plan.url,
       author: plan.author || 'Unknown',
       date: new Date().toISOString(),
       source: 'tiktok',

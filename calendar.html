@@ -52,6 +52,15 @@
       text-shadow: 0 2px 8px #428ec080;
     }
     .calendar-header h2 { margin: 0; font-size: clamp(1.4rem, 4vw, 2rem); }
+    .calendar-header .button { padding: 10px 16px; }
+    .now-line {
+      margin: -8px 0 0;
+      color: #fff;
+      font-weight: 700;
+      font-size: 0.95rem;
+      text-shadow: 0 2px 8px #428ec080;
+    }
+    .now-line span { opacity: 0.85; font-weight: 600; }
     .calendar-grid {
       width: min(980px, 94vw);
       display: grid;
@@ -75,16 +84,32 @@
       flex-direction: column;
       gap: 8px;
       cursor: pointer;
-      transition: box-shadow 0.15s ease;
+      transition: box-shadow 0.15s ease, background 0.15s ease;
     }
     .day:hover { box-shadow: 0 12px 28px #347eac40; }
     .day.muted { opacity: 0.5; }
+    .day.today {
+      background: #ffffff;
+      box-shadow: 0 0 0 3px #4aa8e0, 0 14px 34px #347eac55;
+    }
+    .day.today .day-number { color: #1f6fa8; }
     .day-header {
       display: flex;
       justify-content: space-between;
       align-items: center;
+      gap: 6px;
     }
     .day-number { font-weight: 700; color: #2873a6; }
+    .today-tag {
+      font-size: 0.66rem;
+      font-weight: 800;
+      letter-spacing: 0.02em;
+      color: #fff;
+      background: #4aa8e0;
+      border-radius: 999px;
+      padding: 2px 8px;
+      text-transform: uppercase;
+    }
     .add-btn {
       border: 0;
       background: transparent;
@@ -101,8 +126,44 @@
       overflow-wrap: anywhere;
       cursor: pointer;
       transition: background 0.15s ease;
+      display: flex;
+      flex-direction: column;
+      gap: 3px;
     }
     .event:hover { background: #d8efff; }
+    .event-top {
+      display: flex;
+      align-items: baseline;
+      justify-content: space-between;
+      gap: 6px;
+    }
+    .event-top strong { line-height: 1.2; }
+    .event-clock {
+      flex: none;
+      font-size: 0.78rem;
+      font-weight: 700;
+      color: #2873a6;
+      background: #ffffffb0;
+      border-radius: 999px;
+      padding: 1px 7px;
+    }
+    .event-details { font-size: 0.8rem; color: #3b7db3; }
+    .event-by { font-size: 0.75rem; color: #7fa9c6; }
+    .event-badge {
+      align-self: flex-start;
+      font-size: 0.68rem;
+      font-weight: 800;
+      letter-spacing: 0.02em;
+      text-transform: uppercase;
+      border-radius: 999px;
+      padding: 2px 8px;
+    }
+    .event.now { background: #dff7e6; box-shadow: 0 0 0 2px #57c98a inset; }
+    .event.now .event-clock { color: #1f7a4d; background: #ffffffc0; }
+    .event.now .event-badge { background: #35a86b; color: #fff; }
+    .event.soon .event-badge { background: #dff0ff; color: #2873a6; }
+    .event.done { opacity: 0.6; }
+    .event.done .event-badge { background: #eef2f5; color: #7d8a94; }
     .modal {
       position: fixed;
       inset: 0;
@@ -131,6 +192,15 @@
       font-family: inherit;
       font-size: 0.98rem;
     }
+    .modal-date {
+      margin-top: -8px;
+      font-size: 0.85rem;
+      color: #3b7db3;
+      font-weight: 700;
+    }
+    .title-row { display: flex; gap: 10px; flex-wrap: wrap; }
+    .title-row #eventTitle { flex: 1 1 180px; width: auto; }
+    .title-row #eventStart { flex: 0 0 auto; width: 150px; }
     .modal-actions {
       display: flex;
       gap: 10px;
@@ -168,7 +238,9 @@
       <button class="button" id="prevMonth">←</button>
       <h2 id="monthLabel"></h2>
       <button class="button" id="nextMonth">→</button>
+      <button class="button" id="todayBtn">Today</button>
     </div>
+    <p class="now-line" id="nowLabel"></p>
     <div class="calendar-grid" id="weekdayRow"></div>
     <div class="calendar-grid" id="daysGrid"></div>
   </main>
@@ -176,9 +248,13 @@
   <div class="modal" id="eventModal">
     <div class="modal-card">
       <h3 style="margin:0; color:#2873a6;" id="eventModalTitle">Add event</h3>
+      <div class="modal-date" id="eventDateLabel"></div>
       <div class="modal-hint" id="eventHint"></div>
-      <input id="eventTitle" placeholder="Title">
-      <textarea id="eventTime" rows="2" placeholder="Time / details"></textarea>
+      <div class="title-row">
+        <input id="eventTitle" placeholder="Title">
+        <input id="eventStart" type="time" aria-label="Event time" title="Event time">
+      </div>
+      <textarea id="eventTime" rows="2" placeholder="Details (optional)"></textarea>
       <div class="modal-actions">
         <button class="button danger" id="deleteEvent" type="button" style="display:none;">Delete</button>
         <button class="button" id="cancelEvent" type="button">Cancel</button>
@@ -202,12 +278,17 @@
     const deleteEvent = document.getElementById('deleteEvent');
     const modalTitle = document.getElementById('eventModalTitle');
     const eventHint = document.getElementById('eventHint');
+    const eventStart = document.getElementById('eventStart');
+    const eventDateLabel = document.getElementById('eventDateLabel');
+    const todayBtn = document.getElementById('todayBtn');
+    const nowLabel = document.getElementById('nowLabel');
 
     let current = new Date();
     let selectedDate = null;
     let editing = null;
     let events = {};
     let currentSha = null;
+    let lastTickKey = '';
 
     weekdays.forEach(w => {
       const el = document.createElement('div');
@@ -215,6 +296,96 @@
       el.textContent = w;
       weekdayRow.appendChild(el);
     });
+
+    function pad2(n) {
+      return String(n).padStart(2, '0');
+    }
+
+    function dateKeyOf(date) {
+      return `${date.getFullYear()}-${pad2(date.getMonth() + 1)}-${pad2(date.getDate())}`;
+    }
+
+    function todayKey() {
+      return dateKeyOf(new Date());
+    }
+
+    function minutesOfDay(value) {
+      const match = /^(\d{1,2}):(\d{2})$/.exec(String(value || ''));
+      if (!match) return null;
+      const hours = Number(match[1]);
+      const minutes = Number(match[2]);
+      if (hours > 23 || minutes > 59) return null;
+      return hours * 60 + minutes;
+    }
+
+    function formatClock(value) {
+      const mins = minutesOfDay(value);
+      if (mins === null) return String(value || '');
+      const date = new Date(2000, 0, 1, Math.floor(mins / 60), mins % 60);
+      return date.toLocaleTimeString(undefined, { hour: 'numeric', minute: '2-digit' });
+    }
+
+    function formatDayLabel(dateKey) {
+      const date = new Date(dateKey + 'T00:00:00');
+      if (Number.isNaN(date.getTime())) return dateKey;
+      return date.toLocaleDateString(undefined, { weekday: 'long', day: 'numeric', month: 'long', year: 'numeric' });
+    }
+
+    // 'now' while the event is happening, 'soon' before it starts today, 'done' after it.
+    function eventStatus(dateKey, startTime) {
+      const startMins = minutesOfDay(startTime);
+      if (startMins === null) return '';
+      const today = todayKey();
+      if (dateKey < today) return 'done';
+      if (dateKey > today) return 'soon';
+
+      const now = new Date();
+      const nowMins = now.getHours() * 60 + now.getMinutes();
+      if (nowMins < startMins) return 'soon';
+      if (nowMins < startMins + 90) return 'now';
+      return 'done';
+    }
+
+    function statusLabel(dateKey, startTime) {
+      const status = eventStatus(dateKey, startTime);
+      if (status === 'now') return 'Now';
+      if (status === 'done') return dateKey === todayKey() ? 'Done' : '';
+      if (status !== 'soon' || dateKey !== todayKey()) return '';
+
+      const startMins = minutesOfDay(startTime);
+      if (startMins === null) return '';
+      const now = new Date();
+      const diff = startMins - (now.getHours() * 60 + now.getMinutes());
+      if (diff <= 0) return 'Soon';
+      if (diff < 60) return `in ${diff} min`;
+      const hours = Math.floor(diff / 60);
+      const mins = diff % 60;
+      return `in ${hours}h${mins ? ' ' + mins + 'm' : ''}`;
+    }
+
+    function formatNowLine() {
+      const now = new Date();
+      const date = now.toLocaleDateString(undefined, { weekday: 'short', day: 'numeric', month: 'short' });
+      const time = now.toLocaleTimeString(undefined, { hour: 'numeric', minute: '2-digit' });
+      return `${date} · ${time}`;
+    }
+
+    function updateNowLine() {
+      nowLabel.innerHTML = `<span>It is</span> ${escapeHtml(formatNowLine())}`;
+    }
+
+    function sortDayEvents(list) {
+      return list
+        .map((event, index) => ({ event, index }))
+        .sort((a, b) => {
+          const am = minutesOfDay(a.event.startTime);
+          const bm = minutesOfDay(b.event.startTime);
+          if (am !== null && bm !== null) return am - bm;
+          if (am !== null) return -1;
+          if (bm !== null) return 1;
+          return a.index - b.index;
+        });
+    }
 
     function jumpToHash() {
       const match = /^#(\d{4})-(\d{2})-(\d{2})$/.exec(window.location.hash || '');
@@ -237,6 +408,7 @@
         currentSha = null;
       }
       jumpToHash();
+      updateNowLine();
       render();
     }
 
@@ -263,11 +435,15 @@
         daysGrid.appendChild(el);
       }
 
+      const today = todayKey();
+
       for (let d = 1; d <= totalDays; d++) {
-        const dateKey = `${year}-${String(month + 1).padStart(2, '0')}-${String(d).padStart(2, '0')}`;
+        const dateKey = `${year}-${pad2(month + 1)}-${pad2(d)}`;
+        const isToday = dateKey === today;
         const el = document.createElement('div');
-        el.className = 'day';
-        el.innerHTML = `<div class="day-header"><span class="day-number">${d}</span><button class="add-btn" title="Add event">+</button></div>`;
+        el.className = 'day' + (isToday ? ' today' : '');
+        const todayTag = isToday ? '<span class="today-tag">Today</span>' : '';
+        el.innerHTML = `<div class="day-header"><span class="day-number">${d}</span>${todayTag}<button class="add-btn" title="Add event">+</button></div>`;
         el.title = 'Click to add an event';
         el.addEventListener('click', (e) => {
           if (e.target.closest('.event') || e.target.closest('.add-btn')) return;
@@ -277,11 +453,48 @@
           e.stopPropagation();
           openAdd(dateKey);
         });
-        (events[dateKey] || []).forEach((ev, index) => {
+
+        sortDayEvents(events[dateKey] || []).forEach(({ event: ev, index }) => {
+          const status = eventStatus(dateKey, ev.startTime);
           const evEl = document.createElement('div');
-          evEl.className = 'event';
+          evEl.className = 'event' + (status ? ' ' + status : '');
           evEl.title = 'Click to edit';
-          evEl.innerHTML = `<strong>${escapeHtml(ev.title)}</strong>${ev.time ? '<br>' + escapeHtml(ev.time) : ''}${ev.author ? '<br><small>By ' + escapeHtml(ev.author) + '</small>' : ''}`;
+
+          const top = document.createElement('div');
+          top.className = 'event-top';
+          const strong = document.createElement('strong');
+          strong.textContent = ev.title || '';
+          top.appendChild(strong);
+          if (ev.startTime) {
+            const clock = document.createElement('span');
+            clock.className = 'event-clock';
+            clock.textContent = formatClock(ev.startTime);
+            top.appendChild(clock);
+          }
+          evEl.appendChild(top);
+
+          if (ev.time) {
+            const details = document.createElement('div');
+            details.className = 'event-details';
+            details.textContent = ev.time;
+            evEl.appendChild(details);
+          }
+
+          const label = statusLabel(dateKey, ev.startTime);
+          if (label) {
+            const badge = document.createElement('span');
+            badge.className = 'event-badge';
+            badge.textContent = label;
+            evEl.appendChild(badge);
+          }
+
+          if (ev.author) {
+            const by = document.createElement('small');
+            by.className = 'event-by';
+            by.textContent = 'By ' + ev.author;
+            evEl.appendChild(by);
+          }
+
           evEl.addEventListener('click', (e) => {
             e.stopPropagation();
             openEdit(dateKey, index);
@@ -315,7 +528,9 @@
       selectedDate = key;
       editing = null;
       modalTitle.textContent = 'Add event';
+      eventDateLabel.textContent = formatDayLabel(key);
       eventTitle.value = '';
+      eventStart.value = '';
       eventTime.value = '';
       deleteEvent.style.display = 'none';
       eventHint.classList.remove('visible');
@@ -328,7 +543,9 @@
       selectedDate = key;
       editing = { date: key, index, id: ev.id || '', event: ev };
       modalTitle.textContent = 'Edit event';
+      eventDateLabel.textContent = formatDayLabel(key);
       eventTitle.value = ev.title || '';
+      eventStart.value = ev.startTime || '';
       eventTime.value = ev.time || '';
 
       const isTikTok = ev.source === 'tiktok';
@@ -358,7 +575,7 @@
         return;
       }
       const author = localStorage.getItem('charlotte-user') || 'Unknown';
-      const event = { title, time: eventTime.value.trim(), author, date: new Date().toLocaleString() };
+      const event = { title, startTime: eventStart.value || '', time: eventTime.value.trim(), author, date: new Date().toLocaleString() };
       saveEvent.disabled = true;
       try {
         const target = editing ? { ...editing } : null;
@@ -380,7 +597,7 @@
         if (isEdit) {
           const list = events[target.date] || [];
           if (list[target.index]) {
-            list[target.index] = { ...list[target.index], title, time: event.time, id: list[target.index].id || json.id, editedAt: new Date().toISOString() };
+            list[target.index] = { ...list[target.index], title, startTime: event.startTime, time: event.time, id: list[target.index].id || json.id, editedAt: new Date().toISOString() };
           }
         } else {
           if (!events[addDate]) events[addDate] = [];
@@ -424,7 +641,22 @@
 
     prevMonth.addEventListener('click', () => { current.setMonth(current.getMonth() - 1); render(); });
     nextMonth.addEventListener('click', () => { current.setMonth(current.getMonth() + 1); render(); });
+    todayBtn.addEventListener('click', () => {
+      current = new Date();
+      render();
+    });
 
+    function tick() {
+      updateNowLine();
+      const now = new Date();
+      const key = dateKeyOf(now) + ' ' + now.getHours() + ':' + now.getMinutes();
+      if (key === lastTickKey) return;
+      lastTickKey = key;
+      if (!modal.classList.contains('active')) render();
+    }
+
+    tick();
+    setInterval(tick, 15000);
     loadEvents();
   </script>
   <script src="avatar.js"></script>
