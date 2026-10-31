@@ -12,13 +12,12 @@ A little site for Charlotte. Now split into a hub with multiple sections.
 - `avatar.js` - Shared top-right profile picture button that links to Settings
 - `tiktok.html` - Save TikTok links and plan dance dates (dates auto-sync to the calendar)
 - `messages.html` - Notes we leave for each other
-- `music.html` - Persistent shared Spotify player; keep this tab open while browsing the site
 - `functions/api/heart.js` - Saves shared keepsakes to `heart/heart.json` through the configured GitHub token
 - `play.html` - Inside jokes, bingo, and clue hunts
 - `our-life.html` - Shared recipes, books and films, monthly awards, and projects
 - `question-night.html` - An anytime question room that reveals only when both people are online and ready
-- `presence.js` - Shared online indicator, playlist settings, and persistent-player link
-- `music-player.js` - Spotify embed playback and cross-device play prompts
+- `presence.js` - Shared online indicator, editable playlist, and on-page Spotify player
+- `bathroom.html` - Shared bathroom check-ins with each person's profile picture and activity history
 
 ### Live question room and shared music
 
@@ -28,7 +27,7 @@ The real-time features use a small Cloudflare Durable Object Worker alongside th
 2. The root `wrangler.toml` defines the production `QUESTION_ROOM` binding for the `charlotte-question-room` Worker.
 3. Deploy the Pages project with `npx wrangler pages deploy . --project-name charlotte --branch main` so the binding is attached to the Functions.
 
-Each person has a private question queue; the other person can see its count but not its text until both are online and press **I’m ready**. A round starts with three questions from each person, with each author asking and their partner answering. Questions and responses persist in the Durable Object, and saved answers include their answer date and time. The shared music widget stores one Spotify playlist link in the Durable Object and shows that playlist to both accounts. Playback runs in the separate `music.html` tab so browsing or reloading the main site does not close the player. Each phone still needs a local play tap; Spotify may block autoplay on the other device.
+Each person has a private question queue; the other person can see its count but not its text until both are online and press **I’m ready**. A round starts with three questions from each person, with each author asking and their partner answering. Questions and responses persist in the Durable Object, and saved answers include their answer date and time. The shared music widget stores one Spotify playlist link and playback position in the Durable Object; the player attempts to sync play, pause, and position across both browsers. Some phones block remote autoplay and require a local tap. Bathroom check-ins and their recent activity history are also stored in the Durable Object.
 
 ## Gallery photo uploads (Cloudflare Pages)
 

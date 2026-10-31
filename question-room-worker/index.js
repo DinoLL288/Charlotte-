@@ -29,6 +29,10 @@ export class QuestionNightRoom {
       });
     }
 
+    if (request.method === 'GET' && url.searchParams.get('view') === 'bathroom') {
+      return Response.json(await this.getBathroomData(), { headers: { 'cache-control': 'no-store' } });
+    }
+
     if (request.method === 'GET' && url.searchParams.get('view') === 'questions') {
       const requestedSession = url.searchParams.get('sessionDate') || '';
       if (!(await this.getState(requestedSession)).open) return Response.json({ error: 'We both need to be online and ready before our questions open' }, { status: 423 });
@@ -85,11 +89,30 @@ export class QuestionNightRoom {
     return await this.ctx.storage.get('questionData') || { schedule: null, questions: [], sessions: {}, responses: {} };
   }
 
+  async getBathroomData() {
+    return await this.ctx.storage.get('bathroomData') || { status: {}, events: [] };
+  }
+
   async mutateQuestions(request) {
     try {
       const body = await request.json();
       const data = await this.getQuestionData();
-      if (body.action === 'configure') {
+      if (body.action === 'bathroom') {
+        const user = body.user;
+        if (!['Charlotte', 'Luke'].includes(user)) return Response.json({ error: 'Choose our own profile to save a check-in' }, { status: 403 });
+        const bathroom = await this.getBathroomData();
+        const active = Boolean(body.active);
+        const previous = bathroom.status[user] || { active: false };
+        if (Boolean(previous.active) !== active) {
+          const at = new Date().toISOString();
+          bathroom.status[user] = active ? { active: true, startedAt: at } : { active: false, startedAt: null, returnedAt: at };
+          bathroom.events.unshift({ id: crypto.randomUUID(), user, action: active ? 'start' : 'return', at });
+          bathroom.events = bathroom.events.slice(0, 250);
+          await this.ctx.storage.put('bathroomData', bathroom);
+          await this.broadcastBathroom(bathroom);
+        }
+        return Response.json({ ok: true, bathroom });
+      } else if (body.action === 'configure') {
         const day = Number(body.day);
         if (!Number.isInteger(day) || day < 0 || day > 6 || !/^([01]\d|2[0-3]):[0-5]\d$/.test(String(body.openTime || ''))) return Response.json({ error: 'Choose a valid opening day and time' }, { status: 400 });
         data.schedule = { day, time: body.openTime, configuredAt: new Date().toISOString() };
@@ -165,6 +188,7 @@ export class QuestionNightRoom {
         trackId: String(payload.trackId || ''),
         position: Math.max(0, Number(payload.position) || 0),
         paused: Boolean(payload.paused),
+        user: attachment.user,
         updatedAt: Date.now()
       };
       await this.ctx.storage.put('sharedMusic', music);
@@ -186,11 +210,19 @@ export class QuestionNightRoom {
       await this.broadcastSpotifyPlayback({ type: 'spotify-play-request', user: attachment.user });
     }
     if (payload.type === 'spotify-playback') {
+      const music = {
+        trackId: String(payload.track || '').slice(0, 200),
+        position: Math.min(86400, Math.max(0, Number(payload.position) || 0)),
+        paused: !Boolean(payload.playing),
+        user: attachment.user,
+        updatedAt: Date.now()
+      };
+      await this.ctx.storage.put('sharedMusic', music);
       await this.broadcastSpotifyPlayback({
         type: 'spotify-playback',
-        user: attachment.user,
-        playing: Boolean(payload.playing),
-        track: String(payload.track || '').slice(0, 200)
+        ...music,
+        playing: !music.paused,
+        track: music.trackId
       });
     }
     if (payload.type === 'refresh') {
@@ -221,7 +253,7 @@ export class QuestionNightRoom {
     const ready = await this.ctx.storage.get(`ready:${sessionDate}`) || {};
     const bothOnline = online.has('Charlotte') && online.has('Luke');
     const open = bothOnline && ready.Charlotte === true && ready.Luke === true;
-    const music = await this.ctx.storage.get('sharedMusic') || { trackId: '', position: 0, paused: true, updatedAt: Date.now() };
+    const music = await this.ctx.storage.get('sharedMusic') || { trackId: '', position: 0, paused: true, user: '', updatedAt: Date.now() };
     const spotifyPlaylist = await this.ctx.storage.get('spotifyPlaylist') || DEFAULT_SPOTIFY_PLAYLIST;
     return { type: 'state', sessionDate, online: [...online], ready, open, music, spotifyPlaylist };
   }
@@ -253,6 +285,13 @@ export class QuestionNightRoom {
 
   async broadcastSpotifyPlayback(state) {
     const message = JSON.stringify(state);
+    for (const socket of this.ctx.getWebSockets()) {
+      try { socket.send(message); } catch { /* closed socket */ }
+    }
+  }
+
+  async broadcastBathroom(bathroom) {
+    const message = JSON.stringify({ type: 'bathroom', bathroom });
     for (const socket of this.ctx.getWebSockets()) {
       try { socket.send(message); } catch { /* closed socket */ }
     }
