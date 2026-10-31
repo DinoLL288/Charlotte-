@@ -15,12 +15,7 @@
   <header class="hero"><p class="eyebrow">Just us, here together</p><h1>Question night</h1><p>Our questions stay tucked away until we’re both here and ready.</p></header>
   <main class="shell">
     <section class="panel">
-      <h2>Set our usual time</h2><p class="intro">Choose a weekday and time for our question night. It marks when a new set becomes available; it never opens the questions by itself.</p>
-      <form class="composer" id="scheduleForm"><label for="openDay">Every</label><select id="openDay"><option value="0">Sunday</option><option value="1">Monday</option><option value="2">Tuesday</option><option value="3">Wednesday</option><option value="4">Thursday</option><option value="5">Friday</option><option value="6">Saturday</option></select><label for="openTime">At</label><input id="openTime" type="time" value="19:00" required><button class="button" type="submit">Save the time</button></form>
-      <p class="status" id="scheduleStatus" role="status"></p>
-    </section>
-    <section class="panel">
-      <h2>We open these together</h2><p class="intro">We both need this page open at the same time, then we each tap ready. Our questions appear only when we’re both online and ready.</p>
+      <h2>We open these together</h2><p class="intro">We can start whenever we want. We both need this page open at the same time, then we each tap ready. Our questions appear only when we’re both online and ready.</p>
       <div class="presence"><div class="person" id="presence-charlotte"><strong>Charlotte</strong><span>Checking…</span></div><div class="person" id="presence-luke"><strong>Luke</strong><span>Checking…</span></div></div>
       <div class="presence-note" id="roomMessage">Connecting to our shared room…</div>
       <div class="actions"><button class="button" id="readyButton" type="button" disabled>I’m ready</button><span class="status" id="connectionStatus" role="status"></span></div>
@@ -43,18 +38,10 @@
   <script>
     const user = localStorage.getItem('charlotte-user') || 'Unknown';
     const data = { questionCounts: { Charlotte: 0, Luke: 0 }, questionItems: [], questionSessions: {}, questionResponses: {}, historySessions: {}, historyResponses: {} };
-    let schedule = null, roomState = { online: [], ready: {}, open: false }, socket = null, socketKey = '', reconnectTimer = null, pingTimer = null, currentQuestions = [], loading = false;
+    let roomState = { online: [], ready: {}, open: false }, socket = null, socketKey = '', reconnectTimer = null, pingTimer = null, currentQuestions = [], loading = false;
     const enc = value => { const el=document.createElement('span');el.textContent=value||'';return el.innerHTML; };
-    const days = ['Sunday','Monday','Tuesday','Wednesday','Thursday','Friday','Saturday'];
     function dateKey(d){return d.getFullYear()+'-'+String(d.getMonth()+1).padStart(2,'0')+'-'+String(d.getDate()).padStart(2,'0');}
-    function scheduledSession(){
-      if(!schedule||!schedule.configuredAt)return null;
-      const now=new Date(),delta=(now.getDay()-schedule.day+7)%7,point=new Date(now),[h,m]=schedule.time.split(':').map(Number);
-      point.setHours(h,m,0,0);point.setDate(point.getDate()-delta);if(point>now)point.setDate(point.getDate()-7);
-      return point.toISOString()>=schedule.configuredAt?dateKey(point):null;
-    }
-    function roomKey(){return scheduledSession()||dateKey(new Date());}
-    function nextOpening(){if(!schedule)return null;const n=new Date(),[h,m]=schedule.time.split(':').map(Number);n.setHours(h,m,0,0);n.setDate(n.getDate()+((schedule.day-n.getDay()+7)%7));if(n<=new Date())n.setDate(n.getDate()+7);return n;}
+    function roomKey(){return dateKey(new Date());}
     function showStatus(id,text){document.getElementById(id).textContent=text;}
     function answerText(answer){return typeof answer==='string'?answer:(answer?.text||'');}
     function answerDate(answer){if(typeof answer!=='object'||!answer?.answeredAt)return '';const date=new Date(answer.answeredAt);return Number.isNaN(date.getTime())?'':date.toLocaleString([], {dateStyle:'medium',timeStyle:'short'});}
@@ -69,10 +56,8 @@
     }
     async function loadMeta(){
       const res=await fetch('/api/question-room?view=meta&user='+encodeURIComponent(user));const json=await res.json();if(!res.ok)throw new Error(json.error||'Could not load question settings');
-      schedule=json.questionSchedule;data.questionCounts=json.questionCounts||{Charlotte:0,Luke:0};data.questionItems=json.questionItems||[];data.questionSessions=json.questionSessions||{};
-      if(schedule){document.getElementById('openDay').value=String(schedule.day);document.getElementById('openTime').value=schedule.time;}
+      data.questionCounts=json.questionCounts||{Charlotte:0,Luke:0};data.questionItems=json.questionItems||[];data.questionSessions=json.questionSessions||{};
       renderCounts();renderBank();connectRoom();
-      showStatus('scheduleStatus',schedule?`Our usual time is ${days[schedule.day]} at ${new Date('2000-01-02T'+schedule.time).toLocaleTimeString([], {hour:'numeric',minute:'2-digit'})}.`:'Set a day and time for our question ritual.');
     }
     async function loadHistory(){const res=await fetch('/api/question-room?view=history');const json=await res.json();if(!res.ok)throw new Error(json.error||'Could not load saved answers');data.historySessions=json.questionSessions||{};data.historyResponses=json.questionResponses||{};renderHistory();}
     function connectRoom(force=false){
@@ -89,18 +74,16 @@
     }
     function renderRoom(){
       for(const name of ['Charlotte','Luke']){const box=document.getElementById('presence-'+name.toLowerCase()),online=roomState.online.includes(name);box.classList.toggle('is-online',online);box.querySelector('span').textContent=online?'Online':'Offline';}
-      const session=scheduledSession(),online=roomState.online.length;
+      const online=roomState.online.length;
       const note=document.getElementById('roomMessage');note.classList.toggle('is-open',Boolean(roomState.open));
       if(roomState.open)note.textContent='We’re both here and ready. Our questions are open together.';
-      else if(!schedule)note.textContent='Set our usual day and time above. The room will still wait for us both to be ready.';
-      else if(!session)note.textContent=`The next question night is ${nextOpening().toLocaleString([], {weekday:'long',hour:'numeric',minute:'2-digit'})}. Being online won’t open the questions early.`;
       else if(online<2)note.textContent='Waiting for both of us to be online in this room.';
       else note.textContent=`We’re both here. ${roomState.ready.Charlotte?'Charlotte is ready. ':'Charlotte still needs to tap ready. '}${roomState.ready.Luke?'Luke is ready.':'Luke still needs to tap ready.'}`;
-      const btn=document.getElementById('readyButton'),myReady=Boolean(roomState.ready[user]);btn.disabled=!session||!roomState.online.includes(user)||!socket||socket.readyState!==1;btn.textContent=myReady?'I’m ready ✓':'I’m ready to begin';
+      const btn=document.getElementById('readyButton'),myReady=Boolean(roomState.ready[user]);btn.disabled=!roomState.online.includes(user)||!socket||socket.readyState!==1;btn.textContent=myReady?'I’m ready ✓':'I’m ready to begin';
       if(roomState.open)document.getElementById('sessionPanel').hidden=false;
     }
     async function loadQuestions(){
-      if(!roomState.open||loading)return;const session=scheduledSession();if(!session)return;loading=true;
+      if(!roomState.open||loading)return;const session=roomKey();loading=true;
       try{const res=await fetch('/api/question-room?view=questions&sessionDate='+encodeURIComponent(session));const json=await res.json();if(!res.ok)throw new Error(json.error||'Our questions are still locked');currentQuestions=json.questions||[];data.questionSessions=json.questionSessions||{};data.questionResponses=json.questionResponses||{};renderQuestions(session);}
       catch(e){showStatus('connectionStatus',e.message);}finally{loading=false;}
     }
@@ -136,12 +119,11 @@
     }
     async function postRoom(payload){const res=await fetch('/api/question-room',{method:'POST',headers:{'content-type':'application/json'},body:JSON.stringify(payload)});const json=await res.json();if(!res.ok)throw new Error(json.error||'Could not save');return json;}
     async function refreshAfterMutation(){await loadMeta();await loadHistory();if(roomState.open)await loadQuestions();if(socket&&socket.readyState===1)socket.send(JSON.stringify({type:'refresh'}));}
-    document.getElementById('scheduleForm').addEventListener('submit',async e=>{e.preventDefault();const day=Number(document.getElementById('openDay').value),time=document.getElementById('openTime').value;try{await postRoom({action:'configure',day,openTime:time});showStatus('scheduleStatus','Our usual time is saved. We’ll both still need to be online and ready.');await loadMeta();connectRoom(true);currentRoomKey=roomKey();}catch(error){showStatus('scheduleStatus',error.message);}});
     document.getElementById('questionForm').addEventListener('submit',async e=>{e.preventDefault();try{await postRoom({action:'add',question:new FormData(e.target).get('body'),author:user});e.target.reset();await refreshAfterMutation();showStatus('bankCount','My question is saved privately until we’re both ready.');}catch(error){showStatus('bankCount',error.message);}});
     document.getElementById('readyButton').addEventListener('click',()=>{if(socket&&socket.readyState===1)socket.send(JSON.stringify({type:'ready',ready:!roomState.ready[user]}));});
-    document.getElementById('drawButton').addEventListener('click',async()=>{try{await postRoom({action:'draw',sessionDate:scheduledSession()});await loadQuestions();if(socket&&socket.readyState===1)socket.send(JSON.stringify({type:'refresh'}));}catch(error){showStatus('connectionStatus',error.message);}});
-    document.getElementById('drawMoreButton').addEventListener('click',async()=>{try{await postRoom({action:'draw',sessionDate:scheduledSession()});await loadQuestions();if(socket&&socket.readyState===1)socket.send(JSON.stringify({type:'refresh'}));}catch(error){showStatus('connectionStatus',error.message);}});
-    document.addEventListener('submit',async e=>{const form=e.target.closest('.answer-form');if(!form)return;e.preventDefault();try{await postRoom({action:'answer',sessionDate:scheduledSession(),questionId:form.dataset.id,author:user,response:new FormData(form).get('response')});await loadQuestions();await loadHistory();if(socket&&socket.readyState===1)socket.send(JSON.stringify({type:'refresh'}));}catch(error){showStatus('connectionStatus',error.message);}});
+    document.getElementById('drawButton').addEventListener('click',async()=>{try{await postRoom({action:'draw',sessionDate:roomKey()});await loadQuestions();if(socket&&socket.readyState===1)socket.send(JSON.stringify({type:'refresh'}));}catch(error){showStatus('connectionStatus',error.message);}});
+    document.getElementById('drawMoreButton').addEventListener('click',async()=>{try{await postRoom({action:'draw',sessionDate:roomKey()});await loadQuestions();if(socket&&socket.readyState===1)socket.send(JSON.stringify({type:'refresh'}));}catch(error){showStatus('connectionStatus',error.message);}});
+    document.addEventListener('submit',async e=>{const form=e.target.closest('.answer-form');if(!form)return;e.preventDefault();try{await postRoom({action:'answer',sessionDate:roomKey(),questionId:form.dataset.id,author:user,response:new FormData(form).get('response')});await loadQuestions();await loadHistory();if(socket&&socket.readyState===1)socket.send(JSON.stringify({type:'refresh'}));}catch(error){showStatus('connectionStatus',error.message);}});
     document.addEventListener('click',async e=>{const button=e.target.closest('[data-remove-question]');if(!button)return;if(!await siteDialog.confirm('Remove this question from my saved list?',{title:'Remove question'}))return;try{await postRoom({action:'delete',id:button.dataset.removeQuestion,author:user});await refreshAfterMutation();}catch(error){showStatus('bankCount',error.message);}});
     let currentRoomKey='';setInterval(()=>{const key=roomKey();if(key!==currentRoomKey){currentRoomKey=key;connectRoom();}else if(roomState.open)loadQuestions();renderRoom();},15000);
     loadMeta().then(()=>{currentRoomKey=roomKey();return loadHistory();}).catch(error=>{showStatus('connectionStatus',error.message);});
