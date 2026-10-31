@@ -23,7 +23,7 @@
       color: #10344f;
     }
 
-    .hidden { display: none; }
+    .hidden { display: none !important; }
 
     .screen {
       position: relative;
@@ -182,7 +182,7 @@
       text-shadow: 0 1px 8px rgba(3, 15, 26, 0.6);
     }
 
-    /* ---------- The memory ---------- */
+    /* ---------- One more thing: a reel from our gallery ---------- */
 
     .memory { padding-top: 96px; }
 
@@ -195,37 +195,84 @@
       text-shadow: none;
     }
 
-    .photo-frame {
-      width: min(88vw, 620px);
-      margin-top: 18px;
-      padding: 12px;
+    .memory-sub {
+      margin: 0;
+      color: #4a7291;
+      font-size: 0.95rem;
+    }
+
+    .reel {
+      position: relative;
+      width: min(88vw, 720px);
+      margin-top: 20px;
+      aspect-ratio: 4 / 3;
+      max-height: 62vh;
       border-radius: 26px;
-      background: rgba(255, 255, 255, 0.82);
-      border: 1px solid rgba(255, 255, 255, 0.95);
-      box-shadow: 0 26px 60px rgba(20, 63, 95, 0.28);
+      overflow: hidden;
+      background: linear-gradient(145deg, #16405f, #2a78a8 62%, #7fc2e6);
+      border: 1px solid rgba(255, 255, 255, 0.9);
+      box-shadow: 0 26px 60px rgba(20, 63, 95, 0.3);
+    }
+
+    .reel.is-empty { display: none; }
+
+    .reel img {
+      display: block;
+      width: 100%;
+      height: 100%;
+      object-fit: cover;
+      background: #d9f1ff;
+    }
+
+    .reel img.reel-fade { animation: reelFade 0.55s ease; }
+
+    @keyframes reelFade {
+      from { opacity: 0; transform: scale(1.03); }
+      to { opacity: 1; transform: scale(1); }
+    }
+
+    .reel-count {
+      position: absolute;
+      right: 14px;
+      bottom: 14px;
+      padding: 6px 12px;
+      border-radius: 999px;
+      background: rgba(7, 28, 45, 0.68);
+      border: 1px solid rgba(236, 215, 160, 0.35);
+      color: #f4e6c3;
+      font-size: 0.72rem;
+      font-weight: 700;
+      letter-spacing: 0.1em;
       -webkit-backdrop-filter: blur(8px);
       backdrop-filter: blur(8px);
     }
 
-    .photo-frame img {
-      display: block;
-      width: 100%;
-      max-height: 62vh;
-      min-height: 240px;
-      object-fit: cover;
-      border-radius: 18px;
-      background: #d9f1ff;
-    }
-
-    #photoFallback { color: #245b85; }
-
     .photo-caption {
-      margin: 20px 0 0;
+      margin: 18px 0 0;
       color: #1c5275;
       font-family: var(--display);
       font-size: clamp(1.25rem, 4vw, 1.8rem);
       font-style: italic;
+      min-height: 1.3em;
     }
+
+    .reel-empty {
+      margin: 18px 0 0;
+      max-width: 42ch;
+      color: #3f637e;
+      line-height: 1.6;
+    }
+
+    .reel-actions {
+      display: flex;
+      flex-wrap: wrap;
+      justify-content: center;
+      gap: 10px;
+      margin-top: 20px;
+    }
+
+    .reel-actions .button { margin-top: 0; }
+    .reel-actions .button[hidden] { display: none; }
 
     .top-bar {
       position: absolute;
@@ -265,17 +312,18 @@
 
     <section class="screen memory hidden" id="memory">
       <p class="eyebrow">One more thing</p>
-      <h1>A little memory</h1>
-      <div class="photo-frame">
-        <img id="memoryPhoto" src="holding-hands.jpg" alt="A favourite memory together"
-          onerror="this.onerror=null; this.style.display='none'; document.getElementById('photoFallback').style.display='block';">
-        <div id="photoFallback" style="display:none; padding:45px 12px;">
-          <strong>Your photo goes here</strong>
-          <p>Put the photo in the same folder as index.html and name it <code>holding-hands.jpg</code>.</p>
-        </div>
+      <h1>A few more of us</h1>
+      <p class="memory-sub">Pulled from our gallery, just for you.</p>
+      <div class="reel" id="reelWrap">
+        <img id="reelPhoto" alt="A photo of us from the gallery">
+        <span class="reel-count" id="reelCount"></span>
       </div>
-      <p class="photo-caption">Thanks for being you.</p>
-      <button class="button back-button" id="backButton" type="button">Back to the heart</button>
+      <p class="photo-caption" id="reelCaption">Finding a memory…</p>
+      <p class="reel-empty" id="reelEmpty" hidden>No photos in the gallery yet. Add a few and they'll show up here.</p>
+      <div class="reel-actions">
+        <button class="button" id="nextMemory" type="button">Another one →</button>
+        <button class="button back-button" id="backButton" type="button">Back to the heart</button>
+      </div>
     </section>
   </main>
 
@@ -304,17 +352,105 @@
 
     const opening = document.getElementById("opening");
     const memory = document.getElementById("memory");
+    const reelWrap = document.getElementById("reelWrap");
+    const reelPhoto = document.getElementById("reelPhoto");
+    const reelCount = document.getElementById("reelCount");
+    const reelCaption = document.getElementById("reelCaption");
+    const reelEmpty = document.getElementById("reelEmpty");
+    const nextMemory = document.getElementById("nextMemory");
+
+    let reelPhotos = [];
+    let reelIndex = 0;
+    let reelLoaded = false;
+
+    function showReelPhoto() {
+      if (!reelPhotos.length) return;
+      const photo = reelPhotos[reelIndex];
+
+      reelPhoto.src = photo.url;
+      reelPhoto.alt = photo.uploadedBy
+        ? "A photo of us, added by " + photo.uploadedBy
+        : "A photo of us from the gallery";
+      reelCount.textContent = (reelIndex + 1) + " / " + reelPhotos.length;
+      reelCaption.textContent = "A little more us.";
+
+      reelPhoto.classList.remove("reel-fade");
+      void reelPhoto.offsetWidth;
+      reelPhoto.classList.add("reel-fade");
+
+      // Preload the next one so "Another one" feels instant.
+      if (reelPhotos.length > 1) {
+        const preload = new Image();
+        preload.src = reelPhotos[(reelIndex + 1) % reelPhotos.length].url;
+      }
+    }
+
+    async function loadReel() {
+      if (reelLoaded) return;
+      reelLoaded = true;
+
+      try {
+        const foldersRes = await fetch('/api/gallery');
+        const foldersJson = await foldersRes.json();
+        const folders = Array.isArray(foldersJson.folders) ? foldersJson.folders : [];
+
+        const realFolders = folders
+          .filter(folder => folder && folder !== 'All Photos')
+          .map(folder => folder === 'Old Photos' ? 'root' : folder);
+
+        const lists = await Promise.all(realFolders.map(async folder => {
+          try {
+            const res = await fetch('/api/gallery?folder=' + encodeURIComponent(folder));
+            const json = await res.json();
+            return Array.isArray(json.photos) ? json.photos : [];
+          } catch (e) {
+            return [];
+          }
+        }));
+
+        const imagePattern = /\.(jpe?g|png|gif|webp|avif)$/i;
+        const seen = new Set();
+        reelPhotos = lists.flat().filter(photo => {
+          if (!photo || !photo.url || seen.has(photo.url)) return false;
+          if (!imagePattern.test(photo.name || photo.url)) return false;
+          seen.add(photo.url);
+          return true;
+        });
+
+        if (!reelPhotos.length) {
+          throw new Error('empty');
+        }
+
+        reelWrap.classList.remove('is-empty');
+        reelEmpty.hidden = true;
+        nextMemory.hidden = reelPhotos.length < 2;
+        reelIndex = Math.floor(Math.random() * reelPhotos.length);
+        showReelPhoto();
+      } catch (e) {
+        reelWrap.classList.add('is-empty');
+        reelCaption.textContent = '';
+        reelEmpty.hidden = false;
+        nextMemory.hidden = true;
+      }
+    }
 
     document.getElementById("revealButton").addEventListener("click", () => {
       opening.classList.add("hidden");
       memory.classList.remove("hidden");
       window.scrollTo({ top: 0, behavior: "smooth" });
+      loadReel();
     });
 
     document.getElementById("backButton").addEventListener("click", () => {
       memory.classList.add("hidden");
       opening.classList.remove("hidden");
       window.scrollTo({ top: 0, behavior: "smooth" });
+    });
+
+    nextMemory.addEventListener("click", () => {
+      if (reelPhotos.length < 2) return;
+      reelIndex = (reelIndex + 1) % reelPhotos.length;
+      showReelPhoto();
     });
   </script>
   <script src="together.js"></script>
