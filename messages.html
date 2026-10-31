@@ -114,6 +114,7 @@
     const notesList = document.getElementById('notesList');
     let notes = [];
     let currentSha = null;
+    const currentUser = localStorage.getItem('charlotte-user') || 'Unknown';
 
     function render() {
       notesList.innerHTML = '';
@@ -122,11 +123,17 @@
         el.className = 'note';
         el.innerHTML = `
           <div class="note-header">
-            <div class="note-title">${escapeHtml(note.title || 'Untitled')}</div>
-            <div class="note-date">${note.date}</div>
+            <div>
+              <div class="note-title">${escapeHtml(note.title || 'Untitled')}</div>
+              <div style="color:#3b7db3; font-size:0.9rem;">By ${escapeHtml(note.author || 'Unknown')} • ${note.date}</div>
+            </div>
+            ${note.author === currentUser ? `<button class="button" style="padding:8px 16px; font-size:0.9rem;" data-id="${note.id}">Delete</button>` : ''}
           </div>
           <p class="note-body">${escapeHtml(note.body)}</p>
         `;
+        if (note.author === currentUser) {
+          el.querySelector('button').addEventListener('click', () => deleteNote(note));
+        }
         notesList.appendChild(el);
       });
     }
@@ -150,14 +157,34 @@
       }
     }
 
+    async function deleteNote(note) {
+      if (!confirm('Delete this note?')) return;
+      try {
+        const res = await fetch('/api/notes', {
+          method: 'POST',
+          headers: { 'content-type': 'application/json' },
+          body: JSON.stringify({ action: 'delete', id: note.id, author: note.author, currentUser, sha: currentSha })
+        });
+        const json = await res.json();
+        if (!res.ok) throw new Error(json.error || 'Failed to delete');
+        currentSha = json.sha || currentSha;
+        notes = notes.filter(n => n.id !== note.id);
+        render();
+      } catch (e) {
+        alert(e.message);
+      }
+    }
+
     addNote.addEventListener('click', async () => {
       const title = noteTitle.value.trim();
       const body = noteBody.value.trim();
       if (!body) return;
       const note = {
+        id: Date.now().toString() + '-' + Math.random().toString(36).slice(2),
         title,
         body,
-        date: new Date().toLocaleString()
+        date: new Date().toLocaleString(),
+        author: currentUser
       };
       addNote.disabled = true;
       try {

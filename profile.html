@@ -1,0 +1,100 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Profile</title>
+  <style>
+    :root { --sky: #a4deff; --deep-blue: #245b85; }
+    * { box-sizing: border-box; }
+    body {
+      margin: 0;
+      min-height: 100vh;
+      font-family: "Trebuchet MS", Arial, sans-serif;
+      background: linear-gradient(145deg, #c8edff, var(--sky) 55%, #8ccfff);
+      color: var(--deep-blue);
+      display: grid;
+      place-items: center;
+    }
+    .card {
+      width: min(420px, 92vw);
+      background: #ffffffee;
+      border-radius: 18px;
+      box-shadow: 0 12px 30px #347eac30;
+      padding: 26px;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 14px;
+      text-align: center;
+    }
+    .avatar {
+      width: 120px;
+      height: 120px;
+      border-radius: 50%;
+      object-fit: cover;
+      background: #e8f6ff;
+      box-shadow: 0 10px 24px #347eac25;
+    }
+    .button {
+      border: 0;
+      border-radius: 999px;
+      padding: 12px 22px;
+      background: white;
+      color: #2873a6;
+      font-size: 0.98rem;
+      font-weight: 700;
+      text-decoration: none;
+      box-shadow: 0 7px 20px #347eac35;
+      cursor: pointer;
+    }
+    .top-bar { position: absolute; top: 16px; left: 16px; }
+  </style>
+</head>
+<body>
+  <div class="top-bar">
+    <a class="button" href="index.html">← Back to hub</a>
+  </div>
+  <div class="card">
+    <h1 id="username">Profile</h1>
+    <img id="avatar" class="avatar" src="https://ui-avatars.com/api/?name=User&background=e8f6ff&color=2873a6&size=256" alt="Profile picture">
+    <input type="file" id="avatarInput" accept="image/*">
+    <button class="button" id="saveAvatar">Save profile picture</button>
+    <button class="button" id="logout">Logout</button>
+  </div>
+
+  <script>
+    if (!localStorage.getItem('charlotte-user')) {
+      window.location.href = 'login.html';
+    }
+    const user = localStorage.getItem('charlotte-user');
+    document.getElementById('username').textContent = user;
+    const avatar = document.getElementById('avatar');
+    const avatarInput = document.getElementById('avatarInput');
+    const saveAvatar = document.getElementById('saveAvatar');
+    
+    const saved = localStorage.getItem('charlotte-avatar-' + user);
+    if (saved) avatar.src = saved;
+    
+    avatarInput.addEventListener('change', (e) => {
+      const file = e.target.files?.[0];
+      if (!file) return;
+      const reader = new FileReader();
+      reader.onload = () => {
+        avatar.src = reader.result;
+      };
+      reader.readAsDataURL(file);
+    });
+    
+    saveAvatar.addEventListener('click', () => {
+      localStorage.setItem('charlotte-avatar-' + user, avatar.src);
+      alert('Profile picture saved!');
+    });
+    
+    document.getElementById('logout').addEventListener('click', () => {
+      localStorage.removeItem('charlotte-user');
+      window.location.href = 'login.html';
+    });
+  </script>
+</body>
+</html>
