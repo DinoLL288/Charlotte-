@@ -1,0 +1,241 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Calendar</title>
+  <style>
+    :root { --sky: #a4deff; --deep-blue: #245b85; }
+    * { box-sizing: border-box; }
+    body {
+      margin: 0;
+      min-height: 100vh;
+      font-family: "Trebuchet MS", Arial, sans-serif;
+      background: linear-gradient(145deg, #c8edff, var(--sky) 55%, #8ccfff);
+      color: var(--deep-blue);
+    }
+    .screen {
+      width: min(1100px, 100%);
+      min-height: 100vh;
+      margin: 0 auto;
+      padding: 80px 18px 40px;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 18px;
+    }
+    h1 { margin: 0; color: #fff; font-size: clamp(2rem, 6vw, 3.6rem); text-shadow: 0 3px 14px #428ec080; }
+    .subtitle { margin: 0; color: #fff; font-size: clamp(1rem, 3vw, 1.2rem); text-shadow: 0 2px 8px #428ec080; }
+    .top-bar { position: fixed; top: 16px; left: 16px; z-index: 5; }
+    .button {
+      border: 0;
+      border-radius: 999px;
+      padding: 12px 22px;
+      background: white;
+      color: #2873a6;
+      font-size: 0.98rem;
+      font-weight: 700;
+      text-decoration: none;
+      box-shadow: 0 7px 20px #347eac35;
+      cursor: pointer;
+    }
+    .calendar-header {
+      display: flex;
+      align-items: center;
+      gap: 16px;
+      color: #fff;
+      text-shadow: 0 2px 8px #428ec080;
+    }
+    .calendar-header h2 { margin: 0; font-size: clamp(1.4rem, 4vw, 2rem); }
+    .calendar-grid {
+      width: min(980px, 94vw);
+      display: grid;
+      grid-template-columns: repeat(7, 1fr);
+      gap: 10px;
+    }
+    .weekday {
+      text-align: center;
+      color: #fff;
+      font-weight: 700;
+      text-shadow: 0 1px 6px #428ec080;
+      padding: 6px 0;
+    }
+    .day {
+      background: #ffffffee;
+      border-radius: 14px;
+      box-shadow: 0 10px 24px #347eac25;
+      min-height: 110px;
+      padding: 10px;
+      display: flex;
+      flex-direction: column;
+      gap: 8px;
+    }
+    .day.muted { opacity: 0.5; }
+    .day-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+    }
+    .day-number { font-weight: 700; color: #2873a6; }
+    .add-btn {
+      border: 0;
+      background: transparent;
+      color: #3b7db3;
+      font-weight: 700;
+      cursor: pointer;
+    }
+    .event {
+      background: #e8f6ff;
+      border-radius: 10px;
+      padding: 6px 8px;
+      font-size: 0.9rem;
+      text-align: left;
+    }
+    .modal {
+      position: fixed;
+      inset: 0;
+      background: #245b8526;
+      display: none;
+      align-items: center;
+      justify-content: center;
+      padding: 16px;
+    }
+    .modal.active { display: flex; }
+    .modal-card {
+      width: min(420px, 92vw);
+      background: #ffffffee;
+      border-radius: 16px;
+      box-shadow: 0 18px 40px #347eac40;
+      padding: 18px;
+      display: flex;
+      flex-direction: column;
+      gap: 12px;
+    }
+    .modal-card input, .modal-card textarea {
+      width: 100%;
+      border-radius: 10px;
+      border: 1px solid #b9dcf5;
+      padding: 10px 12px;
+      font-family: inherit;
+      font-size: 0.98rem;
+    }
+    .modal-actions {
+      display: flex;
+      gap: 10px;
+      justify-content: flex-end;
+    }
+  </style>
+</head>
+<body>
+  <div class="top-bar">
+    <a class="button" href="index.html">← Back to hub</a>
+  </div>
+  <main class="screen">
+    <h1>Calendar</h1>
+    <p class="subtitle">Events & dates</p>
+    <div class="calendar-header">
+      <button class="button" id="prevMonth">←</button>
+      <h2 id="monthLabel"></h2>
+      <button class="button" id="nextMonth">→</button>
+    </div>
+    <div class="calendar-grid" id="weekdayRow"></div>
+    <div class="calendar-grid" id="daysGrid"></div>
+  </main>
+
+  <div class="modal" id="eventModal">
+    <div class="modal-card">
+      <h3 style="margin:0; color:#2873a6;">Add event</h3>
+      <input id="eventTitle" placeholder="Title">
+      <textarea id="eventTime" rows="2" placeholder="Time / details"></textarea>
+      <div class="modal-actions">
+        <button class="button" id="cancelEvent">Cancel</button>
+        <button class="button" id="saveEvent">Save</button>
+      </div>
+    </div>
+  </div>
+
+  <script>
+    const weekdays = ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'];
+    const monthLabel = document.getElementById('monthLabel');
+    const weekdayRow = document.getElementById('weekdayRow');
+    const daysGrid = document.getElementById('daysGrid');
+    const prevMonth = document.getElementById('prevMonth');
+    const nextMonth = document.getElementById('nextMonth');
+    const modal = document.getElementById('eventModal');
+    const eventTitle = document.getElementById('eventTitle');
+    const eventTime = document.getElementById('eventTime');
+    const cancelEvent = document.getElementById('cancelEvent');
+    const saveEvent = document.getElementById('saveEvent');
+
+    let current = new Date();
+    let selectedDate = null;
+    const storageKey = 'charlotte-calendar-v1';
+    const events = JSON.parse(localStorage.getItem(storageKey) || '{}');
+
+    weekdays.forEach(w => {
+      const el = document.createElement('div');
+      el.className = 'weekday';
+      el.textContent = w;
+      weekdayRow.appendChild(el);
+    });
+
+    function render() {
+      daysGrid.innerHTML = '';
+      const year = current.getFullYear();
+      const month = current.getMonth();
+      monthLabel.textContent = current.toLocaleDateString(undefined, { month: 'long', year: 'numeric' });
+      const first = new Date(year, month, 1);
+      const last = new Date(year, month + 1, 0);
+      const startDay = first.getDay();
+      const totalDays = last.getDate();
+
+      for (let i = 0; i < startDay; i++) {
+        const pad = new Date(year, month, -(startDay - 1 - i));
+        const el = document.createElement('div');
+        el.className = 'day muted';
+        el.innerHTML = `<div class="day-header"><span class="day-number">${pad.getDate()}</span></div>`;
+        daysGrid.appendChild(el);
+      }
+
+      for (let d = 1; d <= totalDays; d++) {
+        const dateKey = `${year}-${String(month + 1).padStart(2, '0')}-${String(d).padStart(2, '0')}`;
+        const el = document.createElement('div');
+        el.className = 'day';
+        el.innerHTML = `<div class="day-header"><span class="day-number">${d}</span><button class="add-btn">+</button></div>`;
+        el.querySelector('.add-btn').addEventListener('click', () => openModal(dateKey));
+        (events[dateKey] || []).forEach(ev => {
+          const evEl = document.createElement('div');
+          evEl.className = 'event';
+          evEl.innerHTML = `<strong>${ev.title}</strong>${ev.time ? '<br>' + ev.time : ''}`;
+          el.appendChild(evEl);
+        });
+        daysGrid.appendChild(el);
+      }
+    }
+
+    function openModal(key) {
+      selectedDate = key;
+      eventTitle.value = '';
+      eventTime.value = '';
+      modal.classList.add('active');
+    }
+
+    cancelEvent.addEventListener('click', () => modal.classList.remove('active'));
+    saveEvent.addEventListener('click', () => {
+      if (!selectedDate) return;
+      const title = eventTitle.value.trim();
+      if (!title) return;
+      if (!events[selectedDate]) events[selectedDate] = [];
+      events[selectedDate].push({ title, time: eventTime.value.trim() });
+      localStorage.setItem(storageKey, JSON.stringify(events));
+      modal.classList.remove('active');
+      render();
+    });
+
+    prevMonth.addEventListener('click', () => { current.setMonth(current.getMonth() - 1); render(); });
+    nextMonth.addEventListener('click', () => { current.setMonth(current.getMonth() + 1); render(); });
+
+    render();
+  </script>
+</body>
+</html>

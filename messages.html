@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Messages</title>
+  <title>Notes</title>
   <style>
     :root { --sky: #a4deff; --deep-blue: #245b85; }
     * { box-sizing: border-box; }
@@ -13,35 +13,42 @@
       font-family: "Trebuchet MS", Arial, sans-serif;
       background: linear-gradient(145deg, #c8edff, var(--sky) 55%, #8ccfff);
       color: var(--deep-blue);
-      display: grid;
-      place-items: center;
     }
     .screen {
       width: min(900px, 100%);
       min-height: 100vh;
-      padding: 28px 18px;
+      margin: 0 auto;
+      padding: 80px 18px 40px;
       display: flex;
       flex-direction: column;
       align-items: center;
-      justify-content: center;
       text-align: center;
-      gap: 14px;
+      gap: 16px;
     }
     h1 { margin: 0; color: #fff; font-size: clamp(2rem, 6vw, 3.6rem); text-shadow: 0 3px 14px #428ec080; }
     .subtitle { margin: 0; color: #fff; font-size: clamp(1rem, 3vw, 1.2rem); text-shadow: 0 2px 8px #428ec080; }
-    .card {
+    .composer {
       width: min(720px, 92vw);
       background: #ffffffee;
       border-radius: 18px;
       box-shadow: 0 12px 30px #347eac30;
-      padding: clamp(18px, 4vw, 28px);
-      text-align: left;
+      padding: clamp(16px, 4vw, 24px);
       display: flex;
       flex-direction: column;
       gap: 12px;
+      text-align: left;
     }
-    .card p { margin: 0; font-size: clamp(1rem, 2.6vw, 1.08rem); line-height: 1.7; }
+    .composer input, .composer textarea {
+      width: 100%;
+      border-radius: 12px;
+      border: 1px solid #b9dcf5;
+      padding: 12px 14px;
+      font-family: inherit;
+      font-size: 1rem;
+    }
+    .composer textarea { min-height: 120px; resize: vertical; }
     .button {
+      align-self: flex-start;
       border: 0;
       border-radius: 999px;
       padding: 12px 22px;
@@ -51,8 +58,33 @@
       font-weight: 700;
       text-decoration: none;
       box-shadow: 0 7px 20px #347eac35;
+      cursor: pointer;
     }
-    .top-bar { position: absolute; top: 16px; left: 16px; }
+    .notes {
+      width: min(720px, 92vw);
+      display: flex;
+      flex-direction: column;
+      gap: 12px;
+    }
+    .note {
+      background: #ffffffee;
+      border-radius: 16px;
+      box-shadow: 0 12px 30px #347eac30;
+      padding: 18px 20px;
+      text-align: left;
+      display: flex;
+      flex-direction: column;
+      gap: 8px;
+    }
+    .note-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: baseline;
+    }
+    .note-title { font-weight: 800; color: #2873a6; font-size: 1.1rem; }
+    .note-date { color: #3b7db3; font-size: 0.9rem; }
+    .note-body { margin: 0; line-height: 1.7; white-space: pre-wrap; }
+    .top-bar { position: fixed; top: 16px; left: 16px; z-index: 5; }
   </style>
 </head>
 <body>
@@ -60,11 +92,63 @@
     <a class="button" href="index.html">← Back to hub</a>
   </div>
   <main class="screen">
-    <h1>Messages</h1>
-    <p class="subtitle">Little notes for you</p>
-    <div class="card">
-      <p>More messages coming soon. Add your own notes here whenever you want!</p>
-    </div>
+    <h1>Notes</h1>
+    <p class="subtitle">Messages for you</p>
+    <section class="composer">
+      <input id="noteTitle" placeholder="Title">
+      <textarea id="noteBody" placeholder="Write a note..."></textarea>
+      <button class="button" id="addNote">Add note</button>
+    </section>
+    <div class="notes" id="notesList"></div>
   </main>
+
+  <script>
+    const noteTitle = document.getElementById('noteTitle');
+    const noteBody = document.getElementById('noteBody');
+    const addNote = document.getElementById('addNote');
+    const notesList = document.getElementById('notesList');
+    const storageKey = 'charlotte-notes-v1';
+    let notes = JSON.parse(localStorage.getItem(storageKey) || '[]');
+
+    function render() {
+      notesList.innerHTML = '';
+      notes.slice().reverse().forEach(note => {
+        const el = document.createElement('article');
+        el.className = 'note';
+        el.innerHTML = `
+          <div class="note-header">
+            <div class="note-title">${escapeHtml(note.title || 'Untitled')}</div>
+            <div class="note-date">${note.date}</div>
+          </div>
+          <p class="note-body">${escapeHtml(note.body)}</p>
+        `;
+        notesList.appendChild(el);
+      });
+    }
+
+    function escapeHtml(text) {
+      const div = document.createElement('div');
+      div.textContent = text;
+      return div.innerHTML;
+    }
+
+    addNote.addEventListener('click', () => {
+      const title = noteTitle.value.trim();
+      const body = noteBody.value.trim();
+      if (!body) return;
+      const note = {
+        title,
+        body,
+        date: new Date().toLocaleString()
+      };
+      notes.push(note);
+      localStorage.setItem(storageKey, JSON.stringify(notes));
+      noteTitle.value = '';
+      noteBody.value = '';
+      render();
+    });
+
+    render();
+  </script>
 </body>
 </html>
