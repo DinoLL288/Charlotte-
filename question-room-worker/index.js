@@ -68,6 +68,12 @@ export class QuestionNightRoom {
       return Response.json(await this.getTruthDareData(), { headers: { 'cache-control': 'no-store' } });
     }
 
+    if (request.method === 'GET' && url.searchParams.get('view') === 'preferences') {
+      const user = url.searchParams.get('user');
+      if (!['Charlotte', 'Luke'].includes(user)) return Response.json({ error: 'Choose a valid account' }, { status: 400 });
+      return Response.json(await this.getPreferences(user), { headers: { 'cache-control': 'no-store' } });
+    }
+
     if (request.method === 'GET' && url.searchParams.get('view') === 'questions') {
       const requestedSession = url.searchParams.get('sessionDate') || '';
       if (!(await this.getState(requestedSession)).open) return Response.json({ error: 'We both need to be online and ready before our questions open' }, { status: 423 });
@@ -136,10 +142,28 @@ export class QuestionNightRoom {
     };
   }
 
+  async getPreferences(user) {
+    const preferences = await this.ctx.storage.get('profilePreferences') || {};
+    return preferences[user] || { theme: 'blue', accent: '#347fa3', birthdayReminders: true };
+  }
+
   async mutateQuestions(request) {
     try {
       const body = await request.json();
       if (body.action === 'truth-dare') return this.mutateTruthDare(body);
+      if (body.action === 'preferences') {
+        const user = body.user;
+        if (!['Charlotte', 'Luke'].includes(user)) return Response.json({ error: 'Choose a valid account' }, { status: 400 });
+        const allowedThemes = ['blue', 'midnight', 'lavender', 'sage', 'sunset'];
+        const theme = allowedThemes.includes(body.preferences?.theme) ? body.preferences.theme : '';
+        const accent = /^#[0-9a-fA-F]{6}$/.test(String(body.preferences?.accent || '')) ? body.preferences.accent : '';
+        if (!theme || !accent) return Response.json({ error: 'Choose a theme and a valid accent color.' }, { status: 400 });
+        const all = await this.ctx.storage.get('profilePreferences') || {};
+        all[user] = { theme, accent, birthdayReminders: body.preferences?.birthdayReminders !== false };
+        await this.ctx.storage.put('profilePreferences', all);
+        await this.broadcastRefresh();
+        return Response.json({ ok: true, preferences: all[user] });
+      }
       const data = await this.getQuestionData();
       if (body.action === 'bathroom') {
         const user = body.user;
@@ -155,6 +179,20 @@ export class QuestionNightRoom {
           await this.ctx.storage.put('bathroomData', bathroom);
           await this.broadcastBathroom(bathroom);
         }
+        return Response.json({ ok: true, bathroom });
+      } else if (body.action === 'bathroom-history') {
+        const user = body.user;
+        const action = body.eventAction === 'return' ? 'return' : body.eventAction === 'start' ? 'start' : '';
+        const at = new Date(body.at || '');
+        if (!['Charlotte', 'Luke'].includes(user) || !action || Number.isNaN(at.getTime()) || at.getTime() > Date.now() + 5 * 60 * 1000 || at.getTime() < Date.now() - 10 * 365 * 24 * 60 * 60 * 1000) {
+          return Response.json({ error: 'Choose whether we stepped away or came back, and enter a valid recent date and time.' }, { status: 400 });
+        }
+        const bathroom = await this.getBathroomData();
+        bathroom.events.unshift({ id: crypto.randomUUID(), user, action, at: at.toISOString(), addedLater: true });
+        bathroom.events.sort((a, b) => new Date(b.at) - new Date(a.at));
+        bathroom.events = bathroom.events.slice(0, 250);
+        await this.ctx.storage.put('bathroomData', bathroom);
+        await this.broadcastBathroom(bathroom);
         return Response.json({ ok: true, bathroom });
       } else if (body.action === 'configure') {
         const day = Number(body.day);
@@ -283,6 +321,10 @@ export class QuestionNightRoom {
       await this.ctx.storage.put(`ready:${attachment.sessionDate}`, ready);
       await this.broadcast(attachment.sessionDate);
     }
+    if (payload.type === 'reaction') {
+      const emoji = String(payload.emoji || '').slice(0, 12);
+      if (emoji) await this.broadcastReaction({ type: 'reaction', emoji, user: attachment.user, id: crypto.randomUUID(), sentAt: Date.now() });
+    }
     if (payload.type === 'music') {
       const music = {
         trackId: String(payload.trackId || ''),
@@ -399,6 +441,13 @@ export class QuestionNightRoom {
 
   async broadcastRefresh() {
     const message = JSON.stringify({ type: 'refresh' });
+    for (const socket of this.ctx.getWebSockets()) {
+      try { socket.send(message); } catch { /* closed socket */ }
+    }
+  }
+
+  async broadcastReaction(reaction) {
+    const message = JSON.stringify(reaction);
     for (const socket of this.ctx.getWebSockets()) {
       try { socket.send(message); } catch { /* closed socket */ }
     }

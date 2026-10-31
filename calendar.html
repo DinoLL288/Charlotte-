@@ -265,6 +265,7 @@
     </div>
   </div>
 
+  <script src="special-dates.js"></script>
   <script>
     const weekdays = ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'];
     const monthLabel = document.getElementById('monthLabel');
@@ -456,11 +457,14 @@
           openAdd(dateKey);
         });
 
-        sortDayEvents(events[dateKey] || []).forEach(({ event: ev, index }) => {
+        const specialEvents = (window.CHARLOTTE_LUKE_SPECIAL_DATES || []).filter(item => item.date === `${pad2(month + 1)}-${pad2(d)}`).map(item => ({
+          title: `${item.icon} ${item.title}`, time: 'Every year · reminder', specialDate: true
+        }));
+        sortDayEvents([...(events[dateKey] || []), ...specialEvents]).forEach(({ event: ev, index }) => {
           const status = eventStatus(dateKey, ev.startTime);
           const evEl = document.createElement('div');
-          evEl.className = 'event' + (status ? ' ' + status : '');
-          evEl.title = 'Click to edit';
+          evEl.className = 'event' + (status ? ' ' + status : '') + (ev.specialDate ? ' special-date' : '');
+          evEl.title = ev.specialDate ? 'Repeats every year' : 'Click to edit';
 
           const top = document.createElement('div');
           top.className = 'event-top';
@@ -499,6 +503,7 @@
 
           evEl.addEventListener('click', (e) => {
             e.stopPropagation();
+            if (ev.specialDate) return;
             openEdit(dateKey, index);
           });
           el.appendChild(evEl);

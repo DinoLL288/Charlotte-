@@ -1,0 +1,29 @@
+:root[data-couple-theme="blue"] { --couple-page: linear-gradient(150deg,#e8eef2 0%,#ccd9e1 52%,#b1c4d0 100%); --couple-panel:#f5f7f7; --couple-wash:#e8eff2; }
+:root[data-couple-theme="midnight"] { --couple-page: linear-gradient(150deg,#d9e1e8 0%,#becbd5 52%,#aabac7 100%); --couple-panel:#edf1f3; --couple-wash:#dce5eb; }
+:root[data-couple-theme="lavender"] { --couple-page: linear-gradient(150deg,#f0edf6 0%,#ddd6eb 52%,#c8bfdc 100%); --couple-panel:#faf8fc; --couple-wash:#eee9f5; }
+:root[data-couple-theme="sage"] { --couple-page: linear-gradient(150deg,#edf1e9 0%,#d6e0ce 52%,#bdcdb5 100%); --couple-panel:#f8faf5; --couple-wash:#e8eee3; }
+:root[data-couple-theme="sunset"] { --couple-page: linear-gradient(150deg,#f5eee5 0%,#ead9c7 52%,#ddc1a8 100%); --couple-panel:#fcf8f3; --couple-wash:#f4e9dd; }
+:root[data-couple-theme] { --couple-accent:#347fa3; }
+:root[data-couple-theme] body { background:var(--couple-page)!important; }
+:root[data-couple-theme] .panel,
+:root[data-couple-theme] .card,
+:root[data-couple-theme] .upload-card,
+:root[data-couple-theme] .gallery-toolbar,
+:root[data-couple-theme] .quiet-banner,
+:root[data-couple-theme] .td-current,
+:root[data-couple-theme] .td-rules,
+:root[data-couple-theme] .td-custom,
+:root[data-couple-theme] .td-history,
+:root[data-couple-theme] .person,
+:root[data-couple-theme] .calendar-card,
+:root[data-couple-theme] .month-card { background:var(--couple-panel)!important; }
+:root[data-couple-theme] .composer,
+:root[data-couple-theme] .revealed-clue,
+:root[data-couple-theme] .event,
+:root[data-couple-theme] .td-history-item { background:var(--couple-wash)!important; }
+:root[data-couple-theme] .event.special-date { border-color:var(--couple-accent)!important; }
+:root[data-couple-theme] button.button:not(.top-bar .button),
+:root[data-couple-theme] .small:not(.danger),
+:root[data-couple-theme] .tab[aria-selected="true"],
+:root[data-couple-theme] .album-filter[aria-pressed="true"] { background:var(--couple-accent)!important; border-color:var(--couple-accent)!important; color:#fff!important; }
+:root[data-couple-theme] .couple-accent { color:var(--couple-accent)!important; border-color:var(--couple-accent)!important; }

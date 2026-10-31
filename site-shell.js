@@ -30,6 +30,11 @@
 
   window.addEventListener('message', event => {
     if (event.origin !== location.origin || event.source !== frame.contentWindow || !event.data) return;
+    if (event.data.type === 'charlotte-theme') {
+      const preferences = event.data.preferences || {};
+      if (['blue', 'midnight', 'lavender', 'sage', 'sunset'].includes(preferences.theme)) document.documentElement.dataset.coupleTheme = preferences.theme;
+      if (/^#[0-9a-f]{6}$/i.test(preferences.accent || '')) document.documentElement.style.setProperty('--couple-accent', preferences.accent);
+    }
     if (event.data.type === 'site-page-start') {
       const next = safePath(event.data.path);
       pendingPath = next;

@@ -84,6 +84,23 @@
     document.head.appendChild(polish);
   }
 
+  if (!document.querySelector('link[data-site-theme]')) {
+    const theme = document.createElement('link');
+    theme.rel = 'stylesheet';
+    theme.href = 'site-theme.css';
+    theme.dataset.siteTheme = 'true';
+    document.head.appendChild(theme);
+  }
+
+  ['special-dates.js', 'site-theme.js', 'site-reminders.js', 'reactions.js'].forEach(src => {
+    if (document.querySelector(`script[data-site-helper="${src}"]`)) return;
+    const helper = document.createElement('script');
+    helper.src = src;
+    helper.async = false;
+    helper.dataset.siteHelper = src;
+    document.body.appendChild(helper);
+  });
+
   const helperScript = document.createElement('script');
   helperScript.src = window.top === window.self ? 'presence.js' : 'site-frame.js';
   document.body.appendChild(helperScript);

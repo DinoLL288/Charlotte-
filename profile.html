@@ -62,6 +62,7 @@
       color: #2873a6;
       font-size: 1rem;
     }
+    .settings-row{width:100%;display:grid;gap:7px;text-align:left;color:#486a83;font-size:.9rem;font-weight:700}.settings-row select,.settings-row input[type=color]{width:100%;min-height:44px;padding:9px 12px;border:1px solid #c8dceb;border-radius:13px;background:#fffefa;color:#174866;font:inherit}.settings-row input[type=color]{height:48px;padding:5px}.setting-check{display:flex;align-items:flex-start;gap:10px;width:100%;padding:13px;border:1px solid #dce9ef;border-radius:14px;background:#f4f9fb;color:#486a83;text-align:left;line-height:1.45}.setting-check input{margin-top:3px;accent-color:#347fa3}.settings-help,.settings-status{width:100%;margin:0;color:#607e92;font-size:.84rem;line-height:1.5;text-align:left}.settings-status{min-height:1.4em;color:#73591f;font-weight:700}
   </style>
   <link rel="stylesheet" href="theme.css">
 </head>
@@ -76,6 +77,14 @@
     <img id="avatar" class="avatar" src="https://ui-avatars.com/api/?name=User&background=e8f6ff&color=2873a6&size=256" alt="Profile picture">
     <input type="file" id="avatarInput" accept="image/*">
     <button class="button" id="saveAvatar">Save profile picture</button>
+    <h2 class="section-title">Our look and reminders</h2>
+    <label class="settings-row" for="themeChoice">Site theme<select id="themeChoice"><option value="blue">Quiet blue (softer)</option><option value="midnight">Blue dusk</option><option value="lavender">Lavender cloud</option><option value="sage">Soft sage</option><option value="sunset">Warm sunset</option></select></label>
+    <label class="settings-row" for="accentChoice">Choose our accent color<input id="accentChoice" type="color" value="#347fa3"></label>
+    <label class="setting-check"><input id="birthdayReminders" type="checkbox" checked><span>Remind me about our birthdays and anniversary the day before and on the day</span></label>
+    <p class="settings-help">Special dates: Charlotte · 9 March · Luke · 21 July · our anniversary · 26 October. Reminders appear while our website is open; browser notifications must be allowed on this device.</p>
+    <button class="button" id="enableNotifications" type="button">Enable browser notifications</button>
+    <button class="button" id="savePreferences" type="button">Save appearance &amp; reminders</button>
+    <p class="settings-status" id="preferencesStatus" role="status"></p>
     <h2 class="section-title">Account</h2>
     <button class="button" id="logout">Logout</button>
   </div>
@@ -89,6 +98,44 @@
     const avatar = document.getElementById('avatar');
     const avatarInput = document.getElementById('avatarInput');
     const saveAvatar = document.getElementById('saveAvatar');
+    const themeChoice = document.getElementById('themeChoice');
+    const accentChoice = document.getElementById('accentChoice');
+    const birthdayReminders = document.getElementById('birthdayReminders');
+    const preferencesStatus = document.getElementById('preferencesStatus');
+    const preferenceKey = 'charlotte-preferences-' + user;
+    function applyPreferences(preferences) {
+      if (!preferences) return;
+      themeChoice.value = preferences.theme || 'blue';
+      accentChoice.value = preferences.accent || '#347fa3';
+      birthdayReminders.checked = preferences.birthdayReminders !== false;
+      document.documentElement.dataset.coupleTheme = themeChoice.value;
+      document.documentElement.style.setProperty('--couple-accent', accentChoice.value);
+      localStorage.setItem(preferenceKey, JSON.stringify({ theme: themeChoice.value, accent: accentChoice.value, birthdayReminders: birthdayReminders.checked }));
+      window.dispatchEvent(new CustomEvent('charlotte-preferences', { detail: preferences }));
+      if (window.parent !== window) window.parent.postMessage({ type: 'charlotte-theme', preferences: { theme: themeChoice.value, accent: accentChoice.value } }, location.origin);
+    }
+    try { applyPreferences(JSON.parse(localStorage.getItem(preferenceKey) || 'null')); } catch (e) {}
+    fetch('/api/question-room?view=preferences&user=' + encodeURIComponent(user), { cache: 'no-store' }).then(res => res.json()).then(applyPreferences).catch(() => {});
+    document.getElementById('savePreferences').addEventListener('click', async () => {
+      const preferences = { theme: themeChoice.value, accent: accentChoice.value, birthdayReminders: birthdayReminders.checked };
+      const button = document.getElementById('savePreferences'); button.disabled = true; preferencesStatus.textContent = 'Saving our settings…';
+      try {
+        const response = await fetch('/api/question-room', { method: 'POST', headers: { 'content-type': 'application/json' }, body: JSON.stringify({ action: 'preferences', user, preferences }) });
+        const result = await response.json(); if (!response.ok) throw new Error(result.error || 'Could not save settings.');
+        applyPreferences(result.preferences); preferencesStatus.textContent = 'Our preferences are saved for this profile.';
+        if (preferences.birthdayReminders && 'Notification' in window && Notification.permission === 'default') preferencesStatus.textContent += ' Allow notifications here to receive reminders.';
+      } catch (error) { preferencesStatus.textContent = error.message; }
+      finally { button.disabled = false; }
+    });
+    themeChoice.addEventListener('change', () => { document.documentElement.dataset.coupleTheme = themeChoice.value; });
+    accentChoice.addEventListener('input', () => document.documentElement.style.setProperty('--couple-accent', accentChoice.value));
+    document.getElementById('enableNotifications').addEventListener('click', async () => {
+      if (!('Notification' in window)) { preferencesStatus.textContent = 'This browser does not support notifications.'; return; }
+      try {
+        const permission = await Notification.requestPermission();
+        preferencesStatus.textContent = permission === 'granted' ? 'Browser notifications are enabled on this device. Save our settings to keep reminders on.' : 'Notifications were not enabled. We can change that in browser settings later.';
+      } catch (error) { preferencesStatus.textContent = 'This browser could not enable notifications here. We can check its notification settings.'; }
+    });
     
     async function loadProfile() {
       try {

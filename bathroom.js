@@ -35,7 +35,7 @@
     document.getElementById('bathroomEvents').innerHTML = data.events.length ? data.events.map(event => {
       const name = names.includes(event.user) ? event.user : 'One of us';
       const action = event.action === 'start' ? 'stepped away for a bathroom break' : 'came back';
-      return `<article class="event"><img src="${escape(photos[name] || fallbackPhoto(name))}" alt=""><p><strong>${escape(name)}</strong> ${action}.<br><time>${escape(formatDate(event.at))}</time></p></article>`;
+      return `<article class="event"><img src="${escape(photos[name] || fallbackPhoto(name))}" alt=""><p><strong>${escape(name)}</strong> ${action}.${event.addedLater ? ' <span class="event-later">added later</span>' : ''}<br><time>${escape(formatDate(event.at))}</time></p></article>`;
     }).join('') : '<div class="empty">Our check-in log is ready whenever we need it.</div>';
   }
 
@@ -68,6 +68,32 @@
       statusEl.textContent = error.message;
       button.disabled = false;
     }
+  });
+
+  const laterForm = document.getElementById('bathroomLaterForm');
+  const laterStatus = document.getElementById('bathroomLaterStatus');
+  const laterTime = laterForm.elements.namedItem('at');
+  function localDateTimeValue(date) {
+    return `${date.getFullYear()}-${String(date.getMonth() + 1).padStart(2, '0')}-${String(date.getDate()).padStart(2, '0')}T${String(date.getHours()).padStart(2, '0')}:${String(date.getMinutes()).padStart(2, '0')}`;
+  }
+  laterTime.value = localDateTimeValue(new Date());
+  laterTime.max = laterTime.value;
+  laterForm.addEventListener('submit', async event => {
+    event.preventDefault();
+    if (!['Charlotte', 'Luke'].includes(user)) { laterStatus.textContent = 'Choose your own profile before saving a check-in.'; return; }
+    const localDate = new Date(laterTime.value);
+    if (!laterTime.value || Number.isNaN(localDate.getTime())) { laterStatus.textContent = 'Choose when it happened.'; return; }
+    const button = laterForm.querySelector('button[type="submit"]'); button.disabled = true; laterStatus.textContent = 'Saving our earlier check-in…';
+    try {
+      const response = await fetch('/api/question-room', {
+        method: 'POST', headers: { 'content-type': 'application/json' },
+        body: JSON.stringify({ action: 'bathroom-history', user, eventAction: laterForm.elements.namedItem('eventAction').value, at: localDate.toISOString() })
+      });
+      const json = await response.json(); if (!response.ok) throw new Error(json.error || 'Could not save our check-in.');
+      data.status = json.bathroom.status || {}; data.events = json.bathroom.events || []; render();
+      laterStatus.textContent = 'Added to our check-in history.';
+    } catch (error) { laterStatus.textContent = error.message; }
+    finally { button.disabled = false; }
   });
 
   loadPhotos().then(load).catch(error => { statusEl.textContent = error.message; });
