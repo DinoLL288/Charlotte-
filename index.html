@@ -355,6 +355,13 @@
     }
   </style>
   <link rel="stylesheet" href="theme.css">
+  <style>
+    .explore{position:relative;overflow:hidden;padding-top:76px}.explore:before,.explore:after{position:absolute;z-index:-1;pointer-events:none;font-size:clamp(3rem,8vw,6rem);opacity:.28}.explore:before{content:"✦";top:120px;left:7%;color:#d7ae55;transform:rotate(-15deg)}.explore:after{content:"✧";top:260px;right:7%;color:#6da8c1;transform:rotate(12deg)}.explore .eyebrow{display:inline-flex;align-items:center;gap:8px;padding:8px 15px;border:1px solid #eadbb7;border-radius:999px;background:#fffaf0;color:#836520;letter-spacing:.18em}.explore .eyebrow:before{content:"🧭";font-size:1rem;letter-spacing:0}.explore h2{margin:12px 0 6px;font-size:clamp(2.25rem,5.7vw,3.7rem)}.explore-sub{max-width:52ch;margin-bottom:32px;font-size:1.04rem}.hub-grid{width:min(1120px,100%);grid-template-columns:repeat(4,minmax(0,1fr));grid-auto-flow:dense;gap:15px;text-align:left}.hub-card{min-height:188px;gap:7px;overflow:hidden;padding:21px;border:1px solid #fff;border-radius:28px;background:linear-gradient(145deg,#fffefa,#f2f9fd);box-shadow:0 13px 32px #17486618;backdrop-filter:none;-webkit-backdrop-filter:none;transition:transform .24s cubic-bezier(.2,.8,.2,1),box-shadow .24s ease,border-color .24s ease}.hub-card:nth-child(4n+1){background:linear-gradient(145deg,#fff9e7,#fffefa 75%)}.hub-card:nth-child(4n+2){background:linear-gradient(145deg,#eef9fd,#fffefa 78%)}.hub-card:nth-child(4n+3){background:linear-gradient(145deg,#f1f7ff,#fffefa 78%)}.hub-card:nth-child(4n){background:linear-gradient(145deg,#fff5e3,#fffefa 78%)}.hub-card:nth-child(1),.hub-card:nth-child(10),.hub-card:nth-child(11),.hub-card:nth-child(12){grid-column:span 2;min-height:205px}.hub-card:before{content:"";position:absolute;right:-31px;bottom:-43px;width:118px;height:118px;border:1px solid #d7e6ec;border-radius:50%;background:#ffffff50;transition:transform .3s ease}.hub-card:hover,.hub-card:focus-visible{transform:translateY(-5px) rotate(-.6deg);border-color:#e1cb91;box-shadow:0 22px 42px #17486626}.hub-card:nth-child(even):hover{transform:translateY(-5px) rotate(.6deg)}.card-top{position:relative;z-index:1;justify-content:flex-start;gap:11px;margin-bottom:7px}.card-icon{display:grid;place-items:center;width:49px;height:49px;flex:none;border:1px solid #fff;border-radius:17px;background:#ffffffc9;font-size:1.55rem;box-shadow:0 5px 14px #17486612}.hub-card:nth-child(4n+1) .card-icon{background:#fff0c7}.hub-card:nth-child(4n+2) .card-icon{background:#dcf1fa}.hub-card:nth-child(4n+3) .card-icon{background:#e8efff}.hub-card:nth-child(4n) .card-icon{background:#ffefd1}.card-tag{color:#876c2c;font-size:.66rem;font-weight:800;letter-spacing:.14em;text-transform:uppercase}.card-arrow{display:grid;place-items:center;width:34px;height:34px;margin-left:auto;border:1px solid #ffffff;background:#ffffffb8;border-radius:50%;opacity:.78;transition:transform .22s ease,background .22s ease}.hub-card:hover .card-arrow{transform:rotate(-35deg) translateX(2px);background:#fff}.card-title{position:relative;z-index:1;font-size:1.48rem}.card-sub{position:relative;z-index:1;max-width:36ch;font-size:.94rem}.hub-card:nth-child(1) .card-title,.hub-card:nth-child(10) .card-title{font-size:1.7rem}.hub-card:nth-child(1) .card-icon,.hub-card:nth-child(10) .card-icon{width:56px;height:56px;font-size:1.8rem}.quiet-banner{border:1px solid #fff;background:linear-gradient(110deg,#fffefa,#f1f9fd);box-shadow:0 15px 35px #17486620}
+    @media(max-width:900px){.hub-grid{grid-template-columns:repeat(3,minmax(0,1fr))}.hub-card:nth-child(1),.hub-card:nth-child(10),.hub-card:nth-child(11),.hub-card:nth-child(12){grid-column:span 2}}
+    @media(max-width:680px){.hub-grid{grid-template-columns:repeat(2,minmax(0,1fr));gap:11px}.hub-card{min-height:174px;padding:17px;border-radius:23px}.hub-card:nth-child(1),.hub-card:nth-child(10),.hub-card:nth-child(11),.hub-card:nth-child(12){grid-column:span 2;min-height:185px}.card-icon{width:43px;height:43px;border-radius:15px}.card-title{font-size:1.24rem}.card-sub{font-size:.87rem}.card-tag{font-size:.6rem}}
+    @media(max-width:440px){.explore{padding-right:14px;padding-left:14px}.hub-grid{gap:9px}.hub-card{min-height:164px;padding:14px;border-radius:21px}.hub-card:nth-child(1),.hub-card:nth-child(10),.hub-card:nth-child(11),.hub-card:nth-child(12){min-height:177px}.card-top{gap:7px}.card-icon{width:38px;height:38px;font-size:1.3rem}.card-arrow{width:29px;height:29px}.card-title{font-size:1.12rem}.card-sub{font-size:.8rem}}
+    @media(prefers-reduced-motion:reduce){.hub-card,.hub-card:before,.card-arrow{transition:none}}
+  </style>
 </head>
 <body>
   <header class="hero">
@@ -378,68 +385,68 @@
   </a>
 
   <main class="explore" id="explore">
-    <p class="eyebrow">Explore</p>
-    <h2>Where shall we go?</h2>
-    <p class="explore-sub">A collection of little rooms, all ours. Leave a note, plan a date, add a photo, or read what we promised each other.</p>
+    <p class="eyebrow">Our little adventure map</p>
+    <h2>Pick a mood, wander in</h2>
+    <p class="explore-sub">Keep a memory close, make a new plan, or find something that makes us grin. Every room has a little piece of us.</p>
 
     <div class="hub-grid">
       <a class="hub-card" href="love.html">
-        <span class="card-top"><span class="card-icon" aria-hidden="true">🤍</span><span class="card-arrow" aria-hidden="true">→</span></span>
+        <span class="card-top"><span class="card-icon" aria-hidden="true">🤍</span><span class="card-tag">our story</span><span class="card-arrow" aria-hidden="true">↗</span></span>
         <span class="card-title">Our love</span>
         <span class="card-sub">The heart &amp; our little memory</span>
       </a>
       <a class="hub-card" href="messages.html">
-        <span class="card-top"><span class="card-icon" aria-hidden="true">✉️</span><span class="card-arrow" aria-hidden="true">→</span></span>
+        <span class="card-top"><span class="card-icon" aria-hidden="true">✉️</span><span class="card-tag">little words</span><span class="card-arrow" aria-hidden="true">↗</span></span>
         <span class="card-title">Notes</span>
         <span class="card-sub">Messages we leave for each other</span>
       </a>
       <a class="hub-card" href="bathroom.html">
-        <span class="card-top"><span class="card-icon" aria-hidden="true">🚻</span><span class="card-arrow" aria-hidden="true">→</span></span>
+        <span class="card-top"><span class="card-icon" aria-hidden="true">🚻</span><span class="card-tag">tiny check-in</span><span class="card-arrow" aria-hidden="true">↗</span></span>
         <span class="card-title">Bathroom check-ins</span>
         <span class="card-sub">A little update when one of us steps away</span>
       </a>
       <a class="hub-card" href="rules.html">
-        <span class="card-top"><span class="card-icon" aria-hidden="true">🕊️</span><span class="card-arrow" aria-hidden="true">→</span></span>
+        <span class="card-top"><span class="card-icon" aria-hidden="true">🕊️</span><span class="card-tag">care for us</span><span class="card-arrow" aria-hidden="true">↗</span></span>
         <span class="card-title">Rules &amp; boundaries</span>
         <span class="card-sub">What we agree on and what we need</span>
       </a>
       <a class="hub-card" href="calendar.html">
-        <span class="card-top"><span class="card-icon" aria-hidden="true">📅</span><span class="card-arrow" aria-hidden="true">→</span></span>
+        <span class="card-top"><span class="card-icon" aria-hidden="true">📅</span><span class="card-tag">make a plan</span><span class="card-arrow" aria-hidden="true">↗</span></span>
         <span class="card-title">Calendar</span>
         <span class="card-sub">Dates, plans and countdowns</span>
       </a>
       <a class="hub-card" href="gallery.html">
-        <span class="card-top"><span class="card-icon" aria-hidden="true">📷</span><span class="card-arrow" aria-hidden="true">→</span></span>
+        <span class="card-top"><span class="card-icon" aria-hidden="true">📷</span><span class="card-tag">memory lane</span><span class="card-arrow" aria-hidden="true">↗</span></span>
         <span class="card-title">Gallery</span>
         <span class="card-sub">Photos together</span>
       </a>
       <a class="hub-card" href="tiktok.html">
-        <span class="card-top"><span class="card-icon" aria-hidden="true">🎵</span><span class="card-arrow" aria-hidden="true">→</span></span>
+        <span class="card-top"><span class="card-icon" aria-hidden="true">🎵</span><span class="card-tag">dance break</span><span class="card-arrow" aria-hidden="true">↗</span></span>
         <span class="card-title">TikTok plans</span>
         <span class="card-sub">Videos we want to dance to</span>
       </a>
       <a class="hub-card" href="timeline.html">
-        <span class="card-top"><span class="card-icon" aria-hidden="true">🌅</span><span class="card-arrow" aria-hidden="true">→</span></span>
+        <span class="card-top"><span class="card-icon" aria-hidden="true">🌅</span><span class="card-tag">our story so far</span><span class="card-arrow" aria-hidden="true">↗</span></span>
         <span class="card-title">Our timeline</span>
         <span class="card-sub">The story so far, in pictures</span>
       </a>
       <a class="hub-card" href="apart.html">
-        <span class="card-top"><span class="card-icon" aria-hidden="true">🌙</span><span class="card-arrow" aria-hidden="true">→</span></span>
+        <span class="card-top"><span class="card-icon" aria-hidden="true">🌙</span><span class="card-tag">slow down</span><span class="card-arrow" aria-hidden="true">↗</span></span>
         <span class="card-title">Quiet days</span>
         <span class="card-sub">When one of us needs some space</span>
       </a>
       <a class="hub-card" href="play.html">
-        <span class="card-top"><span class="card-icon" aria-hidden="true">🎲</span><span class="card-arrow" aria-hidden="true">→</span></span>
+        <span class="card-top"><span class="card-icon" aria-hidden="true">🎲</span><span class="card-tag">giggles</span><span class="card-arrow" aria-hidden="true">↗</span></span>
         <span class="card-title">Play &amp; ask</span>
         <span class="card-sub">A question ritual and little games</span>
       </a>
       <a class="hub-card" href="question-night.html">
-        <span class="card-top"><span class="card-icon" aria-hidden="true">💬</span><span class="card-arrow" aria-hidden="true">→</span></span>
+        <span class="card-top"><span class="card-icon" aria-hidden="true">💬</span><span class="card-tag">just us</span><span class="card-arrow" aria-hidden="true">↗</span></span>
         <span class="card-title">Question night</span>
         <span class="card-sub">A shared room that opens when we’re both ready</span>
       </a>
       <a class="hub-card" href="our-life.html">
-        <span class="card-top"><span class="card-icon" aria-hidden="true">🧩</span><span class="card-arrow" aria-hidden="true">→</span></span>
+        <span class="card-top"><span class="card-icon" aria-hidden="true">🧩</span><span class="card-tag">little by little</span><span class="card-arrow" aria-hidden="true">↗</span></span>
         <span class="card-title">Things we make together</span>
         <span class="card-sub">Recipes, recommendations, awards and projects</span>
       </a>
