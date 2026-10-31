@@ -363,6 +363,23 @@
     let reelIndex = 0;
     let reelLoaded = false;
 
+    // Shuffle a copy in place so every visit starts somewhere new.
+    function shuffleReel(avoidFirst) {
+      for (let i = reelPhotos.length - 1; i > 0; i--) {
+        const j = Math.floor(Math.random() * (i + 1));
+        const swap = reelPhotos[i];
+        reelPhotos[i] = reelPhotos[j];
+        reelPhotos[j] = swap;
+      }
+      // When the reel loops, never let the same photo follow itself.
+      if (avoidFirst && reelPhotos.length > 1 && reelPhotos[0] === avoidFirst) {
+        const j = 1 + Math.floor(Math.random() * (reelPhotos.length - 1));
+        const swap = reelPhotos[0];
+        reelPhotos[0] = reelPhotos[j];
+        reelPhotos[j] = swap;
+      }
+    }
+
     function showReelPhoto() {
       if (!reelPhotos.length) return;
       const photo = reelPhotos[reelIndex];
@@ -429,7 +446,8 @@
         reelWrap.classList.remove('is-empty');
         reelEmpty.hidden = true;
         nextMemory.hidden = reelPhotos.length < 2;
-        reelIndex = Math.floor(Math.random() * reelPhotos.length);
+        shuffleReel();
+        reelIndex = 0;
         showReelPhoto();
       } catch (e) {
         reelWrap.classList.add('is-empty');
@@ -443,7 +461,15 @@
       opening.classList.add("hidden");
       memory.classList.remove("hidden");
       window.scrollTo({ top: 0, behavior: "smooth" });
-      loadReel();
+
+      // Every time the reel is opened it gets a fresh random order.
+      if (reelLoaded && reelPhotos.length) {
+        shuffleReel();
+        reelIndex = 0;
+        showReelPhoto();
+      } else {
+        loadReel();
+      }
     });
 
     document.getElementById("backButton").addEventListener("click", () => {
@@ -454,7 +480,15 @@
 
     nextMemory.addEventListener("click", () => {
       if (reelPhotos.length < 2) return;
-      reelIndex = (reelIndex + 1) % reelPhotos.length;
+      const current = reelPhotos[reelIndex];
+      reelIndex += 1;
+
+      // Reached the end of this shuffled lap: shuffle again for the next one.
+      if (reelIndex >= reelPhotos.length) {
+        shuffleReel(current);
+        reelIndex = 0;
+      }
+
       showReelPhoto();
     });
   </script>
