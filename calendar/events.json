@@ -2,11 +2,13 @@
   "events": {
     "2026-10-25": [
       {
-        "title": "UI test event",
-        "time": "5pm",
+        "title": "UI edited event",
+        "time": "6:30pm",
         "author": "Luke",
         "date": "31/10/2026, 17:11:05",
-        "id": "59f1330a-bc46-4f58-b056-19b96861953c"
+        "id": "59f1330a-bc46-4f58-b056-19b96861953c",
+        "editedBy": "Luke",
+        "editedAt": "2026-10-31T09:11:18.363Z"
       }
     ]
   }
