@@ -1,13 +1,3 @@
 {
-  "events": {
-    "2026-10-26": [
-      {
-        "title": "Click test",
-        "time": "9pm",
-        "author": "Luke",
-        "date": "31/10/2026, 17:28:37",
-        "id": "6386f614-efc4-4976-ace4-b4ed46371b89"
-      }
-    ]
-  }
+  "events": {}
 }
