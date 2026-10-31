@@ -6,6 +6,9 @@ A little site for Charlotte. Now split into a hub with multiple sections.
 
 ## Structure
 - `index.html` - Hub page to navigate between sections
+- `app-shell.html` - Persistent site frame for animated page transitions and shared music
+- `site-shell-guard.js`, `site-frame.js`, `site-shell.js` - Route pages through the persistent app shell
+- `site-polish.css` - Shared visual styling and form controls
 - `love.html` - Original heart animation + photo memory
 - `messages.html`, `gallery.html`, `timeline.html` - Extra sections
 - `rules.html` - Shared rules & boundaries, saved to `rules/rules.json` via `/api/rules`

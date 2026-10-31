@@ -1,0 +1,67 @@
+:root {
+  --polish-surface: #fffefa;
+  --polish-sky: #eaf6fc;
+  --polish-line: #d8e8ef;
+  --polish-blue: #1b4d6b;
+  --polish-shadow: 0 14px 34px #1748661c;
+}
+
+html { scroll-behavior: smooth; }
+body {
+  background-color: #dceefa;
+  background-image: radial-gradient(950px 520px at 6% 0%, #fff7e4 0%, transparent 66%),
+    radial-gradient(1000px 700px at 96% 4%, #f1faff 0%, transparent 64%),
+    linear-gradient(155deg, #eaf6fc 0%, #cce7f5 58%, #b5dbea 100%);
+}
+
+h1, h2, h3 { text-wrap: pretty; }
+.top-bar .button, .button, .small-button, .small, .primary,
+.tab, .composer button, form button, .actions button {
+  border-radius: 999px;
+  transition: transform .18s ease, box-shadow .18s ease, background-color .18s ease;
+}
+.button:hover, .small-button:hover, .small:hover, .primary:hover,
+.tab:hover, .composer button:hover, form button:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 10px 24px #1748662a;
+}
+
+input:not([type="file"]):not([type="checkbox"]):not([type="radio"]),
+textarea, select {
+  border-color: #c8dce7;
+  border-radius: 13px;
+  background-color: #fffefa;
+  transition: border-color .18s ease, box-shadow .18s ease;
+}
+input:not([type="file"]):not([type="checkbox"]):not([type="radio"]):focus-visible,
+textarea:focus-visible, select:focus-visible {
+  outline: 3px solid #b8ddec;
+  outline-offset: 1px;
+  border-color: #6ea9c4;
+}
+input[type="file"]::file-selector-button {
+  margin-right: 10px;
+  padding: 9px 15px;
+  border: 0;
+  border-radius: 999px;
+  background: linear-gradient(135deg, #194762, #347fa3);
+  color: white;
+  font: inherit;
+  font-weight: 700;
+  cursor: pointer;
+}
+
+.panel, .card, .upload-card, .composer, .entry, .history-card,
+.rule-card, .person, .event {
+  border-color: #ffffffd9;
+  box-shadow: var(--polish-shadow);
+}
+.panel, .card, .upload-card { border-radius: 24px; }
+.composer { border-radius: 19px; background: linear-gradient(145deg, #f1f9fd, #fff9e9); }
+.page-status, .status { line-height: 1.5; }
+a { text-underline-offset: .2em; }
+
+@media (prefers-reduced-motion: reduce) {
+  html { scroll-behavior: auto; }
+  *, *::before, *::after { animation-duration: .01ms !important; transition-duration: .01ms !important; }
+}

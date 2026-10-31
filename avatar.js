@@ -76,7 +76,15 @@
     })
     .catch(() => {});
 
-  const presenceScript = document.createElement('script');
-  presenceScript.src = 'presence.js';
-  document.body.appendChild(presenceScript);
+  if (!document.querySelector('link[data-site-polish]')) {
+    const polish = document.createElement('link');
+    polish.rel = 'stylesheet';
+    polish.href = 'site-polish.css';
+    polish.dataset.sitePolish = 'true';
+    document.head.appendChild(polish);
+  }
+
+  const helperScript = document.createElement('script');
+  helperScript.src = window.top === window.self ? 'presence.js' : 'site-frame.js';
+  document.body.appendChild(helperScript);
 })();
