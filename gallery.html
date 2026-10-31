@@ -66,8 +66,9 @@
     .tile img {
       width: 100%;
       height: 100%;
-      object-fit: cover;
+      object-fit: contain;
       display: block;
+      background: linear-gradient(145deg, #f0faff, #e6f6ff);
     }
     .tile.empty {
       color: #3b7db3;
@@ -112,7 +113,6 @@
         <button class="button" id="uploadBtn" type="submit">Upload to gallery</button>
       </form>
       <div class="status" id="uploadStatus"></div>
-      <small>Photos upload to GitHub via Cloudflare Pages Function. Set up required env vars first (see README).</small>
     </section>
     <div class="grid" id="galleryGrid">
       <div class="tile empty">
