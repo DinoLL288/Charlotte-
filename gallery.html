@@ -236,14 +236,16 @@
 
     async function loadFolderPhotos(folder, grid) {
       try {
-        const folderParam = folder === 'Old Photos' ? 'root' : folder;
-        const res = await fetch('/api/gallery?folder=' + encodeURIComponent(folderParam));
+        let param = folder;
+        if (folder === 'Old Photos') param = 'root';
+        const res = await fetch('/api/gallery?folder=' + encodeURIComponent(param));
         const json = await res.json();
         if (json.photos && json.photos.length > 0) {
           json.photos.forEach(photo => {
             const tile = document.createElement('div');
             tile.className = 'tile';
             tile.style.flexDirection = 'column';
+            tile.style.cursor = 'pointer';
             const img = document.createElement('img');
             img.src = photo.url;
             img.alt = 'Gallery photo';
@@ -258,6 +260,29 @@
             }
             grid.appendChild(tile);
           });
+        } else if (folder === 'Old Photos') {
+          // Try fetching root directly
+          const res2 = await fetch('/api/gallery?folder=');
+          const json2 = await res2.json();
+          if (json2.photos && json2.photos.length > 0) {
+            json2.photos.forEach(photo => {
+              const tile = document.createElement('div');
+              tile.className = 'tile';
+              tile.style.flexDirection = 'column';
+              tile.style.cursor = 'pointer';
+              const img = document.createElement('img');
+              img.src = photo.url;
+              img.alt = 'Gallery photo';
+              tile.appendChild(img);
+              grid.appendChild(tile);
+            });
+          } else {
+            const empty = document.createElement('div');
+            empty.style.color = '#fff';
+            empty.style.textShadow = '0 1px 6px #428ec080';
+            empty.textContent = 'No photos yet';
+            grid.appendChild(empty);
+          }
         } else {
           const empty = document.createElement('div');
           empty.style.color = '#fff';
