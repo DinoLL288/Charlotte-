@@ -267,6 +267,13 @@
               byline.style.color = '#2873a6';
               byline.textContent = `Uploaded by ${photo.uploadedBy}`;
               tile.appendChild(byline);
+            } else {
+              const byline = document.createElement('div');
+              byline.style.padding = '6px 10px';
+              byline.style.fontSize = '0.85rem';
+              byline.style.color = '#3b7db3';
+              byline.textContent = 'Uploaded by Unknown';
+              tile.appendChild(byline);
             }
             grid.appendChild(tile);
           });
