@@ -8,6 +8,11 @@
     const root = document.documentElement;
     root.dataset.coupleTheme = preferences.theme;
     if (/^#[0-9a-f]{6}$/i.test(preferences.accent || '')) root.style.setProperty('--couple-accent', preferences.accent);
+    root.dataset.textSize = preferences.textSize === 'large' ? 'large' : 'normal';
+    root.dataset.reducedMotion = String(Boolean(preferences.reducedMotion));
+    root.dataset.compactLayout = String(Boolean(preferences.compactLayout));
+    root.dataset.showReactions = String(preferences.showReactions !== false);
+    root.dataset.showPresence = String(preferences.showPresence !== false);
     try { localStorage.setItem(key, JSON.stringify(preferences)); } catch {}
     if (window.parent !== window) window.parent.postMessage({ type: 'charlotte-theme', preferences }, location.origin);
   }

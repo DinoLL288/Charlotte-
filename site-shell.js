@@ -30,10 +30,21 @@
 
   window.addEventListener('message', event => {
     if (event.origin !== location.origin || event.source !== frame.contentWindow || !event.data) return;
+    if (event.data.type === 'request-browser-reminders') {
+      const notify = window.Notification;
+      if (!notify) { frame.contentWindow.postMessage({ type: 'browser-reminder-permission', permission: 'unsupported' }, location.origin); return; }
+      notify.requestPermission().then(permission => frame.contentWindow.postMessage({ type: 'browser-reminder-permission', permission }, location.origin)).catch(() => frame.contentWindow.postMessage({ type: 'browser-reminder-permission', permission: 'denied' }, location.origin));
+      return;
+    }
     if (event.data.type === 'charlotte-theme') {
       const preferences = event.data.preferences || {};
       if (['blue', 'midnight', 'lavender', 'sage', 'sunset'].includes(preferences.theme)) document.documentElement.dataset.coupleTheme = preferences.theme;
       if (/^#[0-9a-f]{6}$/i.test(preferences.accent || '')) document.documentElement.style.setProperty('--couple-accent', preferences.accent);
+      document.documentElement.dataset.textSize = preferences.textSize === 'large' ? 'large' : 'normal';
+      document.documentElement.dataset.reducedMotion = String(Boolean(preferences.reducedMotion));
+      document.documentElement.dataset.compactLayout = String(Boolean(preferences.compactLayout));
+      document.documentElement.dataset.showReactions = String(preferences.showReactions !== false);
+      document.documentElement.dataset.showPresence = String(preferences.showPresence !== false);
     }
     if (event.data.type === 'site-page-start') {
       const next = safePath(event.data.path);

@@ -144,7 +144,12 @@ export class QuestionNightRoom {
 
   async getPreferences(user) {
     const preferences = await this.ctx.storage.get('profilePreferences') || {};
-    return preferences[user] || { theme: 'blue', accent: '#347fa3', birthdayReminders: true };
+    return {
+      theme: 'blue', accent: '#347fa3', birthdayReminders: true,
+      reminderLeadDays: 1, reminderTime: '09:00', textSize: 'normal',
+      reducedMotion: false, compactLayout: false, showReactions: true, showPresence: true,
+      ...(preferences[user] || {}), birthdayReminders: true
+    };
   }
 
   async mutateQuestions(request) {
@@ -157,9 +162,16 @@ export class QuestionNightRoom {
         const allowedThemes = ['blue', 'midnight', 'lavender', 'sage', 'sunset'];
         const theme = allowedThemes.includes(body.preferences?.theme) ? body.preferences.theme : '';
         const accent = /^#[0-9a-fA-F]{6}$/.test(String(body.preferences?.accent || '')) ? body.preferences.accent : '';
-        if (!theme || !accent) return Response.json({ error: 'Choose a theme and a valid accent color.' }, { status: 400 });
+        const reminderLeadDays = Number(body.preferences?.reminderLeadDays);
+        const reminderTime = String(body.preferences?.reminderTime || '');
+        const textSize = ['normal', 'large'].includes(body.preferences?.textSize) ? body.preferences.textSize : '';
+        if (!theme || !accent || ![0, 1, 3, 7, 14].includes(reminderLeadDays) || !/^([01]\d|2[0-3]):[0-5]\d$/.test(reminderTime) || !textSize) return Response.json({ error: 'Choose a valid theme, accent, text size, and reminder time.' }, { status: 400 });
         const all = await this.ctx.storage.get('profilePreferences') || {};
-        all[user] = { theme, accent, birthdayReminders: body.preferences?.birthdayReminders !== false };
+        all[user] = {
+          theme, accent, birthdayReminders: true, reminderLeadDays, reminderTime, textSize,
+          reducedMotion: Boolean(body.preferences?.reducedMotion), compactLayout: Boolean(body.preferences?.compactLayout),
+          showReactions: body.preferences?.showReactions !== false, showPresence: body.preferences?.showPresence !== false
+        };
         await this.ctx.storage.put('profilePreferences', all);
         await this.broadcastRefresh();
         return Response.json({ ok: true, preferences: all[user] });

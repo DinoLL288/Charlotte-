@@ -22,6 +22,17 @@
 :root[data-couple-theme] .event,
 :root[data-couple-theme] .td-history-item { background:var(--couple-wash)!important; }
 :root[data-couple-theme] .event.special-date { border-color:var(--couple-accent)!important; }
+:root[data-text-size="large"] { font-size:18px; }
+:root[data-text-size="normal"] { font-size:16px; }
+:root[data-compact-layout="true"] .panel,
+:root[data-compact-layout="true"] .card,
+:root[data-compact-layout="true"] .person,
+:root[data-compact-layout="true"] .upload-card { padding:clamp(14px,2.8vw,22px)!important; }
+:root[data-show-reactions="false"] #couple-reactions { display:none!important; }
+:root[data-show-presence="false"] #shared-presence { display:none!important; }
+:root[data-reduced-motion="true"] *,
+:root[data-reduced-motion="true"] *::before,
+:root[data-reduced-motion="true"] *::after { animation-duration:.01ms!important;animation-iteration-count:1!important;scroll-behavior:auto!important;transition-duration:.01ms!important; }
 :root[data-couple-theme] button.button:not(.top-bar .button),
 :root[data-couple-theme] .small:not(.danger),
 :root[data-couple-theme] .tab[aria-selected="true"],

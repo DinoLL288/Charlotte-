@@ -63,6 +63,7 @@
       font-size: 1rem;
     }
     .settings-row{width:100%;display:grid;gap:7px;text-align:left;color:#486a83;font-size:.9rem;font-weight:700}.settings-row select,.settings-row input[type=color]{width:100%;min-height:44px;padding:9px 12px;border:1px solid #c8dceb;border-radius:13px;background:#fffefa;color:#174866;font:inherit}.settings-row input[type=color]{height:48px;padding:5px}.setting-check{display:flex;align-items:flex-start;gap:10px;width:100%;padding:13px;border:1px solid #dce9ef;border-radius:14px;background:#f4f9fb;color:#486a83;text-align:left;line-height:1.45}.setting-check input{margin-top:3px;accent-color:#347fa3}.settings-help,.settings-status{width:100%;margin:0;color:#607e92;font-size:.84rem;line-height:1.5;text-align:left}.settings-status{min-height:1.4em;color:#73591f;font-weight:700}
+    .settings-group{width:100%;display:grid;gap:12px;padding:15px;border:1px solid #e0ebf0;border-radius:18px;background:#fffefa}.settings-group h2{margin:0;text-align:left;color:#174866;font:700 1.12rem var(--font-display,Georgia,serif)}.setting-check input{flex:none}.settings-row input[type=time]{font-variant-numeric:tabular-nums}.card{width:min(520px,94vw);max-height:calc(100vh - 36px);overflow:auto;align-items:stretch;text-align:left;padding:24px}.card>h1,.card>.subtitle{text-align:center}.card>h1{margin:0}.card .avatar{align-self:center}.card>input[type=file]{align-self:center;max-width:100%}.card>.button{align-self:center}.top-bar{z-index:2}
   </style>
   <link rel="stylesheet" href="theme.css">
 </head>
@@ -77,13 +78,25 @@
     <img id="avatar" class="avatar" src="https://ui-avatars.com/api/?name=User&background=e8f6ff&color=2873a6&size=256" alt="Profile picture">
     <input type="file" id="avatarInput" accept="image/*">
     <button class="button" id="saveAvatar">Save profile picture</button>
-    <h2 class="section-title">Our look and reminders</h2>
-    <label class="settings-row" for="themeChoice">Site theme<select id="themeChoice"><option value="blue">Quiet blue (softer)</option><option value="midnight">Blue dusk</option><option value="lavender">Lavender cloud</option><option value="sage">Soft sage</option><option value="sunset">Warm sunset</option></select></label>
-    <label class="settings-row" for="accentChoice">Choose our accent color<input id="accentChoice" type="color" value="#347fa3"></label>
-    <label class="setting-check"><input id="birthdayReminders" type="checkbox" checked><span>Remind me about our birthdays and anniversary the day before and on the day</span></label>
-    <p class="settings-help">Special dates: Charlotte · 9 March · Luke · 21 July · our anniversary · 26 October. Reminders appear while our website is open; browser notifications must be allowed on this device.</p>
-    <button class="button" id="enableNotifications" type="button">Enable browser notifications</button>
-    <button class="button" id="savePreferences" type="button">Save appearance &amp; reminders</button>
+    <section class="settings-group"><h2>Appearance</h2>
+      <label class="settings-row" for="themeChoice">Site theme<select id="themeChoice"><option value="blue">Quiet blue (softer)</option><option value="midnight">Blue dusk</option><option value="lavender">Lavender cloud</option><option value="sage">Soft sage</option><option value="sunset">Warm sunset</option></select></label>
+      <label class="settings-row" for="accentChoice">Custom accent color<input id="accentChoice" type="color" value="#347fa3"></label>
+    </section>
+    <section class="settings-group"><h2>Comfort and accessibility</h2>
+      <label class="settings-row" for="textSize">Text size<select id="textSize"><option value="normal">Comfortable</option><option value="large">Larger text</option></select></label>
+      <label class="setting-check"><input id="reducedMotion" type="checkbox"><span>Reduce animations and movement</span></label>
+      <label class="setting-check"><input id="compactLayout" type="checkbox"><span>Use a more compact layout</span></label>
+      <label class="setting-check"><input id="showReactions" type="checkbox" checked><span>Show the floating emoji reaction button</span></label>
+      <label class="setting-check"><input id="showPresence" type="checkbox" checked><span>Show when the other person is online</span></label>
+    </section>
+    <section class="settings-group"><h2>Special-day reminders</h2>
+      <p class="settings-help">These reminders stay on. Charlotte’s birthday is 9 March, Luke’s is 21 July, and our anniversary is 26 October. The site shows an in-app reminder and can send browser alerts while it is open.</p>
+      <label class="settings-row" for="reminderLeadDays">Send an extra heads-up<select id="reminderLeadDays"><option value="0">On the day</option><option value="1" selected>The day before and on the day</option><option value="3">3 days before and on the day</option><option value="7">1 week before and on the day</option><option value="14">2 weeks before and on the day</option></select></label>
+      <label class="settings-row" for="reminderTime">Reminder time on this device<input id="reminderTime" type="time" value="09:00"></label>
+      <button class="button" id="enableNotifications" type="button">Allow browser notifications</button>
+      <p class="settings-help" id="notificationHelp">Browser permission is controlled by this device. If it is blocked, the in-app reminders still appear.</p>
+    </section>
+    <button class="button" id="savePreferences" type="button">Save our settings</button>
     <p class="settings-status" id="preferencesStatus" role="status"></p>
     <h2 class="section-title">Account</h2>
     <button class="button" id="logout">Logout</button>
@@ -100,41 +113,76 @@
     const saveAvatar = document.getElementById('saveAvatar');
     const themeChoice = document.getElementById('themeChoice');
     const accentChoice = document.getElementById('accentChoice');
-    const birthdayReminders = document.getElementById('birthdayReminders');
+    const textSize = document.getElementById('textSize');
+    const reducedMotion = document.getElementById('reducedMotion');
+    const compactLayout = document.getElementById('compactLayout');
+    const showReactions = document.getElementById('showReactions');
+    const showPresence = document.getElementById('showPresence');
+    const reminderLeadDays = document.getElementById('reminderLeadDays');
+    const reminderTime = document.getElementById('reminderTime');
     const preferencesStatus = document.getElementById('preferencesStatus');
     const preferenceKey = 'charlotte-preferences-' + user;
     function applyPreferences(preferences) {
       if (!preferences) return;
       themeChoice.value = preferences.theme || 'blue';
       accentChoice.value = preferences.accent || '#347fa3';
-      birthdayReminders.checked = preferences.birthdayReminders !== false;
+      textSize.value = preferences.textSize || 'normal';
+      reducedMotion.checked = Boolean(preferences.reducedMotion);
+      compactLayout.checked = Boolean(preferences.compactLayout);
+      showReactions.checked = preferences.showReactions !== false;
+      showPresence.checked = preferences.showPresence !== false;
+      reminderLeadDays.value = String(preferences.reminderLeadDays ?? 1);
+      reminderTime.value = preferences.reminderTime || '09:00';
       document.documentElement.dataset.coupleTheme = themeChoice.value;
       document.documentElement.style.setProperty('--couple-accent', accentChoice.value);
-      localStorage.setItem(preferenceKey, JSON.stringify({ theme: themeChoice.value, accent: accentChoice.value, birthdayReminders: birthdayReminders.checked }));
+      document.documentElement.dataset.textSize = textSize.value;
+      document.documentElement.dataset.reducedMotion = String(reducedMotion.checked);
+      document.documentElement.dataset.compactLayout = String(compactLayout.checked);
+      document.documentElement.dataset.showReactions = String(showReactions.checked);
+      document.documentElement.dataset.showPresence = String(showPresence.checked);
+      const saved = { ...preferences, theme: themeChoice.value, accent: accentChoice.value, textSize: textSize.value, reducedMotion: reducedMotion.checked, compactLayout: compactLayout.checked, showReactions: showReactions.checked, showPresence: showPresence.checked, reminderLeadDays: Number(reminderLeadDays.value), reminderTime: reminderTime.value, birthdayReminders: true };
+      localStorage.setItem(preferenceKey, JSON.stringify(saved));
       window.dispatchEvent(new CustomEvent('charlotte-preferences', { detail: preferences }));
-      if (window.parent !== window) window.parent.postMessage({ type: 'charlotte-theme', preferences: { theme: themeChoice.value, accent: accentChoice.value } }, location.origin);
+      if (window.parent !== window) window.parent.postMessage({ type: 'charlotte-theme', preferences: saved }, location.origin);
+      updateNotificationHelp();
     }
     try { applyPreferences(JSON.parse(localStorage.getItem(preferenceKey) || 'null')); } catch (e) {}
     fetch('/api/question-room?view=preferences&user=' + encodeURIComponent(user), { cache: 'no-store' }).then(res => res.json()).then(applyPreferences).catch(() => {});
     document.getElementById('savePreferences').addEventListener('click', async () => {
-      const preferences = { theme: themeChoice.value, accent: accentChoice.value, birthdayReminders: birthdayReminders.checked };
+      const preferences = { theme: themeChoice.value, accent: accentChoice.value, textSize: textSize.value, reducedMotion: reducedMotion.checked, compactLayout: compactLayout.checked, showReactions: showReactions.checked, showPresence: showPresence.checked, reminderLeadDays: Number(reminderLeadDays.value), reminderTime: reminderTime.value };
       const button = document.getElementById('savePreferences'); button.disabled = true; preferencesStatus.textContent = 'Saving our settings…';
       try {
         const response = await fetch('/api/question-room', { method: 'POST', headers: { 'content-type': 'application/json' }, body: JSON.stringify({ action: 'preferences', user, preferences }) });
         const result = await response.json(); if (!response.ok) throw new Error(result.error || 'Could not save settings.');
-        applyPreferences(result.preferences); preferencesStatus.textContent = 'Our preferences are saved for this profile.';
-        if (preferences.birthdayReminders && 'Notification' in window && Notification.permission === 'default') preferencesStatus.textContent += ' Allow notifications here to receive reminders.';
+        applyPreferences(result.preferences); preferencesStatus.textContent = 'Our settings are saved for this profile.';
       } catch (error) { preferencesStatus.textContent = error.message; }
       finally { button.disabled = false; }
     });
     themeChoice.addEventListener('change', () => { document.documentElement.dataset.coupleTheme = themeChoice.value; });
     accentChoice.addEventListener('input', () => document.documentElement.style.setProperty('--couple-accent', accentChoice.value));
+    function updateNotificationHelp() {
+      const help = document.getElementById('notificationHelp');
+      if (!('Notification' in window)) { help.textContent = 'This browser does not support system notifications. In-app reminders still appear.'; return; }
+      help.textContent = Notification.permission === 'granted' ? 'Browser notifications are allowed on this device. Reminders will appear while our site is open.' : Notification.permission === 'denied' ? 'Browser notifications are blocked in this device’s settings. In-app reminders still appear.' : 'Allow browser notifications for alerts while the site is open. In-app reminders stay on either way.';
+    }
+    updateNotificationHelp();
     document.getElementById('enableNotifications').addEventListener('click', async () => {
-      if (!('Notification' in window)) { preferencesStatus.textContent = 'This browser does not support notifications.'; return; }
+      if (!('Notification' in window)) { preferencesStatus.textContent = 'This browser does not support notifications; in-app reminders remain on.'; return; }
       try {
-        const permission = await Notification.requestPermission();
-        preferencesStatus.textContent = permission === 'granted' ? 'Browser notifications are enabled on this device. Save our settings to keep reminders on.' : 'Notifications were not enabled. We can change that in browser settings later.';
+        if (window.parent !== window) {
+          preferencesStatus.textContent = 'Asking this browser to allow reminders…';
+          window.parent.postMessage({ type: 'request-browser-reminders' }, location.origin);
+        } else {
+          const permission = await Notification.requestPermission();
+          preferencesStatus.textContent = permission === 'granted' ? 'Browser reminders are enabled on this device.' : 'Browser notifications were not allowed. Our in-app reminders are still on.';
+          updateNotificationHelp();
+        }
       } catch (error) { preferencesStatus.textContent = 'This browser could not enable notifications here. We can check its notification settings.'; }
+    });
+    window.addEventListener('message', event => {
+      if (event.origin !== location.origin || event.data?.type !== 'browser-reminder-permission') return;
+      preferencesStatus.textContent = event.data.permission === 'granted' ? 'Browser reminders are enabled on this device.' : 'Browser notifications were not allowed. Our in-app reminders are still on.';
+      updateNotificationHelp();
     });
     
     async function loadProfile() {
