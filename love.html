@@ -216,12 +216,24 @@
 
     .reel.is-empty { display: none; }
 
+    /* A blurred copy of the same photo fills the frame, so nothing is ever cropped. */
+    .reel-backdrop {
+      position: absolute;
+      inset: -24px;
+      background-position: center;
+      background-size: cover;
+      filter: blur(18px) saturate(1.15) brightness(0.72);
+      transform: scale(1.08);
+    }
+
     .reel img {
+      position: relative;
+      z-index: 1;
       display: block;
       width: 100%;
       height: 100%;
-      object-fit: cover;
-      background: #d9f1ff;
+      object-fit: contain;
+      background: transparent;
     }
 
     .reel img.reel-fade { animation: reelFade 0.55s ease; }
@@ -233,6 +245,7 @@
 
     .reel-count {
       position: absolute;
+      z-index: 2;
       right: 14px;
       bottom: 14px;
       padding: 6px 12px;
@@ -315,6 +328,7 @@
       <h1>A few more of us</h1>
       <p class="memory-sub">Pulled from our gallery, just for you.</p>
       <div class="reel" id="reelWrap">
+        <div class="reel-backdrop" id="reelBackdrop" aria-hidden="true"></div>
         <img id="reelPhoto" alt="A photo of us from the gallery">
         <span class="reel-count" id="reelCount"></span>
       </div>
@@ -353,6 +367,7 @@
     const opening = document.getElementById("opening");
     const memory = document.getElementById("memory");
     const reelWrap = document.getElementById("reelWrap");
+    const reelBackdrop = document.getElementById("reelBackdrop");
     const reelPhoto = document.getElementById("reelPhoto");
     const reelCount = document.getElementById("reelCount");
     const reelCaption = document.getElementById("reelCaption");
@@ -380,6 +395,8 @@
       }
     }
 
+    // The frame keeps a steady 4:3 shape and the photo is fully contained inside it,
+    // with a blurred copy filling the extra space. Nothing gets cropped.
     function showReelPhoto() {
       if (!reelPhotos.length) return;
       const photo = reelPhotos[reelIndex];
@@ -388,6 +405,7 @@
       reelPhoto.alt = photo.uploadedBy
         ? "A photo of us, added by " + photo.uploadedBy
         : "A photo of us from the gallery";
+      reelBackdrop.style.backgroundImage = 'url("' + photo.url.replace(/"/g, '\\"') + '")';
       reelCount.textContent = (reelIndex + 1) + " / " + reelPhotos.length;
       reelCaption.textContent = "A little more us.";
 
@@ -454,6 +472,7 @@
         reelCaption.textContent = '';
         reelEmpty.hidden = false;
         nextMemory.hidden = true;
+        reelBackdrop.style.backgroundImage = '';
       }
     }
 
