@@ -65,7 +65,9 @@ export class QuestionNightRoom {
     }
 
     if (request.method === 'GET' && url.searchParams.get('view') === 'truth-dare') {
-      return Response.json(await this.getTruthDareData(), { headers: { 'cache-control': 'no-store' } });
+      const user = url.searchParams.get('user');
+      if (!['Charlotte', 'Luke'].includes(user)) return Response.json({ error: 'Choose a valid account' }, { status: 400 });
+      return Response.json(await this.getTruthDareView(user), { headers: { 'cache-control': 'no-store' } });
     }
 
     if (request.method === 'GET' && url.searchParams.get('view') === 'preferences') {
@@ -139,6 +141,17 @@ export class QuestionNightRoom {
       rules: { maxDaresInRow: 3, dareAfterTruths: 5 },
       customPrompts: [], usedPrompts: [], history: [],
       stats: { lastType: '', dareStreak: 0, truthsSinceDare: 0 }
+    };
+  }
+
+  async getTruthDareView(user, storedData = null) {
+    const data = storedData || await this.getTruthDareData();
+    const online = (await this.getState('2000-01-02')).online;
+    const bothOnline = online.includes('Charlotte') && online.includes('Luke');
+    return {
+      ...data,
+      customPrompts: data.customPrompts.filter(item => item.author === user),
+      current: bothOnline ? data.current || null : null
     };
   }
 
@@ -317,7 +330,7 @@ export class QuestionNightRoom {
 
     await this.ctx.storage.put('truthDareData', data);
     await this.broadcastRefresh();
-    return Response.json({ ok: true, data });
+    return Response.json({ ok: true, data: await this.getTruthDareView(user, data) });
   }
 
   async webSocketMessage(socket, message) {
