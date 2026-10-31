@@ -107,8 +107,8 @@
     const noteBody = document.getElementById('noteBody');
     const addNote = document.getElementById('addNote');
     const notesList = document.getElementById('notesList');
-    const storageKey = 'charlotte-notes-v1';
-    let notes = JSON.parse(localStorage.getItem(storageKey) || '[]');
+    let notes = [];
+    let currentSha = null;
 
     function render() {
       notesList.innerHTML = '';
@@ -132,7 +132,20 @@
       return div.innerHTML;
     }
 
-    addNote.addEventListener('click', () => {
+    async function loadNotes() {
+      try {
+        const res = await fetch('/api/notes');
+        const json = await res.json();
+        notes = json.notes || [];
+        currentSha = json.sha || null;
+        render();
+      } catch (e) {
+        notes = [];
+        render();
+      }
+    }
+
+    addNote.addEventListener('click', async () => {
       const title = noteTitle.value.trim();
       const body = noteBody.value.trim();
       if (!body) return;
@@ -141,14 +154,28 @@
         body,
         date: new Date().toLocaleString()
       };
-      notes.push(note);
-      localStorage.setItem(storageKey, JSON.stringify(notes));
-      noteTitle.value = '';
-      noteBody.value = '';
-      render();
+      addNote.disabled = true;
+      try {
+        const res = await fetch('/api/notes', {
+          method: 'POST',
+          headers: { 'content-type': 'application/json' },
+          body: JSON.stringify({ note, sha: currentSha })
+        });
+        const json = await res.json();
+        if (!res.ok) throw new Error(json.error || 'Failed to save');
+        currentSha = json.sha || currentSha;
+        notes.push(note);
+        noteTitle.value = '';
+        noteBody.value = '';
+        render();
+      } catch (e) {
+        alert(e.message);
+      } finally {
+        addNote.disabled = false;
+      }
     });
 
-    render();
+    loadNotes();
   </script>
 </body>
 </html>

@@ -169,8 +169,8 @@
 
     let current = new Date();
     let selectedDate = null;
-    const storageKey = 'charlotte-calendar-v1';
-    const events = JSON.parse(localStorage.getItem(storageKey) || '{}');
+    let events = {};
+    let currentSha = null;
 
     weekdays.forEach(w => {
       const el = document.createElement('div');
@@ -178,6 +178,19 @@
       el.textContent = w;
       weekdayRow.appendChild(el);
     });
+
+    async function loadEvents() {
+      try {
+        const res = await fetch('/api/calendar');
+        const json = await res.json();
+        events = json.events || {};
+        currentSha = json.sha || null;
+        render();
+      } catch (e) {
+        events = {};
+        render();
+      }
+    }
 
     function render() {
       daysGrid.innerHTML = '';
@@ -206,11 +219,17 @@
         (events[dateKey] || []).forEach(ev => {
           const evEl = document.createElement('div');
           evEl.className = 'event';
-          evEl.innerHTML = `<strong>${ev.title}</strong>${ev.time ? '<br>' + ev.time : ''}`;
+          evEl.innerHTML = `<strong>${escapeHtml(ev.title)}</strong>${ev.time ? '<br>' + escapeHtml(ev.time) : ''}`;
           el.appendChild(evEl);
         });
         daysGrid.appendChild(el);
       }
+    }
+
+    function escapeHtml(text) {
+      const div = document.createElement('div');
+      div.textContent = text;
+      return div.innerHTML;
     }
 
     function openModal(key) {
@@ -221,21 +240,36 @@
     }
 
     cancelEvent.addEventListener('click', () => modal.classList.remove('active'));
-    saveEvent.addEventListener('click', () => {
+    saveEvent.addEventListener('click', async () => {
       if (!selectedDate) return;
       const title = eventTitle.value.trim();
       if (!title) return;
-      if (!events[selectedDate]) events[selectedDate] = [];
-      events[selectedDate].push({ title, time: eventTime.value.trim() });
-      localStorage.setItem(storageKey, JSON.stringify(events));
-      modal.classList.remove('active');
-      render();
+      const event = { title, time: eventTime.value.trim() };
+      saveEvent.disabled = true;
+      try {
+        const res = await fetch('/api/calendar', {
+          method: 'POST',
+          headers: { 'content-type': 'application/json' },
+          body: JSON.stringify({ date: selectedDate, event, sha: currentSha })
+        });
+        const json = await res.json();
+        if (!res.ok) throw new Error(json.error || 'Failed to save');
+        currentSha = json.sha || currentSha;
+        if (!events[selectedDate]) events[selectedDate] = [];
+        events[selectedDate].push(event);
+        modal.classList.remove('active');
+        render();
+      } catch (e) {
+        alert(e.message);
+      } finally {
+        saveEvent.disabled = false;
+      }
     });
 
     prevMonth.addEventListener('click', () => { current.setMonth(current.getMonth() - 1); render(); });
     nextMonth.addEventListener('click', () => { current.setMonth(current.getMonth() + 1); render(); });
 
-    render();
+    loadEvents();
   </script>
 </body>
 </html>
