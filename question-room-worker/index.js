@@ -182,6 +182,17 @@ export class QuestionNightRoom {
         await this.broadcastSpotifyPlaylist(playlist);
       }
     }
+    if (payload.type === 'spotify-play-request') {
+      await this.broadcastSpotifyPlayback({ type: 'spotify-play-request', user: attachment.user });
+    }
+    if (payload.type === 'spotify-playback') {
+      await this.broadcastSpotifyPlayback({
+        type: 'spotify-playback',
+        user: attachment.user,
+        playing: Boolean(payload.playing),
+        track: String(payload.track || '').slice(0, 200)
+      });
+    }
     if (payload.type === 'refresh') {
       await this.broadcast(attachment.sessionDate);
       await this.broadcastRefresh();
@@ -235,6 +246,13 @@ export class QuestionNightRoom {
 
   async broadcastSpotifyPlaylist(url) {
     const message = JSON.stringify({ type: 'spotify-playlist', url });
+    for (const socket of this.ctx.getWebSockets()) {
+      try { socket.send(message); } catch { /* closed socket */ }
+    }
+  }
+
+  async broadcastSpotifyPlayback(state) {
+    const message = JSON.stringify(state);
     for (const socket of this.ctx.getWebSockets()) {
       try { socket.send(message); } catch { /* closed socket */ }
     }

@@ -17,6 +17,7 @@
     #shared-music-panel input { width:100%; margin:4px 0; padding:10px 11px; border:1px solid #c8dceb; border-radius:10px; color:#10344f; background:#fff; font:inherit; }
     #shared-music-panel button { border:1px solid #d5e3ec; border-radius:999px; padding:8px 12px; color:#24516e; background:#fff; font:inherit; font-weight:700; cursor:pointer; }
     #shared-music-panel button.primary { color:#fff; border-color:#143f5f; background:#143f5f; }
+    #shared-music-play { width:100%; margin-top:8px; }
     #shared-music-open { display:inline-block; margin-top:8px; color:#24516e; font-size:.82rem; }
     #shared-music-player { width:100%; min-height:152px; margin-top:10px; border:0; border-radius:12px; background:#e8f0f5; }
     #shared-music-status { min-height:1.2em; font-size:.76rem; }
@@ -34,11 +35,12 @@
   widget.innerHTML = `
     <section id="shared-music-panel" hidden aria-label="Shared Spotify playlist">
       <h2>Our background music</h2>
-      <p>Our playlist is shared here. We each start playback in our own Spotify player; to loop it, open the playlist in Spotify and turn on repeat.</p>
+      <p>When one of us starts the playlist, the other gets a prompt to join. Tap play on each phone so Spotify can start audio there.</p>
       <form id="shared-music-form"><label for="shared-music-url">Link for our Spotify playlist</label><input id="shared-music-url" name="url" type="url" maxlength="500" placeholder="https://open.spotify.com/playlist/…" required><button class="primary" type="submit">Set our playlist</button></form>
-      <a id="shared-music-open" href="https://open.spotify.com/" target="_blank" rel="noopener noreferrer" hidden>Open our playlist in Spotify to turn on repeat ↗</a>
+      <button id="shared-music-play" class="primary" type="button" disabled>Play our playlist here</button>
+      <a id="shared-music-open" href="https://open.spotify.com/" target="_blank" rel="noopener noreferrer" hidden>Open our playlist in Spotify ↗</a>
       <p id="shared-music-status" role="status">Connecting…</p>
-      <iframe id="shared-music-player" title="Shared Spotify playlist" loading="lazy" allow="autoplay; clipboard-write; encrypted-media; fullscreen; picture-in-picture" hidden></iframe>
+      <div id="shared-music-player" title="Shared Spotify playlist"></div>
     </section>
     <button id="shared-music-toggle" type="button" aria-label="Open shared music controls" aria-expanded="false">♫</button>
   `;
@@ -47,8 +49,9 @@
   const status = widget.querySelector('#shared-music-status');
   const input = widget.querySelector('#shared-music-url');
   const player = widget.querySelector('#shared-music-player');
+  const playButton = widget.querySelector('#shared-music-play');
   const openLink = widget.querySelector('#shared-music-open');
-  let socket = null, reconnectTimer = null, syncTimer = null, playlist = '';
+  let socket = null, reconnectTimer = null, syncTimer = null, playlist = '', controller = null, controllerReady = false, requestedPlaylist = '';
 
   function setPresence(online, connected = true) {
     if (!connected) {
@@ -77,20 +80,54 @@
     const normalized = normalizePlaylist(value || '');
     playlist = normalized;
     if (!normalized) {
-      player.hidden = true;
       openLink.hidden = true;
-      player.removeAttribute('src');
+      playButton.disabled = true;
       if (!input.value) status.textContent = 'Paste a Spotify playlist link to set ours.';
       return;
     }
     input.value = normalized;
-    const embed = normalized.replace('https://open.spotify.com/playlist/', 'https://open.spotify.com/embed/playlist/');
-    if (player.src !== `${embed}?utm_source=generator&theme=0`) player.src = `${embed}?utm_source=generator&theme=0`;
-    player.hidden = false;
+    if (controller && requestedPlaylist !== normalized) {
+      requestedPlaylist = normalized;
+      controller.loadUri(`spotify:playlist:${normalized.split('/').pop()}`);
+    } else if (!controller) initializeSpotifyEmbed(normalized);
+    playButton.disabled = !controllerReady;
     openLink.href = normalized;
     openLink.hidden = false;
-    status.textContent = 'Our playlist is ready in the Spotify player.';
+    if (!controllerReady) status.textContent = 'Loading our Spotify player…';
   }
+
+  function initializeSpotifyEmbed(value) {
+    if (controller || !window.SpotifyIframeApi) return;
+    const normalized = normalizePlaylist(value);
+    if (!normalized) return;
+    requestedPlaylist = normalized;
+    const id = normalized.split('/').pop();
+    window.SpotifyIframeApi.createController(player, { uri: `spotify:playlist:${id}`, width: '100%', height: 152 }, embed => {
+      controller = embed;
+      controllerReady = true;
+      playButton.disabled = false;
+      controller.addListener('ready', () => { playButton.disabled = false; status.textContent = 'Ready. Tap play here to listen on this phone.'; });
+      controller.addListener('playback_started', event => {
+        status.textContent = 'Our playlist is playing here.';
+        if (socket && socket.readyState === WebSocket.OPEN) socket.send(JSON.stringify({ type: 'spotify-playback', playing: true, track: event.data?.playingURI || '' }));
+      });
+      controller.addListener('playback_update', event => {
+        if (!event.data?.isPaused) return;
+        status.textContent = 'Our playlist is paused here.';
+        if (socket && socket.readyState === WebSocket.OPEN) socket.send(JSON.stringify({ type: 'spotify-playback', playing: false }));
+      });
+      playButton.disabled = false;
+    });
+  }
+
+  window.onSpotifyIframeApiReady = api => {
+    window.SpotifyIframeApi = api;
+    if (playlist) initializeSpotifyEmbed(playlist);
+  };
+  const spotifyApiScript = document.createElement('script');
+  spotifyApiScript.src = 'https://open.spotify.com/embed/iframe-api/v1';
+  spotifyApiScript.async = true;
+  document.head.appendChild(spotifyApiScript);
 
   function connect() {
     clearTimeout(reconnectTimer);
@@ -100,6 +137,16 @@
       let message; try { message = JSON.parse(event.data); } catch { return; }
       if (message.type === 'state') { setPresence(message.online || []); showPlaylist(message.spotifyPlaylist || defaultPlaylist); }
       if (message.type === 'spotify-playlist') showPlaylist(message.url || '');
+      if (message.type === 'spotify-play-request' && message.user !== user) {
+        status.textContent = `${message.user} started our playlist. Tap “Play our playlist here” to join on this phone.`;
+        widget.querySelector('#shared-music-panel').hidden = false;
+        widget.querySelector('#shared-music-toggle').setAttribute('aria-expanded', 'true');
+      }
+      if (message.type === 'spotify-playback' && message.user !== user && message.playing) {
+        status.textContent = `${message.user} started our playlist. Tap “Play our playlist here” to join on this phone.`;
+        widget.querySelector('#shared-music-panel').hidden = false;
+        widget.querySelector('#shared-music-toggle').setAttribute('aria-expanded', 'true');
+      }
       if (message.type === 'pong') return;
     };
     socket.onopen = () => {
@@ -115,6 +162,12 @@
     const panel = widget.querySelector('#shared-music-panel');
     panel.hidden = !panel.hidden;
     event.currentTarget.setAttribute('aria-expanded', String(!panel.hidden));
+  });
+  playButton.addEventListener('click', () => {
+    if (!controller || !controllerReady) { status.textContent = 'The Spotify player is still loading. Try again in a moment.'; return; }
+    controller.play();
+    status.textContent = 'Starting our playlist on this phone…';
+    if (socket && socket.readyState === WebSocket.OPEN) socket.send(JSON.stringify({ type: 'spotify-play-request' }));
   });
   widget.querySelector('#shared-music-form').addEventListener('submit', event => {
     event.preventDefault();
