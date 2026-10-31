@@ -184,6 +184,16 @@
     </section>
     <div id="folderView" style="display:flex; flex-direction:column; gap:16px; width:100%; align-items:center;"></div>
   </main>
+  <div class="lightbox" id="lightbox">
+    <div class="lightbox-content">
+      <button class="lightbox-close" id="lightboxClose" type="button" aria-label="Close">&times;</button>
+      <img class="lightbox-img" id="lightboxImg" alt="Gallery photo">
+      <div class="lightbox-info">
+        <img class="lightbox-pfp" id="lightboxPfp" alt="Profile picture">
+        <span id="lightboxName"></span>
+      </div>
+    </div>
+  </div>
   <script>
     const form = document.getElementById('uploadForm');
     const input = document.getElementById('photoInput');
@@ -360,6 +370,7 @@
     const lightboxClose = document.getElementById('lightboxClose');
     
     async function openLightbox(src, by) {
+      if (!lightbox) return;
       lightboxImg.src = src;
       lightboxName.textContent = by || 'Unknown';
       lightboxPfp.src = 'https://ui-avatars.com/api/?name=' + encodeURIComponent(by || 'U') + '&background=e8f6ff&color=2873a6&size=128';
@@ -373,9 +384,17 @@
       lightbox.classList.add('active');
     }
     
-    lightboxClose.addEventListener('click', () => lightbox.classList.remove('active'));
-    lightbox.addEventListener('click', (e) => {
-      if (e.target === lightbox) lightbox.classList.remove('active');
+    if (lightboxClose) {
+      lightboxClose.addEventListener('click', () => lightbox.classList.remove('active'));
+    }
+    if (lightbox) {
+      lightbox.addEventListener('click', (e) => {
+        if (e.target === lightbox) lightbox.classList.remove('active');
+      });
+    }
+    
+    document.addEventListener('keydown', (e) => {
+      if (e.key === 'Escape' && lightbox) lightbox.classList.remove('active');
     });
     
     document.addEventListener('click', (e) => {
