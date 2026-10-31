@@ -73,12 +73,20 @@
     const avatarInput = document.getElementById('avatarInput');
     const saveAvatar = document.getElementById('saveAvatar');
     
-    const saved = localStorage.getItem('charlotte-avatar-' + user);
-    if (saved) avatar.src = saved;
+    async function loadProfile() {
+      try {
+        const res = await fetch('/api/profile?user=' + encodeURIComponent(user));
+        const json = await res.json();
+        if (json.url) avatar.src = json.url;
+      } catch (e) {}
+    }
+    loadProfile();
     
+    let selectedFile = null;
     avatarInput.addEventListener('change', (e) => {
       const file = e.target.files?.[0];
       if (!file) return;
+      selectedFile = file;
       const reader = new FileReader();
       reader.onload = () => {
         avatar.src = reader.result;
@@ -86,9 +94,31 @@
       reader.readAsDataURL(file);
     });
     
-    saveAvatar.addEventListener('click', () => {
-      localStorage.setItem('charlotte-avatar-' + user, avatar.src);
-      alert('Profile picture saved!');
+    saveAvatar.addEventListener('click', async () => {
+      if (!selectedFile) {
+        alert('Select a picture first');
+        return;
+      }
+      saveAvatar.disabled = true;
+      saveAvatar.textContent = 'Saving...';
+      try {
+        const data = new FormData();
+        data.append('avatar', selectedFile);
+        data.append('user', user);
+        const res = await fetch('/api/profile', {
+          method: 'POST',
+          body: data
+        });
+        const json = await res.json();
+        if (!res.ok) throw new Error(json.error || 'Failed');
+        if (json.url) avatar.src = json.url;
+        alert('Profile picture saved!');
+      } catch (e) {
+        alert(e.message);
+      } finally {
+        saveAvatar.disabled = false;
+        saveAvatar.textContent = 'Save profile picture';
+      }
     });
     
     document.getElementById('logout').addEventListener('click', () => {
