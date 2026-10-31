@@ -2,11 +2,13 @@
   "events": {
     "2026-11-20": [
       {
-        "title": "Edit test event",
-        "time": "6pm",
+        "title": "Edited event",
+        "time": "7pm",
         "author": "Luke",
         "date": "now",
-        "id": "eefca579-8b87-41b9-b91d-5d3928cc7f0d"
+        "id": "eefca579-8b87-41b9-b91d-5d3928cc7f0d",
+        "editedBy": "Luke",
+        "editedAt": "2026-10-31T09:10:27.924Z"
       }
     ]
   }
