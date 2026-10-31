@@ -476,6 +476,7 @@
     const profilePics = {};
     let entries = [];
     let currentSha = null;
+    let loadError = false;
 
     function pad(value) {
       return value < 10 ? '0' + value : String(value);
@@ -550,6 +551,14 @@
     }
 
     function renderStatus() {
+      if (loadError) {
+        statusCard.classList.remove('is-on');
+        statusEyebrow.textContent = 'Having trouble';
+        statusTitle.textContent = 'Quiet days could not load';
+        statusText.textContent = 'Check your connection and refresh to try again.';
+        return;
+      }
+
       const active = sortedEntries().find(entry => statusOf(entry) === 'active');
       const upcoming = sortedEntries().find(entry => statusOf(entry) === 'upcoming');
 
@@ -587,7 +596,9 @@
       if (!ordered.length) {
         const empty = document.createElement('div');
         empty.className = 'empty';
-        empty.innerHTML = '<strong>Nothing marked yet</strong>Add the first quiet days above.';
+        empty.innerHTML = loadError
+          ? '<strong>Marked days are unavailable</strong>Refresh the page to try again.'
+          : '<strong>Nothing marked yet</strong>Add the first quiet days above.';
         entriesEl.appendChild(empty);
         return;
       }
@@ -645,13 +656,17 @@
     async function loadEntries() {
       try {
         const res = await fetch('/api/apart');
+        if (!res.ok) throw new Error('Could not load quiet days');
         const json = await res.json();
+        if (json.error) throw new Error(json.error);
         entries = Array.isArray(json.entries) ? json.entries : [];
         currentSha = json.sha || null;
+        loadError = false;
         await Promise.all([...new Set(entries.map(entry => entry.author || 'Unknown'))].map(loadProfilePic));
       } catch (e) {
         entries = [];
         currentSha = null;
+        loadError = true;
       }
       render();
     }

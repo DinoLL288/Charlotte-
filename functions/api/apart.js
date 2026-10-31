@@ -75,7 +75,9 @@ function cleanText(value, max) {
 }
 
 function isDate(value) {
-  return typeof value === 'string' && /^\d{4}-\d{2}-\d{2}$/.test(value);
+  if (typeof value !== 'string' || !/^\d{4}-\d{2}-\d{2}$/.test(value)) return false;
+  const date = new Date(`${value}T00:00:00.000Z`);
+  return !Number.isNaN(date.getTime()) && date.toISOString().slice(0, 10) === value;
 }
 
 export async function onRequestGet(context) {
@@ -86,8 +88,8 @@ export async function onRequestGet(context) {
       headers: { 'content-type': 'application/json' }
     });
   } catch (e) {
-    return new Response(JSON.stringify({ entries: [], error: e.message }), {
-      status: 200,
+    return new Response(JSON.stringify({ error: e.message || 'Could not load quiet days' }), {
+      status: 500,
       headers: { 'content-type': 'application/json' }
     });
   }
@@ -124,7 +126,7 @@ export async function onRequestPost(context) {
       const newSha = await saveApart(
         env,
         entries,
-        body.sha || currentSha,
+        currentSha,
         `Remove quiet days: ${target.from} to ${target.until}`
       );
 
@@ -194,7 +196,7 @@ export async function onRequestPost(context) {
     const newSha = await saveApart(
       env,
       entries,
-      body.sha || currentSha,
+      currentSha,
       `Quiet days for ${author}: ${from} to ${until}`
     );
 
