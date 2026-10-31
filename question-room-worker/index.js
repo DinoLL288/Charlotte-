@@ -278,7 +278,7 @@ export class QuestionNightRoom {
       const mode = ['text', 'call', 'both'].includes(body.mode) ? body.mode : '';
       if (!prompt || !type || !mode) return Response.json({ error: 'Add a truth or dare and choose text, call, or both.' }, { status: 400 });
       if (data.customPrompts.length >= 300) return Response.json({ error: 'Our custom prompt list is full.' }, { status: 400 });
-      data.customPrompts.unshift({ id: crypto.randomUUID(), prompt, type, mode, author: user, createdAt: new Date().toISOString() });
+      data.customPrompts.unshift({ id: crypto.randomUUID(), prompt, type, mode, author: user, assignedTo: user === 'Charlotte' ? 'Luke' : 'Charlotte', createdAt: new Date().toISOString() });
     } else if (body.operation === 'remove-prompt') {
       const index = data.customPrompts.findIndex(item => item.id === body.id);
       if (index < 0) return Response.json({ error: 'Custom prompt not found.' }, { status: 404 });
@@ -288,12 +288,14 @@ export class QuestionNightRoom {
       const mode = ['text', 'call', 'both'].includes(body.mode) ? body.mode : '';
       const type = body.promptType === 'dare' ? 'dare' : body.promptType === 'truth' ? 'truth' : '';
       if (!mode || !type) return Response.json({ error: 'Choose text, call, or both, then truth or dare.' }, { status: 400 });
+      const online = (await this.getState('2000-01-02')).online;
+      if (!online.includes('Charlotte') || !online.includes('Luke')) return Response.json({ error: 'We both need to be online before we draw a prompt.' }, { status: 423 });
       const { maxDaresInRow, dareAfterTruths } = data.rules;
       if (type === 'dare' && data.stats.dareStreak >= maxDaresInRow) return Response.json({ error: `Let’s do a truth before another dare (our limit is ${maxDaresInRow} dares in a row).` }, { status: 409 });
       if (type === 'truth' && data.stats.truthsSinceDare >= dareAfterTruths) return Response.json({ error: `Our rule says to choose at least one dare every ${dareAfterTruths} truths.` }, { status: 409 });
       const modes = mode === 'both' ? ['text', 'call'] : [mode];
       const presets = modes.flatMap(promptMode => TRUTH_DARE_PROMPTS[promptMode][type].map((prompt, index) => ({ id: `preset-${promptMode}-${type}-${index}`, prompt, type, mode: promptMode, preset: true })));
-      const pool = [...data.customPrompts.filter(item => item.type === type && (mode === 'both' || item.mode === 'both' || item.mode === mode)), ...presets];
+      const pool = [...data.customPrompts.filter(item => item.type === type && (item.assignedTo === user || (!item.assignedTo && item.author !== user)) && (mode === 'both' || item.mode === 'both' || item.mode === mode)), ...presets];
       let available = pool.filter(item => !data.usedPrompts.includes(item.id));
       if (!available.length) {
         const ids = new Set(pool.map(item => item.id));
@@ -306,7 +308,7 @@ export class QuestionNightRoom {
       data.stats.lastType = type;
       data.stats.dareStreak = type === 'dare' ? data.stats.dareStreak + 1 : 0;
       data.stats.truthsSinceDare = type === 'truth' ? data.stats.truthsSinceDare + 1 : 0;
-      data.history.unshift({ id: crypto.randomUUID(), promptId: selected.id, prompt: selected.prompt, type, mode: selected.mode, by: user, addedBy: selected.author || '', source: selected.preset ? 'preset' : 'custom', at: new Date().toISOString() });
+      data.history.unshift({ id: crypto.randomUUID(), promptId: selected.id, prompt: selected.prompt, type, mode: selected.mode, by: user, assignedTo: user, addedBy: selected.author || '', source: selected.preset ? 'preset' : 'custom', at: new Date().toISOString() });
       data.history = data.history.slice(0, 100);
       data.current = data.history[0];
     } else if (body.operation === 'clear-current') {
