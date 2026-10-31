@@ -2,7 +2,7 @@
 
 A little site for Charlotte. Now split into a hub with multiple sections.
 
-**Live Site:** https://77256cdb.charlotte-3ts.pages.dev
+**Live Site:** [https://charlotte-3ts.pages.dev](https://charlotte-3ts.pages.dev)
 
 ## Structure
 - `index.html` - Hub page to navigate between sections
