@@ -43,7 +43,7 @@
       gap: 12px;
       text-align: left;
     }
-    .composer input, .composer textarea {
+    .composer input, .composer textarea, .composer select {
       width: 100%;
       border-radius: 12px;
       border: 1px solid #b9dcf5;
@@ -51,7 +51,10 @@
       font-family: inherit;
       font-size: 1rem;
     }
+    .composer select { background: #fff; color: var(--deep-blue); }
     .composer textarea { min-height: 120px; resize: vertical; }
+    .composer-label { font-weight: 700; color: #2873a6; font-size: 0.95rem; }
+    .composer-hint { margin: -4px 0 0; color: #3b7db3; font-size: 0.85rem; }
     .button {
       align-self: flex-start;
       border: 0;
@@ -87,8 +90,37 @@
       align-items: baseline;
     }
     .note-title { font-weight: 800; color: #2873a6; font-size: 1.1rem; }
+    .note-meta {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      color: #3b7db3;
+      font-size: 0.9rem;
+    }
+    .note-avatar {
+      width: 28px;
+      height: 28px;
+      border-radius: 50%;
+      object-fit: cover;
+      background: #e8f6ff;
+      box-shadow: 0 3px 10px #347eac30;
+      flex: none;
+    }
     .note-date { color: #3b7db3; font-size: 0.9rem; }
     .note-body { margin: 0; line-height: 1.7; white-space: pre-wrap; }
+    .note-actions { display: flex; gap: 8px; flex-wrap: wrap; justify-content: flex-end; }
+    .note-action { padding: 8px 16px; font-size: 0.9rem; }
+    .edit-form { display: flex; flex-direction: column; gap: 10px; }
+    .edit-form input, .edit-form textarea {
+      width: 100%;
+      border-radius: 12px;
+      border: 1px solid #b9dcf5;
+      padding: 12px 14px;
+      font-family: inherit;
+      font-size: 1rem;
+    }
+    .edit-form textarea { min-height: 100px; resize: vertical; }
+    .edit-actions { display: flex; gap: 8px; }
     .top-bar { position: fixed; top: 16px; left: 16px; z-index: 5; }
   </style>
 </head>
@@ -100,8 +132,14 @@
     <h1>Notes</h1>
     <p class="subtitle">Messages for you</p>
     <section class="composer">
+      <label class="composer-label" for="noteAuthor">Who wrote this note?</label>
+      <select id="noteAuthor">
+        <option value="Charlotte">Charlotte</option>
+        <option value="Luke">Luke</option>
+      </select>
       <input id="noteTitle" placeholder="Title">
       <textarea id="noteBody" placeholder="Write a note..."></textarea>
+      <p class="composer-hint">Only the person who wrote it can delete it.</p>
       <button class="button" id="addNote">Add note</button>
     </section>
     <div class="notes" id="notesList"></div>
@@ -110,11 +148,44 @@
   <script>
     const noteTitle = document.getElementById('noteTitle');
     const noteBody = document.getElementById('noteBody');
+    const noteAuthor = document.getElementById('noteAuthor');
     const addNote = document.getElementById('addNote');
     const notesList = document.getElementById('notesList');
     let notes = [];
     let currentSha = null;
+    let editingNote = null;
     const currentUser = localStorage.getItem('charlotte-user') || 'Unknown';
+    const profilePics = {};
+
+    if ([...noteAuthor.options].some(option => option.value === currentUser)) {
+      noteAuthor.value = currentUser;
+    }
+
+    function fallbackAvatar(user) {
+      return 'https://ui-avatars.com/api/?name=' + encodeURIComponent(user || 'Unknown') + '&background=e8f6ff&color=2873a6&size=64';
+    }
+
+    async function loadProfilePics(users) {
+      await Promise.all([...new Set(users)].map(async user => {
+        if (!user || user === 'Unknown' || Object.prototype.hasOwnProperty.call(profilePics, user)) return;
+
+        const cached = localStorage.getItem('charlotte-avatar-' + user);
+        if (cached) profilePics[user] = cached;
+
+        try {
+          const res = await fetch('/api/profile?user=' + encodeURIComponent(user));
+          const json = await res.json();
+          if (json.url) {
+            profilePics[user] = json.url;
+            localStorage.setItem('charlotte-avatar-' + user, json.url);
+          } else if (!cached) {
+            profilePics[user] = null;
+          }
+        } catch (e) {
+          if (!cached) profilePics[user] = null;
+        }
+      }));
+    }
 
     function isUnknownAuthor(note) {
       return !note.author || note.author === 'Unknown';
@@ -124,22 +195,71 @@
       return isUnknownAuthor(note) || note.author === currentUser;
     }
 
+    function canEdit(note) {
+      return Boolean(note.id) && canDelete(note);
+    }
+
     function render() {
       notesList.innerHTML = '';
       notes.slice().reverse().forEach(note => {
         const el = document.createElement('article');
         el.className = 'note';
+        const author = note.author || 'Unknown';
+        const avatar = profilePics[author] || fallbackAvatar(author);
+        const meta = `
+          <div class="note-meta">
+            <img class="note-avatar" src="${escapeAttr(avatar)}" alt="${escapeAttr(author)}'s profile picture">
+            <span>By ${escapeHtml(author)} • ${escapeHtml(note.date || '')}${note.editedAt ? ' • edited ' + escapeHtml(note.editedAt) : ''}</span>
+          </div>
+        `;
+
+        if (editingNote === note) {
+          el.innerHTML = `
+            <div class="note-header">
+              <div>
+                <div class="note-title">${escapeHtml(note.title || 'Untitled')}</div>
+                ${meta}
+              </div>
+            </div>
+            <div class="edit-form">
+              <input class="edit-title" maxlength="120" value="${escapeAttr(note.title || '')}" placeholder="Title">
+              <textarea class="edit-body" maxlength="5000" placeholder="Write a note...">${escapeHtml(note.body || '')}</textarea>
+            </div>
+            <div class="edit-actions">
+              <button class="button note-action save-edit" type="button">Save changes</button>
+              <button class="button note-action cancel-edit" type="button">Cancel</button>
+            </div>
+          `;
+          el.querySelector('.save-edit').addEventListener('click', () => saveEdit(note, el));
+          el.querySelector('.cancel-edit').addEventListener('click', () => {
+            editingNote = null;
+            render();
+          });
+          notesList.appendChild(el);
+          return;
+        }
+
         el.innerHTML = `
           <div class="note-header">
             <div>
               <div class="note-title">${escapeHtml(note.title || 'Untitled')}</div>
-              <div style="color:#3b7db3; font-size:0.9rem;">By ${escapeHtml(note.author || 'Unknown')} • ${note.date}</div>
+              ${meta}
             </div>
-            ${canDelete(note) ? `<button class="button" style="padding:8px 16px; font-size:0.9rem;" data-id="${note.id || ''}">Delete</button>` : ''}
+            <div class="note-actions">
+              ${canEdit(note) ? '<button class="button note-action edit-note" type="button">Edit</button>' : ''}
+              ${canDelete(note) ? '<button class="button note-action delete-note" type="button">Delete</button>' : ''}
+            </div>
           </div>
           <p class="note-body">${escapeHtml(note.body)}</p>
         `;
-        const deleteButton = el.querySelector('button');
+        const editButton = el.querySelector('.edit-note');
+        if (editButton) {
+          editButton.addEventListener('click', () => {
+            editingNote = note;
+            render();
+          });
+        }
+        const deleteButton = el.querySelector('.delete-note');
         if (deleteButton) {
           deleteButton.addEventListener('click', () => deleteNote(note));
         }
@@ -153,12 +273,22 @@
       return div.innerHTML;
     }
 
+    function escapeAttr(text) {
+      return String(text == null ? '' : text)
+        .replace(/&/g, '&amp;')
+        .replace(/"/g, '&quot;')
+        .replace(/</g, '&lt;')
+        .replace(/>/g, '&gt;');
+    }
+
     async function loadNotes() {
       try {
         const res = await fetch('/api/notes');
         const json = await res.json();
         notes = json.notes || [];
         currentSha = json.sha || null;
+        editingNote = null;
+        await loadProfilePics(notes.map(note => note.author || 'Unknown'));
         render();
       } catch (e) {
         notes = [];
@@ -179,9 +309,40 @@
         currentSha = json.sha || currentSha;
         const index = notes.indexOf(note);
         if (index !== -1) notes.splice(index, 1);
+        editingNote = null;
         render();
       } catch (e) {
         alert(e.message);
+      }
+    }
+
+    async function saveEdit(note, el) {
+      const title = el.querySelector('.edit-title').value.trim();
+      const body = el.querySelector('.edit-body').value.trim();
+      if (!body) {
+        alert('Write something first');
+        return;
+      }
+
+      const saveButton = el.querySelector('.save-edit');
+      saveButton.disabled = true;
+      try {
+        const res = await fetch('/api/notes', {
+          method: 'POST',
+          headers: { 'content-type': 'application/json' },
+          body: JSON.stringify({ action: 'edit', id: note.id, note: { title, body }, currentUser, sha: currentSha })
+        });
+        const json = await res.json();
+        if (!res.ok) throw new Error(json.error || 'Failed to save');
+        currentSha = json.sha || currentSha;
+        note.title = title;
+        note.body = body;
+        note.editedAt = (json.note && json.note.editedAt) || new Date().toLocaleString();
+        editingNote = null;
+        render();
+      } catch (e) {
+        alert(e.message);
+        saveButton.disabled = false;
       }
     }
 
@@ -194,7 +355,7 @@
         title,
         body,
         date: new Date().toLocaleString(),
-        author: currentUser
+        author: noteAuthor.value
       };
       addNote.disabled = true;
       try {
@@ -206,7 +367,9 @@
         const json = await res.json();
         if (!res.ok) throw new Error(json.error || 'Failed to save');
         currentSha = json.sha || currentSha;
+        await loadProfilePics([note.author]);
         notes.push(note);
+        editingNote = null;
         noteTitle.value = '';
         noteBody.value = '';
         render();

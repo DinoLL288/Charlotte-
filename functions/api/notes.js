@@ -1,3 +1,5 @@
+const NOTE_AUTHORS = ['Charlotte', 'Luke'];
+
 async function getNotes(env) {
   const repo = env.GITHUB_REPO;
   const token = env.GITHUB_TOKEN;
@@ -134,11 +136,69 @@ export async function onRequestPost(context) {
         headers: { 'content-type': 'application/json' }
       });
     }
+
+    if (body.action === 'edit') {
+      const { id, sha, currentUser, note: changes } = body;
+      if (!id) {
+        return new Response(JSON.stringify({ error: 'This note cannot be edited' }), {
+          status: 400,
+          headers: { 'content-type': 'application/json' }
+        });
+      }
+
+      const { notes, sha: currentSha } = await getNotes(env);
+      const target = notes.find(entry => entry.id === id);
+      if (!target) {
+        return new Response(JSON.stringify({ error: 'Note not found' }), {
+          status: 404,
+          headers: { 'content-type': 'application/json' }
+        });
+      }
+
+      if (!isUnknownAuthor(target) && target.author !== currentUser) {
+        return new Response(JSON.stringify({ error: 'You can only edit your own notes or notes from unknown authors' }), {
+          status: 403,
+          headers: { 'content-type': 'application/json' }
+        });
+      }
+
+      const newBody = typeof changes?.body === 'string' ? changes.body.trim() : '';
+      if (!newBody) {
+        return new Response(JSON.stringify({ error: 'Note body is required' }), {
+          status: 400,
+          headers: { 'content-type': 'application/json' }
+        });
+      }
+
+      target.title = typeof changes?.title === 'string' ? changes.title.trim() : (target.title || '');
+      target.body = newBody;
+      target.editedAt = new Date().toLocaleString();
+
+      const newSha = await saveNotes(env, notes, sha || currentSha, `Edit note ${id}`);
+      return new Response(JSON.stringify({ ok: true, sha: newSha, note: target }), {
+        status: 200,
+        headers: { 'content-type': 'application/json' }
+      });
+    }
     
     const { note, sha } = body;
+    if (!note || typeof note !== 'object' || typeof note.body !== 'string' || !note.body.trim()) {
+      return new Response(JSON.stringify({ error: 'Note body is required' }), {
+        status: 400,
+        headers: { 'content-type': 'application/json' }
+      });
+    }
+    const author = typeof note.author === 'string' ? note.author.trim() : '';
+    if (!NOTE_AUTHORS.includes(author)) {
+      return new Response(JSON.stringify({ error: 'Note author must be Charlotte or Luke' }), {
+        status: 400,
+        headers: { 'content-type': 'application/json' }
+      });
+    }
+    const newNote = { ...note, author };
     const { notes, sha: currentSha } = await getNotes(env);
-    notes.push(note);
-    const newSha = await saveNotes(env, notes, sha || currentSha, `Add note: ${note.title || 'Untitled'} by ${note.author}`);
+    notes.push(newNote);
+    const newSha = await saveNotes(env, notes, sha || currentSha, `Add note: ${newNote.title || 'Untitled'} by ${author}`);
     return new Response(JSON.stringify({ ok: true, sha: newSha }), {
       status: 200,
       headers: { 'content-type': 'application/json' }
