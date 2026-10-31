@@ -1,0 +1,115 @@
+/*
+  Shared look for the whole site.
+  Palette: midnight ocean, glacier sky, warm gold. No pink anywhere.
+*/
+
+:root {
+  --ink: #0f2f47;
+  --navy: #143f5f;
+  --ocean: #2a78a8;
+  --sky: #a9dcf7;
+  --ice: #eaf6ff;
+  --cream: #fdf8ee;
+  --gold: #c9a24a;
+  --gold-soft: #ecd7a0;
+  --font-body: "Segoe UI", "Trebuchet MS", Arial, sans-serif;
+  --font-display: Georgia, "Times New Roman", serif;
+}
+
+body {
+  font-family: var(--font-body);
+  background-color: #dbeeff;
+  background-image:
+    radial-gradient(900px 620px at 10% 4%, #fff4dd 0%, rgba(255, 244, 221, 0) 55%),
+    radial-gradient(1200px 760px at 92% 0%, #e8f7ff 0%, rgba(232, 247, 255, 0) 60%),
+    radial-gradient(900px 900px at 50% 110%, #7fc2e6 0%, rgba(127, 194, 230, 0) 65%),
+    linear-gradient(160deg, #eaf7ff 0%, #c3e6fb 42%, #8ecbeb 100%);
+}
+
+h1,
+h2,
+.note-title {
+  font-family: var(--font-display);
+  letter-spacing: -0.015em;
+}
+
+::selection {
+  background: var(--gold-soft);
+  color: var(--ink);
+}
+
+/* The floating "back to hub" control, everywhere. */
+.top-bar .button {
+  background: rgba(255, 255, 255, 0.55);
+  border: 1px solid rgba(255, 255, 255, 0.85);
+  color: #174866;
+  padding: 10px 18px;
+  font-size: 0.9rem;
+  font-weight: 700;
+  letter-spacing: 0.02em;
+  box-shadow: 0 10px 26px #1d5a8033, inset 0 1px 0 #ffffff;
+  -webkit-backdrop-filter: blur(12px) saturate(1.2);
+  backdrop-filter: blur(12px) saturate(1.2);
+  transition: transform 0.2s ease, box-shadow 0.2s ease, background 0.2s ease;
+}
+
+.top-bar .button:hover {
+  transform: translateY(-2px);
+  background: rgba(255, 255, 255, 0.78);
+  box-shadow: 0 14px 30px #1d5a8040;
+}
+
+/* Small caps label used above headings. */
+.eyebrow {
+  margin: 0;
+  font-family: var(--font-body);
+  font-size: 0.72rem;
+  font-weight: 700;
+  letter-spacing: 0.3em;
+  text-transform: uppercase;
+}
+
+/* Live "together for" timer. */
+.together {
+  display: flex;
+  align-items: stretch;
+  justify-content: center;
+  gap: 0;
+  margin: 0;
+}
+
+.together .unit {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  min-width: 66px;
+  padding: 0 14px;
+}
+
+.together .unit + .unit {
+  border-left: 1px solid rgba(255, 255, 255, 0.22);
+}
+
+.together .num {
+  font-family: var(--font-display);
+  font-size: clamp(1.5rem, 4.4vw, 2.5rem);
+  font-variant-numeric: tabular-nums;
+  line-height: 1;
+}
+
+.together .label {
+  margin-top: 6px;
+  font-size: 0.62rem;
+  font-weight: 700;
+  letter-spacing: 0.18em;
+  text-transform: uppercase;
+  opacity: 0.72;
+}
+
+@media (max-width: 420px) {
+  .together .unit {
+    min-width: 52px;
+    padding: 0 8px;
+  }
+}

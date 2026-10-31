@@ -10,130 +10,730 @@
     }
   </script>
   <style>
-    :root { --sky: #a4deff; --deep-blue: #245b85; }
+    :root {
+      --ink: #10344f;
+      --navy: #143f5f;
+      --ocean: #2a78a8;
+      --gold: #c9a24a;
+      --gold-soft: #ecd7a0;
+      --display: Georgia, "Times New Roman", serif;
+    }
+
     * { box-sizing: border-box; }
+
     body {
       margin: 0;
       min-height: 100vh;
-      font-family: "Trebuchet MS", Arial, sans-serif;
-      background: linear-gradient(145deg, #c8edff, var(--sky) 55%, #8ccfff);
-      color: var(--deep-blue);
+      color: var(--ink);
     }
+
+    /* ---------- Opening ---------- */
+
+    .hero {
+      position: relative;
+      padding: 104px 20px 66px;
+      text-align: center;
+      color: #fff;
+      overflow: hidden;
+      isolation: isolate;
+    }
+
+    .hero::before {
+      content: "";
+      position: absolute;
+      inset: 0;
+      z-index: -2;
+      background: url('holding-hands.jpg') center 34% / cover no-repeat;
+    }
+
+    .hero::after {
+      content: "";
+      position: absolute;
+      inset: 0;
+      z-index: -1;
+      background: linear-gradient(180deg, rgba(5, 21, 35, 0.62) 0%, rgba(6, 24, 40, 0.72) 60%, rgba(6, 24, 40, 0.9) 100%);
+    }
+
+    .hero .eyebrow {
+      color: var(--gold-soft);
+      text-shadow: 0 2px 12px rgba(3, 15, 26, 0.6);
+    }
+
+    .hero h1 {
+      margin: 12px 0 8px;
+      font-family: var(--display);
+      font-weight: 400;
+      font-size: clamp(2.4rem, 7vw, 4rem);
+      line-height: 1.05;
+      text-shadow: 0 4px 26px rgba(3, 15, 26, 0.55);
+    }
+
+    .hero p.subtitle {
+      margin: 0;
+      color: #e6f3fc;
+      font-size: clamp(0.98rem, 2.6vw, 1.1rem);
+      text-shadow: 0 2px 12px rgba(3, 15, 26, 0.6);
+    }
+
+    .top-bar {
+      position: absolute;
+      top: 16px;
+      left: 16px;
+      z-index: 5;
+    }
+
+    /* ---------- Layout ---------- */
+
     .screen {
-      width: min(900px, 100%);
-      min-height: 100vh;
+      width: min(820px, 100%);
       margin: 0 auto;
-      padding: 80px 18px 40px;
+      padding: 0 18px 64px;
       display: flex;
       flex-direction: column;
-      align-items: center;
-      gap: 16px;
+      gap: 18px;
     }
-    h1 { margin: 0; color: #fff; font-size: clamp(2rem, 6vw, 3.6rem); text-shadow: 0 3px 14px #428ec080; }
-    .subtitle { margin: 0; color: #fff; font-size: clamp(1rem, 3vw, 1.2rem); text-shadow: 0 2px 8px #428ec080; }
+
     .composer {
-      width: min(720px, 92vw);
-      background: #ffffffee;
-      border-radius: 18px;
-      box-shadow: 0 12px 30px #347eac30;
-      padding: 18px;
+      margin-top: -34px;
+      position: relative;
+      background: rgba(255, 253, 247, 0.94);
+      border: 1px solid rgba(255, 255, 255, 0.95);
+      border-radius: 24px;
+      box-shadow: 0 26px 60px rgba(20, 63, 95, 0.22);
+      padding: clamp(18px, 4vw, 28px);
       display: flex;
       flex-direction: column;
-      gap: 10px;
-      text-align: left;
+      gap: 14px;
+      -webkit-backdrop-filter: blur(10px);
+      backdrop-filter: blur(10px);
     }
-    .composer input, .composer textarea {
+
+    .composer h2 {
+      margin: 0;
+      font-family: var(--display);
+      font-size: 1.6rem;
+      font-weight: 700;
+      color: #123a58;
+    }
+
+    .form-row {
+      display: grid;
+      grid-template-columns: 1.6fr 1fr;
+      gap: 12px;
+    }
+
+    @media (max-width: 560px) {
+      .form-row { grid-template-columns: 1fr; }
+    }
+
+    .composer label {
+      display: flex;
+      flex-direction: column;
+      gap: 6px;
+      font-size: 0.72rem;
+      font-weight: 700;
+      letter-spacing: 0.16em;
+      text-transform: uppercase;
+      color: #6a5230;
+    }
+
+    .composer input,
+    .composer textarea {
       width: 100%;
       border-radius: 12px;
-      border: 1px solid #b9dcf5;
-      padding: 10px 12px;
+      border: 1px solid #c8dceb;
+      background: #fff;
+      padding: 11px 13px;
       font-family: inherit;
+      font-size: 0.97rem;
+      color: var(--ink);
+      letter-spacing: normal;
+      text-transform: none;
     }
+
+    .composer input:focus,
+    .composer textarea:focus {
+      outline: 2px solid rgba(201, 162, 74, 0.65);
+      outline-offset: 1px;
+      border-color: var(--gold);
+    }
+
+    .composer textarea { min-height: 96px; resize: vertical; }
+
+    .photo-pick {
+      flex-direction: row !important;
+      align-items: center;
+      gap: 12px !important;
+      flex-wrap: wrap;
+      padding: 12px 14px;
+      border: 1px dashed #b9cfdf;
+      border-radius: 12px;
+      background: #f7fbfe;
+      letter-spacing: normal;
+      text-transform: none;
+      font-size: 0.88rem;
+      font-weight: 600;
+      color: #3f637e;
+      cursor: pointer;
+    }
+
+    .photo-pick input[type="file"] { display: none; }
+
+    .photo-pick .pick-icon {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      width: 34px;
+      height: 34px;
+      border-radius: 50%;
+      background: #e8f3fb;
+      font-size: 1rem;
+    }
+
+    .photo-pick .pick-text { flex: 1; min-width: 140px; }
+    .photo-pick .pick-text strong { display: block; color: #123a58; font-size: 0.9rem; }
+    .photo-pick .pick-text span { font-weight: 500; color: #67849a; font-size: 0.8rem; }
+
     .button {
       border: 0;
       border-radius: 999px;
-      padding: 12px 22px;
-      background: white;
-      color: #2873a6;
-      font-size: 0.98rem;
+      padding: 12px 24px;
+      background: #143f5f;
+      color: #fff;
+      font-family: inherit;
+      font-size: 0.95rem;
       font-weight: 700;
-      text-decoration: none;
-      box-shadow: 0 7px 20px #347eac35;
+      letter-spacing: 0.02em;
       cursor: pointer;
+      box-shadow: 0 10px 26px rgba(20, 63, 95, 0.28);
+      transition: transform 0.2s ease, box-shadow 0.2s ease, background 0.2s ease;
       align-self: flex-start;
+      text-decoration: none;
     }
+
+    .button:hover {
+      transform: translateY(-2px);
+      background: #1b5178;
+      box-shadow: 0 14px 30px rgba(20, 63, 95, 0.34);
+    }
+
+    .button:focus-visible {
+      outline: 3px solid var(--gold);
+      outline-offset: 3px;
+    }
+
+    .button:disabled { opacity: 0.6; cursor: progress; transform: none; }
+
+    .form-actions {
+      display: flex;
+      align-items: center;
+      gap: 14px;
+      flex-wrap: wrap;
+    }
+
+    .status {
+      font-size: 0.86rem;
+      color: #5c7c93;
+      min-height: 1.2em;
+    }
+
+    /* ---------- Timeline ---------- */
+
+    .timeline-head {
+      display: flex;
+      align-items: baseline;
+      justify-content: space-between;
+      gap: 12px;
+      margin: 10px 2px 0;
+    }
+
+    .timeline-head h2 {
+      margin: 0;
+      font-family: var(--display);
+      font-size: 1.5rem;
+      font-weight: 700;
+      color: #123a58;
+    }
+
+    .timeline-head span {
+      font-size: 0.8rem;
+      letter-spacing: 0.12em;
+      text-transform: uppercase;
+      color: #6a8aa0;
+      font-weight: 700;
+    }
+
     .timeline {
-      width: min(720px, 92vw);
       display: flex;
       flex-direction: column;
-      gap: 12px;
+      gap: 22px;
     }
-    .card {
-      background: #ffffffee;
-      border-radius: 18px;
-      box-shadow: 0 12px 30px #347eac30;
-      padding: 18px 22px;
-      text-align: left;
+
+    .moment {
+      background: rgba(255, 253, 247, 0.96);
+      border: 1px solid rgba(255, 255, 255, 0.95);
+      border-radius: 26px;
+      overflow: hidden;
+      box-shadow: 0 22px 50px rgba(20, 63, 95, 0.16);
+    }
+
+    .moment-photo {
+      position: relative;
+      aspect-ratio: 16 / 10;
+      background: linear-gradient(145deg, #16405f, #2a78a8 62%, #7fc2e6);
+      overflow: hidden;
+    }
+
+    .moment-photo img {
+      display: block;
+      width: 100%;
+      height: 100%;
+      object-fit: cover;
+      transition: transform 0.6s ease;
+    }
+
+    .moment:hover .moment-photo img { transform: scale(1.035); }
+
+    .moment-date {
+      position: absolute;
+      top: 16px;
+      left: 16px;
+      padding: 7px 14px;
+      border-radius: 999px;
+      background: rgba(7, 28, 45, 0.72);
+      border: 1px solid rgba(236, 215, 160, 0.38);
+      color: #f4e6c3;
+      font-size: 0.72rem;
+      font-weight: 700;
+      letter-spacing: 0.12em;
+      text-transform: uppercase;
+      -webkit-backdrop-filter: blur(8px);
+      backdrop-filter: blur(8px);
+    }
+
+    .moment-photo.no-photo {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      gap: 4px;
+      color: #fff;
+      text-align: center;
+      padding: 30px;
+    }
+
+    .no-photo .big-date {
+      font-family: var(--display);
+      font-size: clamp(2rem, 6vw, 3rem);
+      letter-spacing: -0.02em;
+    }
+
+    .no-photo .big-sub {
+      font-size: 0.74rem;
+      letter-spacing: 0.26em;
+      text-transform: uppercase;
+      opacity: 0.78;
+    }
+
+    .moment-content {
+      padding: 20px 24px 22px;
       display: flex;
       flex-direction: column;
       gap: 8px;
     }
-    .card h2 { margin: 0; color: #2873a6; }
-    .card p { margin: 0; line-height: 1.7; white-space: pre-wrap; }
-    .card small { color: #3b7db3; }
-    .top-bar { position: fixed; top: 16px; left: 16px; z-index: 5; }
+
+    .moment-content h3 {
+      margin: 0;
+      font-family: var(--display);
+      font-size: clamp(1.35rem, 3.4vw, 1.7rem);
+      font-weight: 700;
+      color: #123a58;
+      line-height: 1.2;
+    }
+
+    .moment-content p {
+      margin: 0;
+      line-height: 1.7;
+      white-space: pre-wrap;
+      color: #2c4f68;
+    }
+
+    .moment-meta {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      margin-top: 4px;
+      padding-top: 12px;
+      border-top: 1px solid #e7e0cf;
+      color: #5f7e93;
+      font-size: 0.84rem;
+    }
+
+    .moment-meta img {
+      width: 30px;
+      height: 30px;
+      border-radius: 50%;
+      object-fit: cover;
+      background: #e8f3fb;
+      flex: none;
+    }
+
+    .moment-meta .delete-moment {
+      margin-left: auto;
+      border: 0;
+      background: transparent;
+      color: #8a6d2b;
+      font-family: inherit;
+      font-size: 0.82rem;
+      font-weight: 700;
+      letter-spacing: 0.04em;
+      cursor: pointer;
+      padding: 6px 8px;
+      border-radius: 8px;
+    }
+
+    .moment-meta .delete-moment:hover { background: #f3ead4; color: #6b5220; }
+
+    .empty {
+      text-align: center;
+      padding: 34px 24px;
+      border-radius: 22px;
+      background: rgba(255, 255, 255, 0.55);
+      border: 1px dashed rgba(255, 255, 255, 0.9);
+      color: #486a83;
+    }
+
+    .empty strong {
+      display: block;
+      font-family: var(--display);
+      font-size: 1.3rem;
+      color: #123a58;
+      margin-bottom: 4px;
+    }
+
+    @media (max-width: 520px) {
+      .hero { padding: 92px 16px 58px; }
+      .composer { margin-top: -26px; }
+      .moment-content { padding: 18px 18px 20px; }
+    }
+
+    @media (prefers-reduced-motion: reduce) {
+      *, *::before, *::after {
+        animation-duration: 0.01ms !important;
+        transition-duration: 0.01ms !important;
+      }
+    }
   </style>
+  <link rel="stylesheet" href="theme.css">
 </head>
 <body>
   <div class="top-bar">
     <a class="button" href="index.html">← Back to hub</a>
   </div>
-  <main class="screen">
+
+  <header class="hero">
+    <p class="eyebrow">The story so far</p>
     <h1>Our timeline</h1>
-    <p class="subtitle">Little moments</p>
-    <section class="composer">
-      <input id="momentTitle" placeholder="Title (e.g. First walk together)">
-      <input id="momentDate" type="date">
-      <textarea id="momentBody" rows="4" placeholder="Describe the moment..."></textarea>
-      <button class="button" id="addMoment">Add to timeline</button>
-    </section>
+    <p class="subtitle">Every little moment, in pictures.</p>
+  </header>
+
+  <main class="screen">
+    <form class="composer" id="momentForm">
+      <h2>Add a moment</h2>
+      <div class="form-row">
+        <label for="momentTitle">Title
+          <input id="momentTitle" maxlength="120" placeholder="First walk together">
+        </label>
+        <label for="momentDate">Date
+          <input id="momentDate" type="date" required>
+        </label>
+      </div>
+      <label for="momentBody">What happened?
+        <textarea id="momentBody" maxlength="2000" placeholder="A few words about it…"></textarea>
+      </label>
+      <label class="photo-pick" for="momentPhoto">
+        <span class="pick-icon" aria-hidden="true">📷</span>
+        <span class="pick-text">
+          <strong id="photoPickTitle">Add a photo</strong>
+          <span id="photoPickHint">Optional — makes it a proper memory</span>
+        </span>
+        <input id="momentPhoto" type="file" accept="image/*">
+      </label>
+      <div class="form-actions">
+        <button class="button" id="addMoment" type="submit">Add to timeline</button>
+        <span class="status" id="status" role="status"></span>
+      </div>
+    </form>
+
+    <div class="timeline-head">
+      <h2>Moments</h2>
+      <span id="momentCount"></span>
+    </div>
     <div class="timeline" id="timeline"></div>
   </main>
 
   <script>
+    const momentForm = document.getElementById('momentForm');
     const momentTitle = document.getElementById('momentTitle');
     const momentDate = document.getElementById('momentDate');
     const momentBody = document.getElementById('momentBody');
+    const momentPhoto = document.getElementById('momentPhoto');
+    const photoPickTitle = document.getElementById('photoPickTitle');
+    const photoPickHint = document.getElementById('photoPickHint');
     const addMoment = document.getElementById('addMoment');
+    const statusEl = document.getElementById('status');
     const timeline = document.getElementById('timeline');
-    const key = 'charlotte-timeline-v1';
-    let moments = JSON.parse(localStorage.getItem(key) || '[]');
+    const momentCount = document.getElementById('momentCount');
     const user = localStorage.getItem('charlotte-user') || 'Unknown';
 
-    function render() {
-      timeline.innerHTML = '';
-      moments.slice().sort((a,b) => b.date.localeCompare(a.date)).forEach(m => {
-        const el = document.createElement('article');
-        el.className = 'card';
-        el.innerHTML = `<h2>${escapeHtml(m.title)}</h2><small>${m.date} • Added by ${escapeHtml(m.author)}</small><p>${escapeHtml(m.body)}</p>`;
-        timeline.appendChild(el);
+    let moments = [];
+    let currentSha = null;
+    const profilePics = {};
+
+    function todayLocal() {
+      const now = new Date();
+      const month = String(now.getMonth() + 1).padStart(2, '0');
+      const day = String(now.getDate()).padStart(2, '0');
+      return now.getFullYear() + '-' + month + '-' + day;
+    }
+
+    momentDate.value = todayLocal();
+
+    function escapeHtml(text) {
+      const div = document.createElement('div');
+      div.textContent = text == null ? '' : text;
+      return div.innerHTML;
+    }
+
+    function fallbackAvatar(name) {
+      return 'https://ui-avatars.com/api/?name=' + encodeURIComponent(name || 'Unknown') + '&background=e8f3fb&color=143f5f&size=96';
+    }
+
+    async function loadProfilePic(name) {
+      if (!name || name === 'Unknown' || Object.prototype.hasOwnProperty.call(profilePics, name)) return;
+      const cached = localStorage.getItem('charlotte-avatar-' + name);
+      if (cached) profilePics[name] = cached;
+      try {
+        const res = await fetch('/api/profile?user=' + encodeURIComponent(name));
+        const json = await res.json();
+        if (json.url) {
+          profilePics[name] = json.url;
+          localStorage.setItem('charlotte-avatar-' + name, json.url);
+        }
+      } catch (e) {
+        // keep whatever we have
+      }
+    }
+
+    function formatDate(value) {
+      const match = /^(\d{4})-(\d{2})-(\d{2})$/.exec(value || '');
+      if (!match) return value || '';
+      const date = new Date(Number(match[1]), Number(match[2]) - 1, Number(match[3]));
+      return date.toLocaleDateString(undefined, { day: 'numeric', month: 'long', year: 'numeric' });
+    }
+
+    function sortedMoments() {
+      return moments.slice().sort((a, b) => {
+        const byDate = (b.date || '').localeCompare(a.date || '');
+        if (byDate !== 0) return byDate;
+        return (b.createdAt || '').localeCompare(a.createdAt || '');
       });
     }
 
-    function escapeHtml(t){ const d=document.createElement('div'); d.textContent=t; return d.innerHTML; }
+    function render() {
+      timeline.innerHTML = '';
+      const ordered = sortedMoments();
+      momentCount.textContent = ordered.length === 1 ? '1 moment' : ordered.length + ' moments';
 
-    addMoment.addEventListener('click', () => {
+      if (!ordered.length) {
+        const empty = document.createElement('div');
+        empty.className = 'empty';
+        empty.innerHTML = '<strong>No moments yet</strong>Add your first one above — a photo and a date is all it takes.';
+        timeline.appendChild(empty);
+        return;
+      }
+
+      ordered.forEach(moment => {
+        const article = document.createElement('article');
+        article.className = 'moment';
+
+        const author = moment.author || 'Unknown';
+        const avatar = profilePics[author] || fallbackAvatar(author);
+        const photo = moment.photo
+          ? `<div class="moment-photo"><img src="${escapeHtml(moment.photo)}" alt="${escapeHtml(moment.title || 'A moment together')}" loading="lazy"><span class="moment-date">${escapeHtml(formatDate(moment.date))}</span></div>`
+          : `<div class="moment-photo no-photo"><span class="big-date">${escapeHtml(formatDate(moment.date))}</span><span class="big-sub">A moment worth keeping</span></div>`;
+
+        const canDelete = !author || author === 'Unknown' || author === user;
+
+        article.innerHTML = `
+          ${photo}
+          <div class="moment-content">
+            ${moment.title ? `<h3>${escapeHtml(moment.title)}</h3>` : ''}
+            ${moment.body ? `<p>${escapeHtml(moment.body)}</p>` : ''}
+            <div class="moment-meta">
+              <img src="${escapeHtml(avatar)}" alt="${escapeHtml(author)}'s profile picture">
+              <span>Added by ${escapeHtml(author)}</span>
+              ${canDelete ? '<button class="delete-moment" type="button">Delete</button>' : ''}
+            </div>
+          </div>
+        `;
+
+        const deleteButton = article.querySelector('.delete-moment');
+        if (deleteButton) {
+          deleteButton.addEventListener('click', () => deleteMoment(moment));
+        }
+
+        timeline.appendChild(article);
+      });
+    }
+
+    async function postTimeline(body) {
+      const res = await fetch('/api/timeline', {
+        method: 'POST',
+        headers: { 'content-type': 'application/json' },
+        body: JSON.stringify(body)
+      });
+      const json = await res.json();
+      if (!res.ok) throw new Error(json.error || 'Something went wrong');
+      currentSha = json.sha || currentSha;
+      return json;
+    }
+
+    async function uploadPhoto(file) {
+      const data = new FormData();
+      data.append('photo', file);
+      data.append('uploadedBy', user);
+      data.append('folder', 'Timeline');
+
+      const res = await fetch('/api/upload', { method: 'POST', body: data });
+      const json = await res.json();
+      if (!res.ok) throw new Error(json.error || 'Photo upload failed');
+      return json.url || ('/' + json.path);
+    }
+
+    async function loadMoments() {
+      try {
+        const res = await fetch('/api/timeline');
+        const json = await res.json();
+        moments = Array.isArray(json.moments) ? json.moments : [];
+        currentSha = json.sha || null;
+
+        await Promise.all([...new Set(moments.map(m => m.author || 'Unknown'))].map(loadProfilePic));
+        render();
+        await importLocalMoments();
+      } catch (e) {
+        moments = [];
+        render();
+      }
+    }
+
+    // Older devices stored timeline moments only in localStorage. Move them to the shared timeline once.
+    async function importLocalMoments() {
+      const key = 'charlotte-timeline-v1';
+      const raw = localStorage.getItem(key);
+      if (!raw) return;
+
+      let old = [];
+      try { old = JSON.parse(raw) || []; } catch (e) { old = []; }
+      if (!Array.isArray(old) || !old.length) {
+        localStorage.removeItem(key);
+        return;
+      }
+
+      try {
+        for (const item of old) {
+          if (!item.title || !item.date) continue;
+          const json = await postTimeline({
+            moment: {
+              date: item.date,
+              title: item.title,
+              body: item.body || '',
+              photo: '',
+              author: item.author || user
+            },
+            sha: currentSha
+          });
+          if (json.moment) moments.push(json.moment);
+        }
+        localStorage.removeItem(key);
+        await Promise.all([...new Set(moments.map(m => m.author || 'Unknown'))].map(loadProfilePic));
+        render();
+      } catch (e) {
+        // Leave the old data in place so nothing is lost.
+      }
+    }
+
+    async function deleteMoment(moment) {
+      if (!confirm('Delete this moment?')) return;
+      try {
+        await postTimeline({ action: 'delete', id: moment.id, currentUser: user, sha: currentSha });
+        const index = moments.indexOf(moment);
+        if (index !== -1) moments.splice(index, 1);
+        render();
+      } catch (e) {
+        alert(e.message);
+      }
+    }
+
+    momentPhoto.addEventListener('change', () => {
+      const file = momentPhoto.files && momentPhoto.files[0];
+      if (!file) {
+        photoPickTitle.textContent = 'Add a photo';
+        photoPickHint.textContent = 'Optional — makes it a proper memory';
+        return;
+      }
+      photoPickTitle.textContent = file.name;
+      photoPickHint.textContent = Math.round(file.size / 1024) + ' KB — will be uploaded';
+    });
+
+    momentForm.addEventListener('submit', async event => {
+      event.preventDefault();
+
       const title = momentTitle.value.trim();
       const date = momentDate.value;
       const body = momentBody.value.trim();
-      if (!title || !date || !body) return;
-      moments.push({ title, date, body, author: user });
-      localStorage.setItem(key, JSON.stringify(moments));
-      momentTitle.value = ''; momentDate.value = ''; momentBody.value = '';
-      render();
+      const file = momentPhoto.files && momentPhoto.files[0];
+
+      if (!date) {
+        statusEl.textContent = 'Pick a date first';
+        return;
+      }
+      if (!title && !body && !file) {
+        statusEl.textContent = 'Add a photo, a title, or a few words';
+        return;
+      }
+
+      addMoment.disabled = true;
+      try {
+        let photo = '';
+        if (file) {
+          statusEl.textContent = 'Uploading photo…';
+          photo = await uploadPhoto(file);
+        }
+
+        statusEl.textContent = 'Saving…';
+        const json = await postTimeline({
+          moment: { date, title, body, photo, author: user },
+          sha: currentSha
+        });
+
+        if (json.moment) moments.push(json.moment);
+        await loadProfilePic(user);
+
+        momentForm.reset();
+        momentDate.value = todayLocal();
+        photoPickTitle.textContent = 'Add a photo';
+        photoPickHint.textContent = 'Optional — makes it a proper memory';
+        statusEl.textContent = 'Saved 🤍';
+        render();
+      } catch (e) {
+        statusEl.textContent = e.message;
+      } finally {
+        addMoment.disabled = false;
+      }
     });
 
-    render();
+    loadMoments();
   </script>
   <script src="avatar.js"></script>
 </body>

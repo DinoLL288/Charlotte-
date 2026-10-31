@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Our little hub</title>
+  <title>Charlotte &amp; Luke</title>
   <script>
     if (!localStorage.getItem('charlotte-user')) {
       window.location.href = 'login.html';
@@ -11,143 +11,323 @@
   </script>
   <style>
     :root {
-      --sky: #a4deff;
-      --deep-blue: #245b85;
-      --white: #ffffff;
+      --ink: #f7fbff;
+      --gold: #ecd7a0;
+      --display: Georgia, "Times New Roman", serif;
     }
 
     * { box-sizing: border-box; }
+    html { scroll-behavior: smooth; }
 
     body {
       margin: 0;
       min-height: 100vh;
-      font-family: "Trebuchet MS", Arial, sans-serif;
-      background: linear-gradient(145deg, #c8edff, var(--sky) 55%, #8ccfff);
-      color: var(--deep-blue);
-      display: grid;
-      place-items: center;
-      overflow-x: hidden;
+      color: #10344f;
     }
 
-    .screen {
-      width: min(900px, 100%);
+    /* ---------- Opening ---------- */
+
+    .hero {
+      position: relative;
       min-height: 100vh;
-      padding: 28px 18px;
+      min-height: 100svh;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      padding: 96px 20px 72px;
+      overflow: hidden;
+      isolation: isolate;
+    }
+
+    .hero::before {
+      content: "";
+      position: absolute;
+      inset: -3%;
+      z-index: -2;
+      background: url('holding-hands.jpg') center 35% / cover no-repeat;
+      animation: breathe 34s ease-in-out infinite alternate;
+    }
+
+    .hero::after {
+      content: "";
+      position: absolute;
+      inset: 0;
+      z-index: -1;
+      background:
+        radial-gradient(80% 60% at 50% 20%, rgba(6, 26, 43, 0.15) 0%, rgba(6, 26, 43, 0.72) 100%),
+        linear-gradient(180deg, rgba(6, 24, 40, 0.55) 0%, rgba(7, 28, 46, 0.62) 45%, rgba(6, 22, 37, 0.88) 100%);
+    }
+
+    @keyframes breathe {
+      from { transform: scale(1.02); }
+      to { transform: scale(1.09); }
+    }
+
+    .hero-inner {
+      position: relative;
+      width: min(820px, 100%);
       display: flex;
       flex-direction: column;
       align-items: center;
-      justify-content: center;
       text-align: center;
-      gap: 16px;
-    }
-
-    h1 {
-      margin: 0;
-      color: var(--white);
-      font-size: clamp(2.2rem, 7vw, 4.2rem);
-      text-shadow: 0 3px 14px #428ec080;
-    }
-
-    .subtitle {
-      margin: 0 0 10px;
       color: #fff;
-      font-size: clamp(1rem, 3vw, 1.25rem);
-      text-shadow: 0 2px 8px #428ec080;
+    }
+
+    .hero .eyebrow {
+      color: var(--gold);
+      text-shadow: 0 2px 12px rgba(4, 18, 30, 0.55);
+    }
+
+    .hero h1 {
+      margin: 14px 0 10px;
+      font-family: var(--display);
+      font-weight: 400;
+      font-size: clamp(2.7rem, 9vw, 5.6rem);
+      line-height: 1.02;
+      letter-spacing: -0.02em;
+      text-shadow: 0 4px 30px rgba(3, 15, 26, 0.55);
+    }
+
+    .hero-sub {
+      margin: 0 0 30px;
+      max-width: 34ch;
+      color: #eaf6ff;
+      font-size: clamp(0.98rem, 2.4vw, 1.12rem);
+      line-height: 1.6;
+      text-shadow: 0 2px 12px rgba(3, 15, 26, 0.6);
+    }
+
+    .together {
+      color: #fff;
+      padding: 18px 8px;
+      border-radius: 22px;
+      background: rgba(9, 32, 51, 0.34);
+      border: 1px solid rgba(255, 255, 255, 0.18);
+      box-shadow: 0 20px 50px rgba(3, 15, 26, 0.35), inset 0 1px 0 rgba(255, 255, 255, 0.16);
+      -webkit-backdrop-filter: blur(14px) saturate(1.1);
+      backdrop-filter: blur(14px) saturate(1.1);
+    }
+
+    .together-since {
+      margin: 14px 0 0;
+      color: #dcecf7;
+      font-size: 0.82rem;
+      letter-spacing: 0.04em;
+      text-shadow: 0 1px 10px rgba(3, 15, 26, 0.6);
+    }
+
+    .hero-scroll {
+      margin-top: 34px;
+      display: inline-flex;
+      align-items: center;
+      gap: 10px;
+      padding: 12px 24px;
+      border-radius: 999px;
+      border: 1px solid rgba(236, 215, 160, 0.55);
+      color: #f3e4bf;
+      font-size: 0.86rem;
+      font-weight: 700;
+      letter-spacing: 0.12em;
+      text-transform: uppercase;
+      text-decoration: none;
+      background: rgba(255, 255, 255, 0.06);
+      transition: background 0.25s ease, transform 0.25s ease, border-color 0.25s ease;
+    }
+
+    .hero-scroll:hover {
+      background: rgba(236, 215, 160, 0.16);
+      border-color: var(--gold);
+      transform: translateY(-2px);
+    }
+
+    @media (max-height: 720px) {
+      .hero { padding-top: 84px; padding-bottom: 48px; }
+      .hero-sub { margin-bottom: 22px; }
+      .hero-scroll { margin-top: 24px; }
+    }
+
+    /* ---------- Explore ---------- */
+
+    .explore {
+      padding: clamp(56px, 9vw, 96px) 20px clamp(48px, 8vw, 88px);
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      text-align: center;
+    }
+
+    .explore .eyebrow { color: #8a6d2b; }
+
+    .explore h2 {
+      margin: 14px 0 6px;
+      font-family: var(--display);
+      font-weight: 400;
+      color: #123a58;
+      font-size: clamp(2rem, 5vw, 3rem);
+      letter-spacing: -0.02em;
+    }
+
+    .explore-sub {
+      margin: 0 0 38px;
+      max-width: 46ch;
+      color: #3a6483;
+      line-height: 1.65;
+      font-size: 0.98rem;
     }
 
     .hub-grid {
-      width: min(880px, 92vw);
+      width: min(900px, 100%);
       display: grid;
-      grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
+      grid-template-columns: repeat(auto-fit, minmax(248px, 1fr));
       gap: 16px;
+      text-align: left;
     }
 
     .hub-card {
+      position: relative;
       display: flex;
       flex-direction: column;
-      align-items: center;
-      justify-content: center;
-      gap: 6px;
+      gap: 4px;
+      padding: 24px 22px 22px;
+      border-radius: 22px;
       text-decoration: none;
-      border-radius: 18px;
-      padding: 22px 18px;
-      background: #ffffffee;
-      color: #2873a6;
-      font-weight: 800;
-      font-size: clamp(1.05rem, 2.6vw, 1.3rem);
-      box-shadow: 0 12px 30px #347eac30;
-      transition: transform 0.2s ease, box-shadow 0.2s ease;
-      border: 1px solid #ffffff;
+      color: #123a58;
+      background: rgba(255, 255, 255, 0.66);
+      border: 1px solid rgba(255, 255, 255, 0.92);
+      box-shadow: 0 18px 42px rgba(29, 90, 128, 0.13);
+      -webkit-backdrop-filter: blur(10px);
+      backdrop-filter: blur(10px);
+      transition: transform 0.22s ease, box-shadow 0.22s ease, border-color 0.22s ease;
     }
 
-    .hub-card:hover {
-      transform: translateY(-4px);
-      box-shadow: 0 16px 38px #347eac40;
+    .hub-card:hover,
+    .hub-card:focus-visible {
+      transform: translateY(-6px);
+      border-color: rgba(201, 162, 74, 0.55);
+      box-shadow: 0 28px 54px rgba(29, 90, 128, 0.2);
     }
 
     .hub-card:focus-visible {
-      outline: 3px solid #245b85;
-      outline-offset: 4px;
+      outline: 3px solid var(--gold);
+      outline-offset: 3px;
     }
 
-    .hub-card small {
-      font-weight: 600;
-      color: #3b7db3;
-      font-size: clamp(0.9rem, 2vw, 0.98rem);
+    .card-top {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      margin-bottom: 10px;
     }
 
-    .footer-note {
-      margin-top: 18px;
+    .card-icon { font-size: 1.55rem; line-height: 1; }
+
+    .card-arrow {
+      color: #8a6d2b;
+      font-size: 1.05rem;
+      opacity: 0.45;
+      transition: transform 0.22s ease, opacity 0.22s ease;
+    }
+
+    .hub-card:hover .card-arrow {
+      transform: translateX(5px);
+      opacity: 1;
+    }
+
+    .card-title {
+      font-family: var(--display);
+      font-size: 1.32rem;
+      font-weight: 700;
+      letter-spacing: -0.01em;
+    }
+
+    .card-sub {
+      color: #4a7291;
+      font-size: 0.92rem;
+      line-height: 1.5;
+      font-weight: 500;
+    }
+
+    /* ---------- Footer ---------- */
+
+    footer {
+      padding: 30px 20px 46px;
+      text-align: center;
       color: #ffffff;
-      font-size: 0.95rem;
-      text-shadow: 0 1px 6px #428ec080;
+      font-size: 0.86rem;
+      letter-spacing: 0.08em;
+      text-shadow: 0 1px 8px rgba(23, 74, 106, 0.35);
     }
 
     @media (prefers-reduced-motion: reduce) {
+      html { scroll-behavior: auto; }
       *, *::before, *::after {
         animation-duration: 0.01ms !important;
+        animation-iteration-count: 1 !important;
         transition-duration: 0.01ms !important;
-        scroll-behavior: auto !important;
       }
     }
   </style>
+  <link rel="stylesheet" href="theme.css">
 </head>
 <body>
-  <main class="screen">
-    <h1>Our little hub</h1>
-    <p class="subtitle">Pick a section to explore</p>
+  <header class="hero">
+    <div class="hero-inner">
+      <p class="eyebrow">Charlotte &amp; Luke</p>
+      <h1>Our little universe</h1>
+      <p class="hero-sub">Every note, photo, plan and promise — kept in one quiet corner of the internet.</p>
+      <div class="together" data-together role="timer" aria-label="Time we have been together"></div>
+      <p class="together-since">Together since 26 October 2026 · 5:46 pm</p>
+      <a class="hero-scroll" href="#explore">Wander through <span aria-hidden="true">↓</span></a>
+    </div>
+  </header>
+
+  <main class="explore" id="explore">
+    <p class="eyebrow">Explore</p>
+    <h2>Where shall we go?</h2>
+    <p class="explore-sub">Seven little rooms, all ours. Leave a note, plan a date, add a photo, or read what we promised each other.</p>
+
     <div class="hub-grid">
       <a class="hub-card" href="love.html">
-        <span>🤍 Love you</span>
-        <small>The heart & little memory</small>
+        <span class="card-top"><span class="card-icon" aria-hidden="true">🤍</span><span class="card-arrow" aria-hidden="true">→</span></span>
+        <span class="card-title">Love you</span>
+        <span class="card-sub">The heart &amp; our little memory</span>
       </a>
       <a class="hub-card" href="messages.html">
-        <span>Notes</span>
-        <small>Messages for you</small>
+        <span class="card-top"><span class="card-icon" aria-hidden="true">✉️</span><span class="card-arrow" aria-hidden="true">→</span></span>
+        <span class="card-title">Notes</span>
+        <span class="card-sub">Messages we leave for each other</span>
       </a>
       <a class="hub-card" href="rules.html">
-        <span>Rules &amp; boundaries</span>
-        <small>What we agree on</small>
+        <span class="card-top"><span class="card-icon" aria-hidden="true">🕊️</span><span class="card-arrow" aria-hidden="true">→</span></span>
+        <span class="card-title">Rules &amp; boundaries</span>
+        <span class="card-sub">What we agree on and what we need</span>
       </a>
       <a class="hub-card" href="calendar.html">
-        <span>Calendar</span>
-        <small>Events & dates</small>
+        <span class="card-top"><span class="card-icon" aria-hidden="true">📅</span><span class="card-arrow" aria-hidden="true">→</span></span>
+        <span class="card-title">Calendar</span>
+        <span class="card-sub">Dates, plans and countdowns</span>
       </a>
       <a class="hub-card" href="gallery.html">
-        <span>Gallery</span>
-        <small>Photos together</small>
+        <span class="card-top"><span class="card-icon" aria-hidden="true">📷</span><span class="card-arrow" aria-hidden="true">→</span></span>
+        <span class="card-title">Gallery</span>
+        <span class="card-sub">Photos together</span>
       </a>
       <a class="hub-card" href="tiktok.html">
-        <span>🎵 TikTok plans</span>
-        <small>Videos to dance to</small>
+        <span class="card-top"><span class="card-icon" aria-hidden="true">🎵</span><span class="card-arrow" aria-hidden="true">→</span></span>
+        <span class="card-title">TikTok plans</span>
+        <span class="card-sub">Videos we want to dance to</span>
       </a>
       <a class="hub-card" href="timeline.html">
-        <span>Our timeline</span>
-        <small>Little moments</small>
+        <span class="card-top"><span class="card-icon" aria-hidden="true">🌅</span><span class="card-arrow" aria-hidden="true">→</span></span>
+        <span class="card-title">Our timeline</span>
+        <span class="card-sub">The story so far, in pictures</span>
       </a>
     </div>
-    <p class="footer-note">Made with care</p>
   </main>
+
+  <footer>Charlotte &amp; Luke · made with care</footer>
+
+  <script src="together.js"></script>
   <script src="avatar.js"></script>
 </body>
 </html>
