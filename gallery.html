@@ -338,11 +338,55 @@
               const tile = document.createElement('div');
               tile.className = 'tile';
               tile.style.cursor = 'pointer';
+              tile.style.position = 'relative';
               const img = document.createElement('img');
               img.src = photo.url;
               img.alt = 'Gallery photo';
               tile.appendChild(img);
               tile.dataset.uploadedBy = photo.uploadedBy || 'Unknown';
+              tile.dataset.path = photo.path;
+              const copyBtn = document.createElement('button');
+              copyBtn.type = 'button';
+              copyBtn.textContent = '+';
+              copyBtn.title = 'Add to another folder';
+              copyBtn.style.position = 'absolute';
+              copyBtn.style.top = '6px';
+              copyBtn.style.right = '6px';
+              copyBtn.style.background = 'rgba(255,255,255,0.9)';
+              copyBtn.style.border = 'none';
+              copyBtn.style.borderRadius = '50%';
+              copyBtn.style.width = '24px';
+              copyBtn.style.height = '24px';
+              copyBtn.style.cursor = 'pointer';
+              copyBtn.style.boxShadow = '0 2px 6px rgba(0,0,0,0.2)';
+              copyBtn.addEventListener('click', async (e) => {
+                e.stopPropagation();
+                const user = localStorage.getItem('charlotte-user') || 'Unknown';
+                const target = prompt('Copy to which folder? (enter folder name, or "Old Photos" for root)');
+                if (!target) return;
+                copyBtn.disabled = true;
+                copyBtn.textContent = '...';
+                try {
+                  const res = await fetch('/api/gallery-copy', {
+                    method: 'POST',
+                    headers: { 'content-type': 'application/json' },
+                    body: JSON.stringify({ sourcePath: photo.path, targetFolder: target.trim(), uploadedBy: user })
+                  });
+                  const j = await res.json();
+                  if (res.ok) {
+                    alert('Copied!');
+                    renderGalleryView();
+                  } else {
+                    alert(j.error || 'Failed');
+                  }
+                } catch (err) {
+                  alert(err.message);
+                } finally {
+                  copyBtn.disabled = false;
+                  copyBtn.textContent = '+';
+                }
+              });
+              tile.appendChild(copyBtn);
               grid.appendChild(tile);
             });
             return;
@@ -358,15 +402,55 @@
             const tile = document.createElement('div');
             tile.className = 'tile';
             tile.style.cursor = 'pointer';
+            tile.style.position = 'relative';
             const img = document.createElement('img');
             img.src = photo.url;
             img.alt = 'Gallery photo';
             tile.appendChild(img);
-            if (photo.uploadedBy) {
-              tile.dataset.uploadedBy = photo.uploadedBy;
-            } else {
-              tile.dataset.uploadedBy = 'Unknown';
-            }
+            tile.dataset.uploadedBy = photo.uploadedBy || 'Unknown';
+            tile.dataset.path = photo.path;
+            const copyBtn = document.createElement('button');
+            copyBtn.type = 'button';
+            copyBtn.textContent = '+';
+            copyBtn.title = 'Add to another folder';
+            copyBtn.style.position = 'absolute';
+            copyBtn.style.top = '6px';
+            copyBtn.style.right = '6px';
+            copyBtn.style.background = 'rgba(255,255,255,0.9)';
+            copyBtn.style.border = 'none';
+            copyBtn.style.borderRadius = '50%';
+            copyBtn.style.width = '24px';
+            copyBtn.style.height = '24px';
+            copyBtn.style.cursor = 'pointer';
+            copyBtn.style.boxShadow = '0 2px 6px rgba(0,0,0,0.2)';
+            copyBtn.addEventListener('click', async (e) => {
+              e.stopPropagation();
+              const user = localStorage.getItem('charlotte-user') || 'Unknown';
+              const target = prompt('Copy to which folder? (enter folder name, or "Old Photos" for root)');
+              if (!target) return;
+              copyBtn.disabled = true;
+              copyBtn.textContent = '...';
+              try {
+                const res = await fetch('/api/gallery-copy', {
+                  method: 'POST',
+                  headers: { 'content-type': 'application/json' },
+                  body: JSON.stringify({ sourcePath: photo.path, targetFolder: target.trim(), uploadedBy: user })
+                });
+                const j = await res.json();
+                if (res.ok) {
+                  alert('Copied!');
+                  renderGalleryView();
+                } else {
+                  alert(j.error || 'Failed');
+                }
+              } catch (err) {
+                alert(err.message);
+              } finally {
+                copyBtn.disabled = false;
+                copyBtn.textContent = '+';
+              }
+            });
+            tile.appendChild(copyBtn);
             grid.appendChild(tile);
           });
         } else if (folder === 'Old Photos') {
@@ -378,11 +462,55 @@
               const tile = document.createElement('div');
               tile.className = 'tile';
               tile.style.cursor = 'pointer';
+              tile.style.position = 'relative';
               const img = document.createElement('img');
               img.src = photo.url;
               img.alt = 'Gallery photo';
               tile.appendChild(img);
               tile.dataset.uploadedBy = photo.uploadedBy || 'Unknown';
+              tile.dataset.path = photo.path;
+              const copyBtn = document.createElement('button');
+              copyBtn.type = 'button';
+              copyBtn.textContent = '+';
+              copyBtn.title = 'Add to another folder';
+              copyBtn.style.position = 'absolute';
+              copyBtn.style.top = '6px';
+              copyBtn.style.right = '6px';
+              copyBtn.style.background = 'rgba(255,255,255,0.9)';
+              copyBtn.style.border = 'none';
+              copyBtn.style.borderRadius = '50%';
+              copyBtn.style.width = '24px';
+              copyBtn.style.height = '24px';
+              copyBtn.style.cursor = 'pointer';
+              copyBtn.style.boxShadow = '0 2px 6px rgba(0,0,0,0.2)';
+              copyBtn.addEventListener('click', async (e) => {
+                e.stopPropagation();
+                const user = localStorage.getItem('charlotte-user') || 'Unknown';
+                const target = prompt('Copy to which folder? (enter folder name, or "Old Photos" for root)');
+                if (!target) return;
+                copyBtn.disabled = true;
+                copyBtn.textContent = '...';
+                try {
+                  const res = await fetch('/api/gallery-copy', {
+                    method: 'POST',
+                    headers: { 'content-type': 'application/json' },
+                    body: JSON.stringify({ sourcePath: photo.path, targetFolder: target.trim(), uploadedBy: user })
+                  });
+                  const j = await res.json();
+                  if (res.ok) {
+                    alert('Copied!');
+                    renderGalleryView();
+                  } else {
+                    alert(j.error || 'Failed');
+                  }
+                } catch (err) {
+                  alert(err.message);
+                } finally {
+                  copyBtn.disabled = false;
+                  copyBtn.textContent = '+';
+                }
+              });
+              tile.appendChild(copyBtn);
               grid.appendChild(tile);
             });
           } else {
