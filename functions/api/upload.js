@@ -4,6 +4,7 @@ export async function onRequestPost(context) {
     const formData = await request.formData();
     const file = formData.get('photo');
     const uploadedBy = formData.get('uploadedBy') || 'Unknown';
+    const folder = (formData.get('folder') || 'General').replace(/[^a-zA-Z0-9-_ ]/g, '');
 
     if (!file || typeof file === 'string') {
       return new Response(JSON.stringify({ error: 'No file uploaded' }), {
@@ -14,7 +15,6 @@ export async function onRequestPost(context) {
 
     const arrayBuffer = await file.arrayBuffer();
     const bytes = new Uint8Array(arrayBuffer);
-    // Convert to base64
     let binary = '';
     for (let i = 0; i < bytes.length; i++) {
       binary += String.fromCharCode(bytes[i]);
@@ -22,7 +22,7 @@ export async function onRequestPost(context) {
     const content = btoa(binary);
 
     const ext = file.name.split('.').pop() || 'jpg';
-    const filename = `gallery/${Date.now()}-${crypto.randomUUID()}.${ext}`;
+    const filename = `gallery/${folder}/${Date.now()}-${crypto.randomUUID()}.${ext}`;
     
     const repo = env.GITHUB_REPO;
     const token = env.GITHUB_TOKEN;
@@ -43,7 +43,7 @@ export async function onRequestPost(context) {
         'User-Agent': 'cf-pages-upload'
       },
       body: JSON.stringify({
-        message: `Upload gallery photo by ${uploadedBy}: ${filename}`,
+        message: `Upload gallery photo by ${uploadedBy} to ${folder}: ${filename}`,
         content: content,
         branch: branch
       })

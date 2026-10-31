@@ -115,57 +115,79 @@
     <p class="subtitle">Photos together</p>
     <section class="upload-card">
       <strong>Upload a photo</strong>
+      <div style="display:flex; gap:10px; flex-wrap:wrap; align-items:center; justify-content:center;">
+        <select id="folderSelect" style="padding:10px 14px; border-radius:10px; border:1px solid #b9dcf5;"></select>
+        <input id="newFolderInput" placeholder="New folder name" style="padding:10px 14px; border-radius:10px; border:1px solid #b9dcf5;">
+        <button class="button" id="createFolderBtn" type="button">Create Folder</button>
+      </div>
       <form id="uploadForm">
         <input id="photoInput" type="file" name="photo" accept="image/*" required>
-        <button class="button" id="uploadBtn" type="submit">Upload to gallery</button>
+        <button class="button" id="uploadBtn" type="submit">Upload to selected folder</button>
       </form>
       <div class="status" id="uploadStatus"></div>
     </section>
-    <div class="grid" id="galleryGrid">
-      <div class="tile empty">
-        <div>
-          <strong>No photos yet</strong>
-          <p>Upload one above to get started</p>
-        </div>
-      </div>
-    </div>
+    <div id="folderView" style="display:flex; flex-direction:column; gap:16px; width:100%; align-items:center;"></div>
   </main>
   <script>
     const form = document.getElementById('uploadForm');
     const input = document.getElementById('photoInput');
     const btn = document.getElementById('uploadBtn');
     const statusEl = document.getElementById('uploadStatus');
-    const grid = document.getElementById('galleryGrid');
+    const folderSelect = document.getElementById('folderSelect');
+    const newFolderInput = document.getElementById('newFolderInput');
+    const createFolderBtn = document.getElementById('createFolderBtn');
+    const folderView = document.getElementById('folderView');
 
-    function addPhoto(src, by) {
-      const tile = document.createElement('div');
-      tile.className = 'tile';
-      tile.style.flexDirection = 'column';
-      const img = document.createElement('img');
-      img.src = src;
-      img.alt = 'Gallery photo';
-      tile.appendChild(img);
-      if (by) {
-        const byline = document.createElement('div');
-        byline.style.padding = '6px 10px';
-        byline.style.fontSize = '0.85rem';
-        byline.style.color = '#2873a6';
-        byline.textContent = `Uploaded by ${by}`;
-        tile.appendChild(byline);
-      }
-      // remove empty placeholder if present
-      const empty = grid.querySelector('.tile.empty');
-      if (empty) empty.remove();
-      grid.prepend(tile);
+    let folders = [];
+
+    function renderFolders() {
+      folderSelect.innerHTML = '';
+      const allOption = document.createElement('option');
+      allOption.value = 'all';
+      allOption.textContent = 'All Photos';
+      folderSelect.appendChild(allOption);
+      folders.forEach(f => {
+        const opt = document.createElement('option');
+        opt.value = f;
+        opt.textContent = f;
+        folderSelect.appendChild(opt);
+      });
+      renderGalleryView();
     }
 
-    async function loadGallery() {
+    function renderGalleryView() {
+      folderView.innerHTML = '';
+      const selected = folderSelect.value;
+      if (selected === 'all') {
+        folders.forEach(folder => {
+          const section = document.createElement('section');
+          section.style.width = 'min(1100px, 94vw)';
+          section.innerHTML = `<h2 style="color:#fff; text-shadow:0 2px 8px #428ec080; text-align:left;">${folder}</h2>`;
+          const grid = document.createElement('div');
+          grid.className = 'grid';
+          grid.dataset.folder = folder;
+          section.appendChild(grid);
+          folderView.appendChild(section);
+          loadFolderPhotos(folder, grid);
+        });
+      } else {
+        const section = document.createElement('section');
+        section.style.width = 'min(1100px, 94vw)';
+        section.innerHTML = `<h2 style="color:#fff; text-shadow:0 2px 8px #428ec080; text-align:left;">${selected}</h2>`;
+        const grid = document.createElement('div');
+        grid.className = 'grid';
+        grid.dataset.folder = selected;
+        section.appendChild(grid);
+        folderView.appendChild(section);
+        loadFolderPhotos(selected, grid);
+      }
+    }
+
+    async function loadFolderPhotos(folder, grid) {
       try {
-        const res = await fetch('/api/gallery');
+        const res = await fetch('/api/gallery?folder=' + encodeURIComponent(folder));
         const json = await res.json();
         if (json.photos && json.photos.length > 0) {
-          const empty = grid.querySelector('.tile.empty');
-          if (empty) empty.remove();
           json.photos.forEach(photo => {
             const tile = document.createElement('div');
             tile.className = 'tile';
@@ -184,19 +206,49 @@
             }
             grid.appendChild(tile);
           });
+        } else {
+          const empty = document.createElement('div');
+          empty.style.color = '#fff';
+          empty.style.textShadow = '0 1px 6px #428ec080';
+          empty.textContent = 'No photos yet';
+          grid.appendChild(empty);
         }
+      } catch (e) {}
+    }
+
+    async function loadFolders() {
+      try {
+        const res = await fetch('/api/gallery');
+        const json = await res.json();
+        folders = json.folders || [];
+        if (folders.length === 0) folders = ['General'];
+        renderFolders();
       } catch (e) {
-        // ignore
+        folders = ['General'];
+        renderFolders();
       }
     }
 
-    loadGallery();
+    createFolderBtn.addEventListener('click', () => {
+      const name = newFolderInput.value.trim();
+      if (!name) return;
+      if (!folders.includes(name)) {
+        folders.push(name);
+        newFolderInput.value = '';
+        renderFolders();
+        folderSelect.value = name;
+        renderGalleryView();
+      }
+    });
+
+    folderSelect.addEventListener('change', renderGalleryView);
 
     form.addEventListener('submit', async (e) => {
       e.preventDefault();
       const file = input.files?.[0];
       if (!file) return;
       const user = localStorage.getItem('charlotte-user') || 'Unknown';
+      const folder = folderSelect.value === 'all' ? 'General' : folderSelect.value;
       btn.disabled = true;
       statusEl.textContent = 'Uploading...';
 
@@ -204,6 +256,7 @@
         const data = new FormData();
         data.append('photo', file);
         data.append('uploadedBy', user);
+        data.append('folder', folder);
         const res = await fetch('/api/upload', {
           method: 'POST',
           body: data
@@ -211,16 +264,16 @@
         const json = await res.json();
         if (!res.ok) throw new Error(json.error || 'Upload failed');
         statusEl.textContent = 'Uploaded!';
-        if (json.url) {
-          addPhoto(json.url, user);
-        }
         form.reset();
+        renderGalleryView();
       } catch (err) {
         statusEl.textContent = err.message;
       } finally {
         btn.disabled = false;
       }
     });
+
+    loadFolders();
   </script>
 </body>
 </html>
