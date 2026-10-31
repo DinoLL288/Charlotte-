@@ -185,7 +185,8 @@
 
     async function loadFolderPhotos(folder, grid) {
       try {
-        const res = await fetch('/api/gallery?folder=' + encodeURIComponent(folder));
+        const folderParam = folder === 'Old Photos' ? 'root' : folder;
+        const res = await fetch('/api/gallery?folder=' + encodeURIComponent(folderParam));
         const json = await res.json();
         if (json.photos && json.photos.length > 0) {
           json.photos.forEach(photo => {

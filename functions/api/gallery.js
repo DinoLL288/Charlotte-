@@ -21,6 +21,32 @@ export async function onRequestGet(context) {
     if (token) headers['Authorization'] = `Bearer ${token}`;
 
     if (folder) {
+      if (folder === 'root' || folder === '') {
+        const res = await fetch(`https://api.github.com/repos/${repo}/contents/gallery?ref=${branch}`, { headers });
+        if (res.status === 404) {
+          return new Response(JSON.stringify({ photos: [] }), {
+            status: 200,
+            headers: { 'content-type': 'application/json' }
+          });
+        }
+        const json = await res.json();
+        if (!Array.isArray(json)) {
+          return new Response(JSON.stringify({ photos: [] }), {
+            status: 200,
+            headers: { 'content-type': 'application/json' }
+          });
+        }
+
+        const photos = json
+          .filter(f => f.type === 'file')
+          .map(f => ({ name: f.name, url: f.download_url || f.html_url, path: f.path }))
+          .sort((a, b) => b.name.localeCompare(a.name));
+
+        return new Response(JSON.stringify({ photos }), {
+          status: 200,
+          headers: { 'content-type': 'application/json' }
+        });
+      }
       const res = await fetch(`https://api.github.com/repos/${repo}/contents/gallery/${folder}?ref=${branch}`, { headers });
       if (res.status === 404) {
         return new Response(JSON.stringify({ photos: [] }), {
@@ -48,14 +74,14 @@ export async function onRequestGet(context) {
     } else {
       const res = await fetch(`https://api.github.com/repos/${repo}/contents/gallery?ref=${branch}`, { headers });
       if (res.status === 404) {
-        return new Response(JSON.stringify({ photos: [], folders: [] }), {
+        return new Response(JSON.stringify({ photos: [], folders: ['General'] }), {
           status: 200,
           headers: { 'content-type': 'application/json' }
         });
       }
       const json = await res.json();
       if (!Array.isArray(json)) {
-        return new Response(JSON.stringify({ photos: [], folders: [] }), {
+        return new Response(JSON.stringify({ photos: [], folders: ['General'] }), {
           status: 200,
           headers: { 'content-type': 'application/json' }
         });
@@ -65,6 +91,13 @@ export async function onRequestGet(context) {
         .filter(f => f.type === 'dir')
         .map(f => f.name)
         .sort();
+      if (folders.length === 0) folders.push('General');
+      
+      // Also check for files in root
+      const hasRootFiles = json.some(f => f.type === 'file');
+      if (hasRootFiles && !folders.includes('Old Photos')) {
+        folders.unshift('Old Photos');
+      }
 
       return new Response(JSON.stringify({ photos: [], folders }), {
         status: 200,
