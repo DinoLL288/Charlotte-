@@ -1,0 +1,15 @@
+{
+  "plans": [
+    {
+      "id": "2ef7935a-0711-49ef-9d40-be97d5f0bfae",
+      "url": "https://www.tiktok.com/@tiktok/video/7106594312292453675",
+      "title": "Test dance plan",
+      "date": "2026-11-14",
+      "time": "19:30",
+      "note": "test note",
+      "author": "Luke",
+      "createdAt": "2026-10-31T08:31:38.030Z",
+      "updatedAt": "2026-10-31T08:31:38.030Z"
+    }
+  ]
+}
