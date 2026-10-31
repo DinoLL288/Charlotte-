@@ -119,8 +119,8 @@
     .tile {
       border-radius: 12px;
       overflow: hidden;
-      background: #ffffff;
-      box-shadow: 0 8px 20px #347eac25;
+      background: transparent;
+      box-shadow: none;
       position: relative;
       display: flex;
       align-items: center;
@@ -129,9 +129,10 @@
     .tile img {
       width: 100%;
       height: auto;
-      max-height: 320px;
+      max-height: 400px;
       object-fit: contain;
       display: block;
+      background: transparent;
     }
     .tile.empty {
       color: #3b7db3;
