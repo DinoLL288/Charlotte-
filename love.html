@@ -411,8 +411,13 @@
         const imagePattern = /\.(jpe?g|png|gif|webp|avif)$/i;
         const seen = new Set();
         reelPhotos = lists.flat().filter(photo => {
-          if (!photo || !photo.url || seen.has(photo.url)) return false;
+          if (!photo || !photo.url) return false;
           if (!imagePattern.test(photo.name || photo.url)) return false;
+          // The same picture can be stored twice under different names (or in two
+          // folders), so compare by GitHub's content hash as well as the URL.
+          const key = photo.sha || photo.path || photo.url;
+          if (seen.has(key) || seen.has(photo.url)) return false;
+          seen.add(key);
           seen.add(photo.url);
           return true;
         });

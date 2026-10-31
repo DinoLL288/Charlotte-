@@ -50,7 +50,7 @@ export async function onRequestGet(context) {
 
         const photos = json
           .filter(f => f.type === 'file')
-          .map(f => ({ name: f.name, url: f.download_url || f.html_url, path: f.path, uploadedBy: metadata[f.path]?.uploadedBy || null }))
+          .map(f => ({ name: f.name, url: f.download_url || f.html_url, path: f.path, sha: f.sha, uploadedBy: metadata[f.path]?.uploadedBy || null }))
           .sort((a, b) => b.name.localeCompare(a.name));
 
         return new Response(JSON.stringify({ photos }), {
@@ -85,7 +85,7 @@ export async function onRequestGet(context) {
 
       const photos = json
         .filter(f => f.type === 'file')
-        .map(f => ({ name: f.name, url: f.download_url || f.html_url, path: f.path, uploadedBy: metadata[f.path]?.uploadedBy || null }))
+        .map(f => ({ name: f.name, url: f.download_url || f.html_url, path: f.path, sha: f.sha, uploadedBy: metadata[f.path]?.uploadedBy || null }))
         .sort((a, b) => b.name.localeCompare(a.name));
 
       return new Response(JSON.stringify({ photos }), {
