@@ -30,6 +30,8 @@ The real-time features use a small Cloudflare Durable Object Worker alongside th
 2. The root `wrangler.toml` defines the production `QUESTION_ROOM` binding for the `charlotte-question-room` Worker.
 3. Deploy the Pages project with `npx wrangler pages deploy . --project-name charlotte --branch main` so the binding is attached to the Functions.
 
+The GitHub-connected Pages project must also keep the build command `npm ci --omit=dev`. Pages Functions import `@aws-sdk/*` and `@xmldom/xmldom`; without an install step the build fails with "Could not resolve" errors.
+
 Each person has a private question queue; the other person can see its count but not its text until both are online and press **I’m ready**. A round starts with three questions from each person, with each author asking and their partner answering. Questions and responses persist in the Durable Object, and saved answers include their answer date and time. The shared music widget stores one Spotify playlist link and playback position in the Durable Object; the player attempts to sync play, pause, and position across both browsers. Some phones block remote autoplay and require a local tap. Bathroom check-ins and their recent activity history are also stored in the Durable Object.
 
 ## Gallery photo storage (Google Photos)
@@ -40,9 +42,9 @@ Google Photos only lets this integration list and retrieve media items created t
 
 ### One-time Google setup
 
-In the Google Cloud project used by the website's existing OAuth web client:
+In the Google Cloud project used by the website's existing OAuth web client (`molten-crowbar-513403-j7`, project number `924567335912`):
 
-1. Enable **Photos Library API**.
+1. Enable **Photos Library API** (done). Without it, uploads fail with a misleading browser CORS error.
 2. In OAuth consent **Data Access**, add `https://www.googleapis.com/auth/photoslibrary.appendonly` and `https://www.googleapis.com/auth/photoslibrary.readonly.appcreateddata`.
 3. Confirm the OAuth web client has `https://charlotte-3ts.pages.dev` as an authorized JavaScript origin. Add the exact local development origin too if testing locally.
 4. If the consent screen is in **Testing**, add the shared Google Photos account as a test user. Google may require app verification before wider production access to Photos scopes.
