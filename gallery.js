@@ -271,7 +271,7 @@
     const button = event.currentTarget;
     button.disabled = true;
     try {
-      await getGoogleAccessToken('consent');
+      await getGoogleAccessToken('select_account');
       await loadGooglePhotoUrls(false);
       status.textContent = 'Our shared Google Photos account is connected ✨';
     } catch (error) { status.textContent = error.message; }
@@ -308,6 +308,7 @@
     const uploadFileName = file.name.normalize('NFKD').replace(/[^A-Za-z0-9._-]/g, '_').slice(0, 200) || 'memory';
     uploadButton.disabled = true; status.textContent = 'Adding our memory…';
     try {
+      if (!googleAccessToken || Date.now() >= googleTokenExpiresAt - 60_000) throw new Error('Connect our shared Google Photos account first, then save the photo.');
       const token = await getGoogleAccessToken('');
       const uploadToken = await new Promise((resolve, reject) => {
         const xhr = new XMLHttpRequest();
