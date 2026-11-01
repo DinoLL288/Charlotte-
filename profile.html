@@ -64,6 +64,7 @@
     }
     .settings-row{width:100%;display:grid;gap:7px;text-align:left;color:#486a83;font-size:.9rem;font-weight:700}.settings-row select,.settings-row input[type=color]{width:100%;min-height:44px;padding:9px 12px;border:1px solid #c8dceb;border-radius:13px;background:#fffefa;color:#174866;font:inherit}.settings-row input[type=color]{height:48px;padding:5px}.setting-check{display:flex;align-items:flex-start;gap:10px;width:100%;padding:13px;border:1px solid #dce9ef;border-radius:14px;background:#f4f9fb;color:#486a83;text-align:left;line-height:1.45}.setting-check input{margin-top:3px;accent-color:#347fa3}.settings-help,.settings-status{width:100%;margin:0;color:#607e92;font-size:.84rem;line-height:1.5;text-align:left}.settings-status{min-height:1.4em;color:#73591f;font-weight:700}
     .settings-group{width:100%;display:grid;gap:12px;padding:15px;border:1px solid #e0ebf0;border-radius:18px;background:#fffefa}.settings-group h2{margin:0;text-align:left;color:#174866;font:700 1.12rem var(--font-display,Georgia,serif)}.setting-check input{flex:none}.settings-row input[type=time]{font-variant-numeric:tabular-nums}.card{width:min(520px,94vw);max-height:calc(100vh - 36px);overflow:auto;align-items:stretch;text-align:left;padding:24px}.card>h1,.card>.subtitle{text-align:center}.card>h1{margin:0}.card .avatar{align-self:center}.card>input[type=file]{align-self:center;max-width:100%}.card>.button{align-self:center}.top-bar{z-index:2}
+    .shared-accounts-list{display:grid;gap:12px}.shared-account{display:grid;gap:9px;padding:12px;border:1px solid #dce9ef;border-radius:15px;background:#f6fafc}.shared-account-head{display:flex;align-items:center;justify-content:space-between;gap:8px}.shared-account-head strong{color:#174866}.shared-account .settings-row{font-size:.82rem}.shared-account input{width:100%;min-height:42px;padding:9px 11px;border:1px solid #c8dceb;border-radius:11px;background:#fffefa;color:#174866;font:inherit}.shared-account input:focus{outline:2px solid #8cc5df;outline-offset:1px}.shared-account-meta{margin:0;color:#728b9b;font-size:.76rem}.shared-account .remove-account{border:0;border-radius:999px;background:#fff0f1;color:#965564;padding:7px 11px;font:inherit;font-size:.78rem;font-weight:700;cursor:pointer}.shared-account-actions{display:flex;justify-content:center;gap:10px;flex-wrap:wrap}.shared-account-actions .button{align-self:auto}
   </style>
   <link rel="stylesheet" href="theme.css">
 </head>
@@ -96,6 +97,16 @@
       <button class="button" id="enableNotifications" type="button">Allow browser notifications</button>
       <p class="settings-help" id="notificationHelp">Browser permission is controlled by this device. If it is blocked, the in-app reminders still appear.</p>
     </section>
+    <section class="settings-group" id="sharedAccountsGroup">
+      <h2>Our shared accounts</h2>
+      <p class="settings-help">Keep our account names and profile links together. These notes don’t change privacy settings, connect an upload service, or store passwords and login tokens.</p>
+      <div class="shared-accounts-list" id="sharedAccountsList"><p class="settings-help">Loading our accounts…</p></div>
+      <div class="shared-account-actions">
+        <button class="button" id="addSharedAccount" type="button">Add an account</button>
+        <button class="button" id="saveSharedAccounts" type="button">Save shared accounts</button>
+      </div>
+      <p class="settings-status" id="sharedAccountsStatus" role="status"></p>
+    </section>
     <button class="button" id="savePreferences" type="button">Save our settings</button>
     <p class="settings-status" id="preferencesStatus" role="status"></p>
     <h2 class="section-title">Account</h2>
@@ -121,6 +132,9 @@
     const reminderLeadDays = document.getElementById('reminderLeadDays');
     const reminderTime = document.getElementById('reminderTime');
     const preferencesStatus = document.getElementById('preferencesStatus');
+    const sharedAccountsList = document.getElementById('sharedAccountsList');
+    const sharedAccountsStatus = document.getElementById('sharedAccountsStatus');
+    let sharedAccounts = [];
     const preferenceKey = 'charlotte-preferences-' + user;
     function applyPreferences(preferences) {
       if (!preferences) return;
@@ -193,6 +207,111 @@
       } catch (e) {}
     }
     loadProfile();
+
+    function accountField(account, key, labelText, placeholder = '') {
+      const label = document.createElement('label');
+      label.className = 'settings-row';
+      label.textContent = labelText;
+      const input = document.createElement('input');
+      input.type = key === 'profileUrl' ? 'url' : 'text';
+      input.dataset.field = key;
+      input.maxLength = key === 'note' ? 300 : key === 'profileUrl' ? 500 : 100;
+      input.placeholder = placeholder;
+      input.value = account[key] || '';
+      label.appendChild(input);
+      return label;
+    }
+    function renderSharedAccounts() {
+      sharedAccountsList.replaceChildren();
+      if (!sharedAccounts.length) {
+        const empty = document.createElement('p');
+        empty.className = 'settings-help';
+        empty.textContent = 'No accounts saved yet.';
+        sharedAccountsList.appendChild(empty);
+      }
+      sharedAccounts.forEach((account, index) => {
+        const card = document.createElement('article');
+        card.className = 'shared-account';
+        card.dataset.id = account.id || '';
+        const head = document.createElement('div');
+        head.className = 'shared-account-head';
+        const title = document.createElement('strong');
+        title.textContent = account.name || 'Shared account';
+        if (account.profileUrl) {
+          try {
+            const profileUrl = new URL(account.profileUrl);
+            if (profileUrl.protocol === 'https:') {
+              const open = document.createElement('a');
+              open.href = profileUrl.href;
+              open.target = '_blank';
+              open.rel = 'noopener noreferrer';
+              open.textContent = 'Open profile ↗';
+              open.style.cssText = 'margin-left:auto;color:#347fa3;font-size:.8rem;font-weight:700;text-decoration:none';
+              head.append(title, open);
+            } else head.appendChild(title);
+          } catch { head.appendChild(title); }
+        } else head.appendChild(title);
+        const remove = document.createElement('button');
+        remove.className = 'remove-account';
+        remove.type = 'button';
+        remove.textContent = 'Remove';
+        remove.addEventListener('click', () => { sharedAccounts.splice(index, 1); renderSharedAccounts(); });
+        head.appendChild(remove);
+        card.append(head,
+          accountField(account, 'name', 'Account name', 'TikTok'),
+          accountField(account, 'platform', 'Platform', 'TikTok, YouTube…'),
+          accountField(account, 'handle', 'Username or handle', '@name'),
+          accountField(account, 'profileUrl', 'Profile link', 'https://…'),
+          accountField(account, 'visibility', 'Privacy note', 'Public / private videos'),
+          accountField(account, 'note', 'Note (optional)', 'Anything we should remember')
+        );
+        const meta = document.createElement('p');
+        meta.className = 'shared-account-meta';
+        meta.textContent = account.updatedBy ? 'Last updated by ' + account.updatedBy + (account.updatedAt ? ' · ' + new Date(account.updatedAt).toLocaleString() : '') : 'Shared profile details';
+        card.appendChild(meta);
+        sharedAccountsList.appendChild(card);
+      });
+    }
+    async function loadSharedAccounts() {
+      try {
+        const response = await fetch('/api/shared-accounts');
+        const result = await response.json();
+        if (!response.ok) throw new Error(result.error || 'Could not load our accounts.');
+        sharedAccounts = Array.isArray(result.accounts) ? result.accounts : [];
+        renderSharedAccounts();
+      } catch (error) {
+        sharedAccountsList.replaceChildren();
+        const message = document.createElement('p');
+        message.className = 'settings-help';
+        message.textContent = error.message;
+        sharedAccountsList.appendChild(message);
+      }
+    }
+    document.getElementById('addSharedAccount').addEventListener('click', () => {
+      sharedAccounts.push({ id: crypto.randomUUID(), name: '', platform: '', handle: '', profileUrl: '', visibility: '', note: '' });
+      renderSharedAccounts();
+      sharedAccountsList.lastElementChild?.querySelector('input')?.focus();
+    });
+    document.getElementById('saveSharedAccounts').addEventListener('click', async () => {
+      const button = document.getElementById('saveSharedAccounts');
+      const accounts = [...sharedAccountsList.querySelectorAll('.shared-account')].map(card => {
+        const entry = { id: card.dataset.id };
+        card.querySelectorAll('[data-field]').forEach(input => { entry[input.dataset.field] = input.value.trim(); });
+        return entry;
+      });
+      button.disabled = true;
+      sharedAccountsStatus.textContent = 'Saving our shared accounts…';
+      try {
+        const response = await fetch('/api/shared-accounts', { method: 'POST', headers: { 'content-type': 'application/json' }, body: JSON.stringify({ accounts }) });
+        const result = await response.json();
+        if (!response.ok) throw new Error(result.error || 'Could not save our accounts.');
+        sharedAccounts = result.accounts || accounts;
+        renderSharedAccounts();
+        sharedAccountsStatus.textContent = 'Our shared account details are saved.';
+      } catch (error) { sharedAccountsStatus.textContent = error.message; }
+      finally { button.disabled = false; }
+    });
+    loadSharedAccounts();
     
     let selectedFile = null;
     avatarInput.addEventListener('change', (e) => {

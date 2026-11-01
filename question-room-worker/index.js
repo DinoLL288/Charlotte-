@@ -167,6 +167,33 @@ export class QuestionNightRoom {
       for (let i = 0; i < Math.max(token.length, saved.length); i++) diff |= (token.charCodeAt(i) || 0) ^ (saved.charCodeAt(i) || 0);
       return Response.json({ ok: Boolean(saved) && diff === 0 });
     }
+    if (body.action === 'get-shared-accounts') {
+      let accounts = await this.ctx.storage.get('sharedAccounts');
+      if (!Array.isArray(accounts)) {
+        accounts = [
+          { id: 'tiktok', name: 'TikTok', platform: 'TikTok', handle: '@secretdino.ll27', profileUrl: 'https://www.tiktok.com/@secretdino.ll27', visibility: 'Public', note: '' },
+          { id: 'youtube', name: 'YouTube', platform: 'YouTube', handle: '@secretdino.ll27', profileUrl: 'https://www.youtube.com/@secretdino.ll27', visibility: 'Private videos', note: '' }
+        ];
+        await this.ctx.storage.put('sharedAccounts', accounts);
+      }
+      return Response.json({ ok: true, accounts });
+    }
+    if (body.action === 'save-shared-accounts') {
+      if (!Array.isArray(body.accounts) || body.accounts.length > 30) return Response.json({ error: 'Keep up to 30 shared account cards.' }, { status: 400 });
+      const accounts = body.accounts.map(account => ({
+        id: String(account.id || crypto.randomUUID()).slice(0, 80),
+        name: String(account.name || '').trim().slice(0, 80),
+        platform: String(account.platform || 'Other').trim().slice(0, 40),
+        handle: String(account.handle || '').trim().slice(0, 100),
+        profileUrl: String(account.profileUrl || '').trim().slice(0, 500),
+        visibility: String(account.visibility || '').trim().slice(0, 80),
+        note: String(account.note || '').trim().slice(0, 300),
+        updatedBy: ['Luke', 'Charlotte'].includes(body.updatedBy) ? body.updatedBy : 'Unknown',
+        updatedAt: new Date().toISOString()
+      }));
+      await this.ctx.storage.put('sharedAccounts', accounts);
+      return Response.json({ ok: true, accounts });
+    }
 
     if (body.action === 'attempt-login') {
       const ip = String(body.ip || 'unknown').slice(0, 100);
