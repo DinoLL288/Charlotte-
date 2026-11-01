@@ -1,0 +1,219 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <script src="site-shell-guard.js"></script>
+  <meta charset="UTF-8"><meta name="viewport" content="width=device-width, initial-scale=1.0"><title>Our little safe</title>
+  <script>if (!localStorage.getItem('charlotte-user')) location.href = 'login.html';</script>
+  <link rel="stylesheet" href="theme.css">
+  <style>
+    *{box-sizing:border-box}
+    .hero{position:relative;overflow:hidden;padding:86px 20px 72px;text-align:center;color:#fff;background:radial-gradient(680px 340px at 16% 0%,#1d5f89 0%,rgba(29,95,137,0) 62%),radial-gradient(520px 300px at 86% 12%,#38799f 0%,rgba(56,121,159,0) 60%),linear-gradient(160deg,#0b263b,#2a78a8)}
+    .hero:before,.hero:after{position:absolute;pointer-events:none;font-size:clamp(2rem,5vw,3.2rem);opacity:.32}
+    .hero:before{content:"✦";top:58px;left:12%;color:var(--gold-soft);transform:rotate(-14deg)}
+    .hero:after{content:"✧";bottom:54px;right:13%;color:#d9f0ff;transform:rotate(12deg)}
+    .hero .eyebrow{color:var(--gold-soft)}
+    .hero h1{margin:12px 0 10px;font-size:clamp(2.3rem,7vw,3.6rem);font-weight:400}
+    .hero p:last-child{max-width:56ch;margin:0 auto;color:#e6f3fc;line-height:1.65}
+    .hero-badge{display:grid;place-items:center;width:62px;height:62px;margin:0 auto 18px;border:1px solid rgba(255,255,255,.4);border-radius:21px;background:rgba(255,255,255,.12);box-shadow:inset 0 1px 0 #ffffff66,0 12px 26px #06202f4d;font-size:1.7rem}
+    .top-bar{position:absolute;top:16px;left:16px;z-index:2}
+    .shell{width:min(940px,100%);margin:-36px auto 60px;padding:0 18px;position:relative}
+    .panel{margin-top:16px;padding:clamp(22px,4vw,32px);border:1px solid #fff;border-radius:24px;background:rgba(255,253,247,.97);box-shadow:0 20px 50px #143f5f22}
+    .panel h2{margin:0;color:#123a58;font-size:1.5rem}
+    .panel h3{margin:0 0 6px;color:#174866;font-size:1.02rem}
+    .intro{margin:8px 0 18px;color:#5c7c93;line-height:1.6}
+    .gate{max-width:560px;margin:16px auto 0}
+    .gate-badge{display:grid;place-items:center;width:52px;height:52px;margin-bottom:14px;border:1px solid #f0e0b8;border-radius:17px;background:linear-gradient(150deg,#fff6de,#ffe9b8);font-size:1.4rem;box-shadow:0 8px 20px #c9a24a26}
+    .gate form{display:grid;gap:13px}
+    .gate label{display:grid;gap:6px;color:#5b7a8f;font-size:.84rem;font-weight:700}
+    input[type=password],input[type=text],input[type=search]{width:100%;padding:12px 14px;border:1px solid #c8dceb;border-radius:12px;background:#fff;color:#123a58;font:inherit}
+    input[type=password]:focus,input[type=text]:focus,input[type=search]:focus{outline:3px solid #c9a24a55;border-color:var(--gold)}
+    .hint{margin:0;color:#7b91a0;font-size:.8rem;line-height:1.5}
+    .strength{min-height:1.1em;margin:0;color:#7b6a35;font-size:.8rem;font-weight:700}
+    .button{border:1px solid #d5e3ec;border-radius:999px;padding:10px 18px;color:#24516e;background:#fff;font:inherit;font-size:.9rem;font-weight:700;cursor:pointer;transition:transform .15s ease,box-shadow .15s ease,background .15s ease}
+    .button:hover{background:#edf7fd;transform:translateY(-1px)}
+    .button.primary{border-color:#143f5f;color:#fff;background:#143f5f;box-shadow:0 10px 22px #143f5f33}
+    .button.primary:hover{background:#1b5178}
+    .button.ghost{background:#f2f8fb}
+    .button.danger{border-color:#8a5238;color:#fff;background:#8a5238}
+    .button:disabled{opacity:.55;cursor:wait;transform:none}
+    .button:focus-visible{outline:3px solid var(--gold);outline-offset:3px}
+    .link{border:0;padding:0;color:#8a6d2b;background:none;font:inherit;font-weight:700;text-decoration:underline;cursor:pointer}
+    .gate-foot{margin:18px 0 0;color:#7b91a0;font-size:.82rem;line-height:1.6}
+    .status{min-height:1.3em;margin:0;color:#73591f;font-size:.86rem;font-weight:700;line-height:1.5}
+    .safe-head{display:flex;align-items:flex-start;justify-content:space-between;gap:18px;flex-wrap:wrap}
+    .safe-head .intro{margin-bottom:0;max-width:52ch}
+    .safe-actions{display:flex;gap:8px;flex-wrap:wrap}
+    .count{display:inline-block;margin-left:6px;padding:2px 9px;border-radius:999px;color:#775d20;background:#fff3d6;font-family:var(--font-body);font-size:.72rem;font-weight:800;vertical-align:middle}
+    .toolbar{display:flex;align-items:center;gap:12px;flex-wrap:wrap;margin:20px 0 16px}
+    .toolbar .search{flex:1;min-width:220px}
+    .toolbar input[type=search]{border-radius:999px;background:#f9fdff}
+    .autolock{color:#8297a5;font-size:.76rem;line-height:1.4}
+    .entries{display:grid;grid-template-columns:repeat(auto-fill,minmax(280px,1fr));gap:14px}
+    .entry{display:flex;flex-direction:column;gap:12px;padding:16px;border:1px solid #e4edf2;border-radius:18px;background:#fff;box-shadow:0 8px 22px #1748660f}
+    .entry-head{display:flex;align-items:center;gap:11px}
+    .entry-mark{display:grid;place-items:center;width:38px;height:38px;flex:none;border:1px solid #f0dfae;border-radius:12px;color:#7a5c17;background:linear-gradient(140deg,#fff6dc,#ffe7ae);font-family:var(--font-display);font-size:1.05rem;font-weight:700}
+    .entry-title{margin:0;color:#123a58;font-family:var(--font-display);font-size:1.08rem;overflow-wrap:anywhere}
+    .entry-notes{margin:2px 0 0;color:#7b91a0;font-size:.79rem;line-height:1.45;overflow-wrap:anywhere}
+    .fields{margin:0;display:grid;gap:8px}
+    .field{padding:8px 10px;border:1px solid #edf4f8;border-radius:11px;background:#f8fcfd}
+    .field-top{display:flex;align-items:center;justify-content:space-between;gap:8px}
+    .field-label{color:#8a9dab;font-size:.66rem;font-weight:800;letter-spacing:.14em;text-transform:uppercase}
+    .field-value{margin-top:4px;display:flex;align-items:center;gap:6px;flex-wrap:wrap;color:#1f4a68;font-family:ui-monospace,Consolas,"Courier New",monospace;font-size:.84rem;line-height:1.4;overflow-wrap:anywhere;word-break:break-word}
+    .field-value.is-empty{color:#9aabb7;font-family:var(--font-body);font-size:.8rem}
+    .mini{border:1px solid #dbe8ef;border-radius:999px;padding:5px 10px;color:#33607d;background:#fff;font:inherit;font-size:.72rem;font-weight:700;cursor:pointer}
+    .mini:hover{background:#eef7fc}
+    .mini.danger{border-color:#e8d4c9;color:#8a5238}
+    .mini:focus-visible{outline:3px solid #c9a24a88;outline-offset:2px}
+    .entry-actions{display:flex;gap:7px;margin-top:auto;padding-top:2px}
+    .empty{padding:22px;border:1px dashed #c3d8e4;border-radius:16px;color:#6b8799;background:#fbfdfe;text-align:center;line-height:1.6}
+    .safe-status{margin-top:14px}
+    .settings{margin-top:22px;border:1px solid #dce9ef;border-radius:17px;background:#f7fbfd}
+    .settings summary{padding:14px 17px;color:#315d78;font-weight:800;cursor:pointer}
+    .settings-body{display:grid;gap:22px;padding:4px 17px 18px}
+    .settings form{display:grid;gap:11px;max-width:420px}
+    .settings label{display:grid;gap:6px;color:#5b7a8f;font-size:.82rem;font-weight:700}
+    .settings p{margin:0;color:#7b91a0;font-size:.8rem;line-height:1.55}
+    .danger-zone{padding-top:18px;border-top:1px solid #e6eef2}
+    .danger-zone .button{margin-top:10px}
+    .entry-dialog{width:min(480px,calc(100% - 28px));max-width:none;padding:0;border:1px solid #fff;border-radius:24px;color:var(--ink);background:linear-gradient(150deg,#fff,#fdf8ee);box-shadow:0 30px 90px #0a283e59}
+    .entry-dialog::backdrop{background:rgba(8,30,47,.55);backdrop-filter:blur(5px)}
+    .entry-form{display:grid;gap:12px;padding:26px}
+    .entry-form .eyebrow{color:#8a6d2b}
+    .entry-form h2{margin:0 0 2px;color:#123a58;font-size:1.5rem}
+    .entry-form label{display:grid;gap:6px;color:#5b7a8f;font-size:.82rem;font-weight:700}
+    .password-row{display:flex;align-items:center;gap:8px;flex-wrap:wrap}
+    .password-row input{flex:1;min-width:140px}
+    .dialog-actions{display:flex;justify-content:flex-end;gap:10px;margin-top:6px}
+    .toast{position:fixed;left:50%;bottom:26px;z-index:40;max-width:80vw;padding:10px 18px;border:1px solid #fff;border-radius:999px;color:#123a58;background:rgba(255,253,247,.98);box-shadow:0 14px 34px #0a283e40;font-size:.86rem;font-weight:700;opacity:0;transform:translate(-50%,10px);pointer-events:none;transition:opacity .18s ease,transform .18s ease}
+    .toast.show{opacity:1;transform:translate(-50%,0)}
+    .sr-only{position:absolute;width:1px;height:1px;margin:-1px;padding:0;overflow:hidden;clip:rect(0 0 0 0);white-space:nowrap;border:0}
+    @media(max-width:560px){.hero{padding-top:94px}.entries{grid-template-columns:1fr}.safe-head{flex-direction:column}.toolbar .search{min-width:0;flex-basis:100%}.entry-form{padding:22px 18px}}
+    @media(prefers-reduced-motion:reduce){.button,.button:hover{transition:none;transform:none}.toast{transition:none}}
+  </style>
+</head>
+<body>
+  <div class="top-bar"><a class="button" href="index.html">← Back to hub</a></div>
+
+  <header class="hero">
+    <span class="hero-badge" aria-hidden="true">🔐</span>
+    <p class="eyebrow">just for us</p>
+    <h1>Our little safe</h1>
+    <p>A cosy corner for the logins we share. Everything is scrambled in this browser with our passphrase before it's saved, so the site only ever stores a locked box.</p>
+  </header>
+
+  <main class="shell">
+    <p class="sr-only" id="pageAnnouncement" role="status" aria-live="polite"></p>
+
+    <section class="panel gate" id="setupPanel" hidden>
+      <div class="gate-badge" aria-hidden="true">🌱</div>
+      <h2>Make our safe</h2>
+      <p class="intro">Pick one passphrase we'll both remember. It never leaves this browser and can't be recovered — if we forget it, the only way back in is to start the safe again with a new passphrase.</p>
+      <form id="setupForm" autocomplete="off">
+        <label for="setupPassphrase">Our passphrase
+          <input id="setupPassphrase" name="setup-passphrase" type="password" autocomplete="new-password" autocapitalize="off" spellcheck="false" minlength="10" required>
+        </label>
+        <label for="setupConfirm">Once more, slowly
+          <input id="setupConfirm" name="setup-confirm" type="password" autocomplete="new-password" autocapitalize="off" spellcheck="false" required>
+        </label>
+        <p class="strength" id="setupStrength" aria-live="polite"></p>
+        <button class="button primary" type="submit" id="setupButton">Create our safe</button>
+        <p class="status" id="setupStatus" role="status"></p>
+      </form>
+      <p class="gate-foot">Tip: three or four little words squished together make a passphrase that's easy for us and hard for anyone else.</p>
+    </section>
+
+    <section class="panel gate" id="lockPanel" hidden>
+      <div class="gate-badge" aria-hidden="true">🔒</div>
+      <h2>Welcome back</h2>
+      <p class="intro" id="lockIntro">Our safe is locked. Type our shared passphrase to see what's inside.</p>
+      <form id="unlockForm" autocomplete="off">
+        <label for="unlockPassphrase">Our passphrase
+          <input id="unlockPassphrase" name="unlock-passphrase" type="password" autocomplete="current-password" autocapitalize="off" spellcheck="false" required>
+        </label>
+        <button class="button primary" type="submit" id="unlockButton">Open our safe</button>
+        <p class="status" id="unlockStatus" role="status"></p>
+      </form>
+      <p class="gate-foot">Forgotten it? A passphrase can't be reset. <button class="link" type="button" id="startOverButton">Start our safe again</button> — that erases every saved login.</p>
+    </section>
+
+    <section class="panel" id="safePanel" hidden>
+      <div class="safe-head">
+        <div>
+          <h2>Inside our safe <span class="count" id="entryCount" hidden></span></h2>
+          <p class="intro">Copy a password straight from its card. Nothing is ever shown before we ask for it.</p>
+        </div>
+        <div class="safe-actions">
+          <button class="button primary" type="button" id="addEntryButton">＋ Add a login</button>
+          <button class="button ghost" type="button" id="lockButton">Lock</button>
+        </div>
+      </div>
+
+      <div class="toolbar">
+        <label class="search"><span class="sr-only">Search our safe</span>
+          <input id="searchInput" type="search" placeholder="Search names, usernames, notes…" autocomplete="off">
+        </label>
+        <span class="autolock">It locks itself after five quiet minutes.</span>
+      </div>
+
+      <div class="entries" id="entryList"></div>
+      <p class="empty" id="emptyState" hidden></p>
+      <p class="status safe-status" id="safeStatus" role="status" aria-live="polite"></p>
+
+      <details class="settings" id="settingsPanel">
+        <summary>Safe settings</summary>
+        <div class="settings-body">
+          <form id="changeForm" autocomplete="off">
+            <h3>Change our passphrase</h3>
+            <p>This re-locks everything with a new passphrase. Nothing inside the safe changes.</p>
+            <label for="newPassphrase">New passphrase
+              <input id="newPassphrase" name="new-passphrase" type="password" autocomplete="new-password" autocapitalize="off" spellcheck="false" minlength="10" required>
+            </label>
+            <label for="newConfirm">Once more
+              <input id="newConfirm" name="new-confirm" type="password" autocomplete="new-password" autocapitalize="off" spellcheck="false" required>
+            </label>
+            <button class="button" type="submit" id="changeButton">Save new passphrase</button>
+            <p class="status" id="changeStatus" role="status"></p>
+          </form>
+          <div class="danger-zone">
+            <h3>Empty the safe</h3>
+            <p>Deletes every saved login for both of us. There's no undo.</p>
+            <button class="button danger" type="button" id="eraseButton">Erase our safe</button>
+          </div>
+        </div>
+      </details>
+    </section>
+  </main>
+
+  <dialog class="entry-dialog" id="entryDialog">
+    <form class="entry-form" id="entryForm" autocomplete="off">
+      <p class="eyebrow">A shared login</p>
+      <h2 id="entryDialogTitle">Add to our safe</h2>
+      <label for="entryTitle">What is it?
+        <input id="entryTitle" name="entry-title" type="text" maxlength="80" placeholder="Netflix, the wifi, electricity…" required>
+      </label>
+      <label for="entryUsername">Username or email
+        <input id="entryUsername" name="entry-username" type="text" maxlength="160" autocomplete="off" autocapitalize="off" spellcheck="false">
+      </label>
+      <label for="entryPassword">Password
+        <span class="password-row">
+          <input id="entryPassword" name="entry-password" type="password" maxlength="200" autocomplete="new-password" autocapitalize="off" spellcheck="false">
+          <button class="mini" type="button" id="toggleEntryPassword" aria-pressed="false">Show</button>
+          <button class="mini" type="button" id="generatePassword">Surprise me</button>
+        </span>
+      </label>
+      <label for="entryNotes">A little note
+        <input id="entryNotes" name="entry-notes" type="text" maxlength="200" placeholder="optional, like which account it belongs to">
+      </label>
+      <p class="status" id="entryStatus" role="status"></p>
+      <div class="dialog-actions">
+        <button class="button ghost" type="button" id="cancelEntry">Cancel</button>
+        <button class="button primary" type="submit" id="saveEntry">Save it</button>
+      </div>
+    </form>
+  </dialog>
+
+  <div class="toast" id="toast" role="status" aria-live="polite"></div>
+
+  <script src="dialog.js"></script><script src="avatar.js"></script><script src="vault.js"></script>
+</body>
+</html>

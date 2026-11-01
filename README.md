@@ -21,6 +21,7 @@ A little site for Charlotte. Now split into a hub with multiple sections.
 - `question-night.html` - An anytime question room that reveals only when both people are online and ready
 - `presence.js` - Shared online indicator, editable playlist, and on-page Spotify player
 - `bathroom.html` - Shared bathroom check-ins with each person's profile picture and activity history
+- `vault.html`, `vault.js` - Our little safe: shared logins encrypted in the browser and saved as ciphertext through `/api/vault`
 
 ### Live question room and shared music
 
@@ -33,6 +34,16 @@ The real-time features use a small Cloudflare Durable Object Worker alongside th
 The GitHub-connected Pages project must also keep the build command `npm ci --omit=dev`. Pages Functions import `@aws-sdk/*` and `@xmldom/xmldom`; without an install step the build fails with "Could not resolve" errors.
 
 Each person has a private question queue; the other person can see its count but not its text until both are online and press **I’m ready**. A round starts with three questions from each person, with each author asking and their partner answering. Questions and responses persist in the Durable Object, and saved answers include their answer date and time. The shared music widget stores one Spotify playlist link and playback position in the Durable Object; the player attempts to sync play, pause, and position across both browsers. Some phones block remote autoplay and require a local tap. Bathroom check-ins and their recent activity history are also stored in the Durable Object.
+
+## Our little safe (shared logins)
+
+`vault.html` is a quiet, separate page reached from the small **Our little safe** link in the hub footer. It keeps account names and passwords we both need, and it is deliberately not one of the hub cards.
+
+- The browser derives a 256-bit AES-GCM key from the shared passphrase with PBKDF2-SHA256 (310,000 iterations) and a random 16-byte salt. Every save uses a fresh 12-byte IV and the additional data `charlotte-shared-vault-v1`.
+- The passphrase and derived key stay in that tab's memory only. They are never sent to Cloudflare, stored in the repository, or written to local storage. The page auto-locks after five idle minutes.
+- `/api/vault` requires the normal signed site login. It stores only `{version, kdf, iterations, salt, iv, ciphertext, updatedBy, updatedAt, createdAt}` at the Durable Object key `sharedVault`, and validates the envelope before saving.
+- A forgotten passphrase cannot be reset. **Erase our safe** deletes the stored blob for both people; **Change our passphrase** re-encrypts the same entries with a new salt and key.
+- A change to the safe's storage actions must be deployed to the room Worker before the page can save (`npx wrangler deploy --config question-room-worker/wrangler.toml`). Never commit a real passphrase or a decrypted export.
 
 ## Gallery photo storage (Google Photos)
 

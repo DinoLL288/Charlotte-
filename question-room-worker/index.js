@@ -161,7 +161,7 @@ export class QuestionNightRoom {
     for (let i = 0; i < Math.max(supplied.length, expected.length); i++) mismatch |= (supplied.charCodeAt(i) || 0) ^ (expected.charCodeAt(i) || 0);
     if (!expected || mismatch) return Response.json({ error: 'Not found' }, { status: 404 });
     const data = await this.ctx.storage.get('galleryData') || { photos: [], pendingUploads: {} };
-    if (request.method === 'GET') return Response.json({ ok: true, photos: data.photos, googlePhotos: data.googlePhotos || [], pendingUploads: data.pendingUploads }, { headers: { 'cache-control': 'no-store' } });
+    if (request.method === 'GET') return Response.json({ ok: true, photos: data.photos, googlePhotos: data.googlePhotos || [], pendingUploads: data.pendingUploads, vault: await this.ctx.storage.get('sharedVault') || null }, { headers: { 'cache-control': 'no-store' } });
     if (request.method !== 'POST') return Response.json({ error: 'Method not allowed' }, { status: 405 });
     let body;
     try { body = await request.json(); } catch { return Response.json({ error: 'Invalid request' }, { status: 400 }); }
@@ -213,6 +213,32 @@ export class QuestionNightRoom {
       }));
       await this.ctx.storage.put('sharedAccounts', accounts);
       return Response.json({ ok: true, accounts });
+    }
+    if (body.action === 'save-vault') {
+      const vault = body.vault || {};
+      const base64Url = (value, min, max) => typeof value === 'string' && value.length >= min && value.length <= max && /^[A-Za-z0-9_-]+$/.test(value);
+      if (vault.version !== 1 || vault.kdf !== 'PBKDF2-SHA256' || !Number.isInteger(vault.iterations) || vault.iterations < 100000 || vault.iterations > 2000000 || !base64Url(vault.salt, 16, 64) || !base64Url(vault.iv, 12, 32) || !base64Url(vault.ciphertext, 16, 90000) || !['Luke', 'Charlotte'].includes(body.updatedBy)) {
+        return Response.json({ error: 'That safe could not be saved.' }, { status: 400 });
+      }
+      const savedAt = new Date().toISOString();
+      const existing = await this.ctx.storage.get('sharedVault');
+      const saved = {
+        version: 1,
+        kdf: 'PBKDF2-SHA256',
+        iterations: vault.iterations,
+        salt: vault.salt,
+        iv: vault.iv,
+        ciphertext: vault.ciphertext,
+        updatedBy: body.updatedBy,
+        updatedAt: savedAt,
+        createdAt: existing?.createdAt || savedAt
+      };
+      await this.ctx.storage.put('sharedVault', saved);
+      return Response.json({ ok: true, vault: saved });
+    }
+    if (body.action === 'erase-vault') {
+      await this.ctx.storage.delete('sharedVault');
+      return Response.json({ ok: true });
     }
     if (body.action === 'get-youtube-client-id') {
       const saved = await this.ctx.storage.get('youtubeClientId') || '';
