@@ -1,5 +1,5 @@
 import { DOMParser } from '@xmldom/xmldom';
-import { DeleteObjectCommand, GetObjectCommand, HeadObjectCommand, ListObjectVersionsCommand, PutObjectCommand, S3Client } from '@aws-sdk/client-s3';
+import { DeleteObjectCommand, GetObjectCommand, ListObjectVersionsCommand, PutObjectCommand, S3Client } from '@aws-sdk/client-s3';
 import { getSignedUrl } from '@aws-sdk/s3-request-presigner';
 import { getGalleryUser, isValidAlbum, json, readJsonLimited, requireGalleryConfig, roomRequest, sameOrigin } from './_gallery-auth.js';
 
@@ -50,6 +50,11 @@ function validImageHeader(type, data) {
   if (type === 'image/webp') return String.fromCharCode(...data.slice(0, 4)) === 'RIFF' && String.fromCharCode(...data.slice(8, 12)) === 'WEBP';
   if (type === 'image/avif') return String.fromCharCode(...data.slice(4, 8)) === 'ftyp' && /^(avif|avis)$/.test(String.fromCharCode(...data.slice(8, 12)));
   return false;
+}
+
+function rangedObjectSize(result) {
+  const total = String(result.ContentRange || '').match(/\/(\d+)$/)?.[1];
+  return total ? Number(total) : Number(result.ContentLength);
 }
 
 function client(env) {
@@ -216,19 +221,17 @@ export async function onRequestPost({ request, env }) {
     const metadata = await metadataResponse.json();
     const pending = metadata.pendingUploads?.[body.uploadId];
     if (!pending || pending.user !== user) return json({ error: 'Upload receipt expired. Please upload again.' }, 403);
-    let verificationStep = 'check the original photo in private storage';
+    let verificationStep = 'read the original photo from private storage';
     try {
       const b2 = client(env);
-      const head = await b2.send(new HeadObjectCommand({ Bucket: env.B2_BUCKET_NAME, Key: pending.objectKey }));
-      if (head.ContentLength !== pending.size || head.ContentType !== pending.contentType) {
+      const image = await b2.send(new GetObjectCommand({ Bucket: env.B2_BUCKET_NAME, Key: pending.objectKey, Range: 'bytes=0-31' }));
+      const header = await image.Body.transformToByteArray();
+      if (rangedObjectSize(image) !== pending.size || image.ContentType !== pending.contentType) {
         await deleteAllVersions(b2, env.B2_BUCKET_NAME, pending.objectKey);
         if (pending.thumbnailObjectKey) await deleteAllVersions(b2, env.B2_BUCKET_NAME, pending.thumbnailObjectKey);
         await roomRequest(env, { action: 'cancel-upload', uploadId: body.uploadId, user });
         return json({ error: 'The uploaded photo did not match its approved size or type.' }, 400);
       }
-      verificationStep = 'read the original photo data';
-      const image = await b2.send(new GetObjectCommand({ Bucket: env.B2_BUCKET_NAME, Key: pending.objectKey, Range: 'bytes=0-31' }));
-      const header = await image.Body.transformToByteArray();
       if (!validImageHeader(pending.contentType, header)) {
         await deleteAllVersions(b2, env.B2_BUCKET_NAME, pending.objectKey);
         if (pending.thumbnailObjectKey) await deleteAllVersions(b2, env.B2_BUCKET_NAME, pending.thumbnailObjectKey);
@@ -236,17 +239,16 @@ export async function onRequestPost({ request, env }) {
         return json({ error: 'The uploaded file is not a supported image.' }, 400);
       }
       if (pending.thumbnailObjectKey) {
-        verificationStep = 'check the preview in private storage';
-        const thumbHead = await b2.send(new HeadObjectCommand({ Bucket: env.B2_BUCKET_NAME, Key: pending.thumbnailObjectKey }));
-        if (thumbHead.ContentLength !== pending.thumbnailSize || thumbHead.ContentType !== 'image/webp') {
+        verificationStep = 'read the preview from private storage';
+        const thumb = await b2.send(new GetObjectCommand({ Bucket: env.B2_BUCKET_NAME, Key: pending.thumbnailObjectKey, Range: 'bytes=0-31' }));
+        const thumbHeader = await thumb.Body.transformToByteArray();
+        if (rangedObjectSize(thumb) !== pending.thumbnailSize || thumb.ContentType !== 'image/webp') {
           await deleteAllVersions(b2, env.B2_BUCKET_NAME, pending.objectKey);
           await deleteAllVersions(b2, env.B2_BUCKET_NAME, pending.thumbnailObjectKey);
           await roomRequest(env, { action: 'cancel-upload', uploadId: body.uploadId, user });
           return json({ error: 'The preview upload did not match its reservation.' }, 400);
         }
-        verificationStep = 'read the preview image data';
-        const thumb = await b2.send(new GetObjectCommand({ Bucket: env.B2_BUCKET_NAME, Key: pending.thumbnailObjectKey, Range: 'bytes=0-31' }));
-        if (!validImageHeader('image/webp', await thumb.Body.transformToByteArray())) {
+        if (!validImageHeader('image/webp', thumbHeader)) {
           await deleteAllVersions(b2, env.B2_BUCKET_NAME, pending.objectKey);
           await deleteAllVersions(b2, env.B2_BUCKET_NAME, pending.thumbnailObjectKey);
           await roomRequest(env, { action: 'cancel-upload', uploadId: body.uploadId, user });
