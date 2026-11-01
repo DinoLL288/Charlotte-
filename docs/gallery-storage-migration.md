@@ -70,9 +70,9 @@ The Pages Function route for `/gallery/*` returns 404 for old repository-backed 
 
 ## Repeatable migration
 
-The current inventory is **14 image paths totaling 9,104,817 source bytes** (about 8.7 MiB), representing **12 distinct original image contents**: there are two byte-for-byte duplicate pairs. The migration stores each unique original and preview only once, then keeps each path's album and metadata record pointing at the shared object. There are 10 root photos and four album photos in `1`, `Charlottes Painted Nails`, `General`, and `Luke`. Root photos are presented as the `Old Photos` album. The existing `gallery/metadata.json` has uploader and timestamp data for one image; the remaining dates are read from timestamped filenames and uploader identity is kept as `Unknown` when the repository has no record. The migration reads captions when present and extracts dimensions where supported. It creates WebP previews while retaining exact original files.
+The migrated inventory is **24 image paths totaling 23,357,785 source bytes**, representing **22 distinct original image contents**: there are two byte-for-byte duplicate pairs. The migration stores each unique original and preview only once, then keeps each path's album and metadata record pointing at the shared object. There are 10 root photos and 14 album photos across `1`, `Charlottes Painted Nails`, `General`, and `Luke`. Root photos are presented as the `Old Photos` album. The existing `gallery/metadata.json` has uploader and timestamp data for 11 images; other dates are read from timestamped filenames and uploader identity is kept as `Unknown` when the repository has no record. The migration reads captions when present and extracts dimensions where supported. It creates WebP previews while retaining exact original files.
 
-The completed migration report records **14 source paths**, **12 unique originals**, **9,097,063 bytes** of B2 originals plus previews, and successful signed-URL SHA-256 verification for all 14 originals and 14 previews. It is stored locally at `gallery-migration-report.json` and excluded from Git.
+The completed migration report records **24 source paths**, **22 unique originals**, **23,596,491 bytes** of B2 originals plus previews, and successful signed-URL SHA-256 verification for all 24 originals and 24 previews. It is stored locally at `gallery-migration-report.json` and excluded from Git.
 
 To safely repeat the migration, run:
 
@@ -105,7 +105,7 @@ B2 keeps object versions. The app uses random keys for new originals and derived
 
 Automated tests cover signed-session validation, unauthenticated gallery rejection, disabled legacy upload behavior, Durable Object internal-secret checks, upload reservations, and repeatable migration seeding. Run `npm test` for these. They do not contact Backblaze or Cloudflare.
 
-The live migration verified private original and preview retrieval by downloading all 28 URLs and checking SHA-256 hashes. Login was smoke-tested against production, the authenticated gallery API returned JSON, and unauthenticated gallery access returned 401. No manual upload through a browser or regression run for Question Night, presence, shared playlist, bathroom check-ins, memories, and rules was completed as part of this migration.
+The live migration verified private original and preview retrieval by downloading all 48 URLs and checking SHA-256 hashes. Login was smoke-tested against production, the authenticated gallery API returned JSON, and unauthenticated gallery access returned 401. No manual upload through a browser or regression run for Question Night, presence, shared playlist, bathroom check-ins, memories, and rules was completed as part of this migration.
 
 ## Known limits / unfinished steps
 
