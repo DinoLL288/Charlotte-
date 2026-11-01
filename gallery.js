@@ -245,14 +245,30 @@
       const preparedResponse = await fetch('/api/gallery', { method: 'POST', headers: { 'content-type': 'application/json' }, credentials: 'same-origin', body: JSON.stringify({ action: 'create-upload', name: file.name, contentType: file.type, size: file.size, thumbnailSize: thumbnail?.size || 0, width: preparedImage?.width || null, height: preparedImage?.height || null, albums: selected }) });
       prepared = await preparedResponse.json();
       if (!preparedResponse.ok) throw new Error(prepared.error || 'Could not prepare the upload.');
-      const [uploaded, thumbUploaded] = await Promise.all([
-        fetch(prepared.uploadUrl, { method: 'PUT', headers: prepared.headers, body: file }),
-        prepared.thumbnailUrl ? fetch(prepared.thumbnailUrl, { method: 'PUT', headers: prepared.thumbnailHeaders, body: thumbnail }) : Promise.resolve({ ok: true })
+      let uploadPercent = 0;
+      const putToB2 = (url, headers, blob, label) => new Promise((resolve, reject) => {
+        const xhr = new XMLHttpRequest();
+        xhr.open('PUT', url);
+        Object.entries(headers || {}).forEach(([key, value]) => xhr.setRequestHeader(key, value));
+        xhr.upload.onprogress = event => {
+          if (!event.lengthComputable) return;
+          uploadPercent = Math.max(uploadPercent, Math.floor(event.loaded / event.total * 100));
+          status.textContent = `Uploading our memory… ${uploadPercent}%${label === 'preview' ? ' · preparing preview' : ''}`;
+        };
+        xhr.onload = () => xhr.status >= 200 && xhr.status < 300
+          ? resolve()
+          : reject(new Error(`Private photo storage rejected the ${label} (HTTP ${xhr.status}). Please try again.`));
+        xhr.onerror = () => reject(new Error(`The ${label} could not connect to private photo storage. Check your connection and try again.`));
+        xhr.onabort = () => reject(new Error(`The ${label} upload was interrupted. Please try again.`));
+        xhr.send(blob);
+      });
+      const uploads = await Promise.allSettled([
+        putToB2(prepared.uploadUrl, prepared.headers, file, 'photo'),
+        prepared.thumbnailUrl ? putToB2(prepared.thumbnailUrl, prepared.thumbnailHeaders, thumbnail, 'preview') : Promise.resolve()
       ]);
-    if (!uploaded.ok || !thumbUploaded.ok) {
-      if (!uploaded.ok && thumbUploaded.ok && prepared.thumbnailUrl) await fetch('/api/gallery', { method: 'POST', headers: { 'content-type': 'application/json' }, credentials: 'same-origin', body: JSON.stringify({ action: 'cancel-upload', uploadId: prepared.uploadId }) }).catch(() => {});
-      throw new Error('Backblaze could not receive the photo. Please try again.');
-    }
+      const failedUpload = uploads.find(result => result.status === 'rejected');
+      if (failedUpload) throw failedUpload.reason;
+      status.textContent = 'Checking and saving our photo…';
       const completeResponse = await fetch('/api/gallery', { method: 'POST', headers: { 'content-type': 'application/json' }, credentials: 'same-origin', body: JSON.stringify({ action: 'complete-upload', uploadId: prepared.uploadId }) });
       const complete = await completeResponse.json();
       if (!completeResponse.ok) throw new Error(complete.error || 'Could not save this photo to our gallery.');

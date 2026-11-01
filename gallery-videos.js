@@ -50,7 +50,7 @@
       Object.entries(headers || {}).forEach(([key, value]) => xhr.setRequestHeader(key, String(value)));
       if (onProgress) xhr.upload.onprogress = event => { if (event.lengthComputable) onProgress(event.loaded, event.total); };
       xhr.onload = () => resolve(xhr);
-      xhr.onerror = () => reject(new Error('The upload connection dropped. Try uploading again.'));
+      xhr.onerror = () => reject(new Error('The browser could not reach Google’s video upload service. Check the connection, account permissions, and try again.'));
       xhr.onabort = () => reject(new Error('The upload was cancelled.'));
       xhr.send(body);
     });
@@ -72,6 +72,7 @@
     const chunkBytes = 16 * 1024 * 1024;
     let offset = 0;
     let uploadedVideo = null;
+    let recoveries = 0;
     while (offset < videoFile.size) {
       const end = Math.min(offset + chunkBytes, videoFile.size);
       const chunk = videoFile.slice(offset, end);
@@ -82,7 +83,28 @@
           progress.value = Math.min(100, total / videoFile.size * 100);
           status.textContent = `Uploading… ${Math.floor(total / videoFile.size * 100)}%`;
         });
-      } catch (error) { throw new Error(`${error.message} YouTube may keep the partial upload for a while; start again to retry.`); }
+      } catch (error) {
+        if (++recoveries > 3) throw new Error(`${error.message} Google could not resume this upload after three attempts.`);
+        status.textContent = 'Connection interrupted. Resuming the video upload…';
+        await new Promise(resolve => setTimeout(resolve, 700 * recoveries));
+        let check;
+        try { check = await xhrRequest(uploadUrl, 'PUT', token, { 'Content-Range': `bytes */${videoFile.size}` }, new Blob()); }
+        catch { continue; }
+        if (check.status >= 200 && check.status < 300) {
+          try { uploadedVideo = JSON.parse(check.responseText); } catch {}
+          if (uploadedVideo?.id) break;
+        }
+        if (check.status !== 308) {
+          let message = `Google could not resume this video (HTTP ${check.status}).`;
+          try { message = JSON.parse(check.responseText).error?.message || message; } catch {}
+          throw new Error(message);
+        }
+        const accepted = check.getResponseHeader('Range')?.match(/bytes=0-(\d+)/i);
+        offset = accepted ? Number(accepted[1]) + 1 : 0;
+        progress.value = Math.min(100, offset / videoFile.size * 100);
+        continue;
+      }
+      recoveries = 0;
       if (response.status === 308) { offset = end; continue; }
       if (response.status >= 200 && response.status < 300) { try { uploadedVideo = JSON.parse(response.responseText); } catch {} offset = end; break; }
       let message = `YouTube stopped the upload (HTTP ${response.status}).`;

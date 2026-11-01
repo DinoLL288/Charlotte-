@@ -186,12 +186,10 @@ export async function onRequestPost({ request, env }) {
     }
     const reservation = await reserve.json();
     try {
+      // The Durable Object reserves original + thumbnail bytes against the
+      // bucket snapshot above. A second full version listing here made every
+      // upload wait on another complete B2 scan.
       const b2 = client(env);
-      const currentUsage = await bucketUsage(b2, env.B2_BUCKET_NAME);
-      if (currentUsage.bytes + reservation.reservedBytes > 10_000_000_000) {
-        await roomRequest(env, { action: 'cancel-upload', uploadId, user });
-        return json({ error: 'This upload would take our bucket over the 10 GB free storage allowance.' }, 413);
-      }
       const uploadUrl = await getSignedUrl(b2, new PutObjectCommand({ Bucket: env.B2_BUCKET_NAME, Key: objectKey, ContentType: body.contentType }), { expiresIn: 5 * 60 });
       const thumbnailUrl = thumbnailSize ? await getSignedUrl(b2, new PutObjectCommand({ Bucket: env.B2_BUCKET_NAME, Key: thumbnailObjectKey, ContentType: 'image/webp' }), { expiresIn: 5 * 60 }) : '';
       return json({ ok: true, uploadId, uploadUrl, headers: { 'Content-Type': body.contentType }, thumbnailUrl, thumbnailHeaders: thumbnailSize ? { 'Content-Type': 'image/webp' } : null });
@@ -210,21 +208,12 @@ export async function onRequestPost({ request, env }) {
     if (!pending || pending.user !== user) return json({ error: 'Upload receipt expired. Please upload again.' }, 403);
     try {
       const b2 = client(env);
-      const [head, liveUsage] = await Promise.all([
-        b2.send(new HeadObjectCommand({ Bucket: env.B2_BUCKET_NAME, Key: pending.objectKey })),
-        bucketUsage(b2, env.B2_BUCKET_NAME)
-      ]);
+      const head = await b2.send(new HeadObjectCommand({ Bucket: env.B2_BUCKET_NAME, Key: pending.objectKey }));
       if (head.ContentLength !== pending.size || head.ContentType !== pending.contentType) {
         await deleteAllVersions(b2, env.B2_BUCKET_NAME, pending.objectKey);
         if (pending.thumbnailObjectKey) await deleteAllVersions(b2, env.B2_BUCKET_NAME, pending.thumbnailObjectKey);
         await roomRequest(env, { action: 'cancel-upload', uploadId: body.uploadId, user });
         return json({ error: 'The uploaded photo did not match its approved size or type.' }, 400);
-      }
-      if (liveUsage.bytes > 10_000_000_000) {
-        await deleteAllVersions(b2, env.B2_BUCKET_NAME, pending.objectKey);
-        if (pending.thumbnailObjectKey) await deleteAllVersions(b2, env.B2_BUCKET_NAME, pending.thumbnailObjectKey);
-        await roomRequest(env, { action: 'cancel-upload', uploadId: body.uploadId, user });
-        return json({ error: 'This upload would take our bucket over the 10 GB free storage allowance.' }, 413);
       }
       const image = await b2.send(new GetObjectCommand({ Bucket: env.B2_BUCKET_NAME, Key: pending.objectKey, Range: 'bytes=0-31' }));
       const header = await image.Body.transformToByteArray();

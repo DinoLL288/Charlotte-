@@ -287,7 +287,8 @@ export class QuestionNightRoom {
       const indexedBytes = [...new Map(data.photos.flatMap(photo => [[photo.objectKey, Number(photo.size) || 0], ...(photo.thumbnailObjectKey ? [[photo.thumbnailObjectKey, Number(photo.thumbnailSize) || 0]] : [])])).values()].reduce((sum, size) => sum + size, 0);
       const pendingBytes = Object.values(data.pendingUploads).reduce((sum, pending) => sum + (Number(pending.size) || 0) + (Number(pending.thumbnailSize) || 0), 0);
       const storageFloor = Math.max(indexedBytes, Number(body.bucketBytes) || 0);
-      if (storageFloor + pendingBytes + Number(body.upload.size) > 10_000_000_000) return Response.json({ error: 'This upload would take our bucket over the 10 GB free storage allowance. Remove files in Backblaze or wait for the monthly allowance to reset.' }, { status: 413 });
+      const newUploadBytes = (Number(body.upload.size) || 0) + (Number(body.upload.thumbnailSize) || 0);
+      if (storageFloor + pendingBytes + newUploadBytes > 10_000_000_000) return Response.json({ error: 'This upload would take our bucket over the 10 GB free storage allowance. Remove files in Backblaze or wait for the monthly allowance to reset.' }, { status: 413 });
       data.pendingUploads[body.upload.id] = { ...body.upload, createdMs: now };
       await this.ctx.storage.put('galleryData', data);
       recent.push(now);

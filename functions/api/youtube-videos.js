@@ -32,7 +32,11 @@ export async function onRequestPost({ request, env }) {
     const verifyResponse = await fetch(`https://www.googleapis.com/youtube/v3/videos?part=snippet,status&id=${encodeURIComponent(videoId)}`, {
       headers: { authorization: `Bearer ${accessToken}` }
     });
-    if (!verifyResponse.ok) return json({ error: 'YouTube could not confirm this upload. Check the connected channel and try again.' }, 502);
+    if (!verifyResponse.ok) {
+      const problem = await verifyResponse.json().catch(() => ({}));
+      const message = typeof problem.error?.message === 'string' ? problem.error.message.slice(0, 300) : `YouTube returned HTTP ${verifyResponse.status}.`;
+      return json({ error: `YouTube could not confirm this upload: ${message}` }, 502);
+    }
     const result = await verifyResponse.json();
     const video = result.items?.[0];
     if (!video || video.status?.privacyStatus !== 'unlisted') return json({ error: 'This upload was not confirmed as an unlisted YouTube video.' }, 400);
