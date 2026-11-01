@@ -1,5 +1,5 @@
 {
   "version": 1,
   "include": ["/api/*", "/gallery/*"],
-  "exclude": []
+  "exclude": ["/gallery", "/gallery.html"]
 }
