@@ -1,0 +1,8 @@
+/*
+  Cache-Control: public, max-age=60, stale-while-revalidate=300
+
+/api/*
+  Cache-Control: no-store
+
+/gallery/*
+  Cache-Control: no-store

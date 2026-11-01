@@ -43,6 +43,10 @@
     const enc = value => { const el=document.createElement('span');el.textContent=value||'';return el.innerHTML; };
     function dateKey(d){return d.getFullYear()+'-'+String(d.getMonth()+1).padStart(2,'0')+'-'+String(d.getDate()).padStart(2,'0');}
     function roomKey(){return dateKey(new Date());}
+    const questionDraftKey=`charlotte-question-draft:${user}`;
+    const answerDraftKey=(session,id)=>`charlotte-answer-draft:${user}:${session}:${id}`;
+    function readDraft(key,fallback=''){try{return localStorage.getItem(key)??fallback;}catch{return fallback;}}
+    function writeDraft(key,value){try{if(value)localStorage.setItem(key,value);else localStorage.removeItem(key);}catch{}}
     function showStatus(id,text){document.getElementById(id).textContent=text;}
     function answerText(answer){return typeof answer==='string'?answer:(answer?.text||'');}
     function answerDate(answer){if(typeof answer!=='object'||!answer?.answeredAt)return '';const date=new Date(answer.answeredAt);return Number.isNaN(date.getTime())?'':date.toLocaleString([], {dateStyle:'medium',timeStyle:'short'});}
@@ -90,6 +94,8 @@
     }
     function renderBank(){document.getElementById('questionBank').innerHTML=data.questionItems.length?data.questionItems.map(item=>`<div class="bank-row"><span class="question-text">${enc(item.body)}</span><button class="small danger" data-remove-question="${enc(item.id)}">Remove</button></div>`).join(''):'<div class="empty">I haven’t saved any questions for our next night yet.</div>';}
     function renderQuestions(session){
+      const active=document.activeElement,activeForm=active?.matches('.answer-form textarea')?active.closest('.answer-form'):null,activeId=activeForm?.dataset.id||'';
+      const selection=activeId?{start:active.selectionStart,end:active.selectionEnd,direction:active.selectionDirection}:null;
       const selected=data.questionSessions[session]?.questionIds||[];const snapshots=data.questionSessions[session]?.questions||{};
       const viewQuestions=selected.map(id=>currentQuestions.find(q=>q.id===id)||{id,body:snapshots[id]}).filter(q=>q.body);
       const responses=data.questionResponses[session]||{};
@@ -100,10 +106,11 @@
       document.getElementById('drawMoreButton').hidden=!selected.length||!hasMore;
       document.getElementById('sessionQuestions').innerHTML=viewQuestions.map((q,i)=>{
         const asker=q.author||'one of us',recipient=otherPerson(asker),pair=responses[q.id]||{},saved=pair[recipient],text=answerText(saved),answered=answerDateLabel(saved,session);
-        const answerBlock=user===recipient?`<form class="answer-form" data-id="${enc(q.id)}"><textarea name="response" maxlength="1200" placeholder="My answer…" required>${enc(text)}</textarea><button class="small" type="submit">Save my answer</button></form>`:`<p class="answers">${enc(recipient)} will answer this one.</p>`;
+        const answerBlock=user===recipient?`<form class="answer-form" data-id="${enc(q.id)}"><textarea name="response" maxlength="1200" placeholder="My answer…" required>${enc(readDraft(answerDraftKey(session,q.id),text))}</textarea><button class="small" type="submit">Save my answer</button></form>`:`<p class="answers">${enc(recipient)} will answer this one.</p>`;
         const savedBlock=text?`<p class="answers"><strong>${enc(recipient)}’s answer:</strong> ${enc(text)}${answered?`<br><span class="answer-meta">${enc(answered)}</span>`:''}</p>`:'';
         return `<article class="prompt-card"><p class="count">${enc(asker)} asks ${enc(recipient)}</p><h3>${i+1}. ${enc(q.body)}</h3>${savedBlock}${answerBlock}</article>`;
       }).join('')||'<div class="empty">We’re both ready. Start with three questions from each of us.</div>';
+      if(activeId){const restored=[...document.querySelectorAll('#sessionQuestions .answer-form')].find(form=>form.dataset.id===activeId)?.elements.response;if(restored){restored.focus({preventScroll:true});if(selection)restored.setSelectionRange(selection.start,selection.end,selection.direction);}}
       renderHistory();
     }
     function renderHistory(){
@@ -120,13 +127,16 @@
     }
     async function postRoom(payload){const res=await fetch('/api/question-room',{method:'POST',headers:{'content-type':'application/json'},body:JSON.stringify(payload)});const json=await res.json();if(!res.ok)throw new Error(json.error||'Could not save');return json;}
     async function refreshAfterMutation(){await loadMeta();await loadHistory();if(roomState.open)await loadQuestions();if(socket&&socket.readyState===1)socket.send(JSON.stringify({type:'refresh'}));}
-    document.getElementById('questionForm').addEventListener('submit',async e=>{e.preventDefault();try{await postRoom({action:'add',question:new FormData(e.target).get('body'),author:user});e.target.reset();await refreshAfterMutation();showStatus('bankCount','My question is saved privately until we’re both ready.');}catch(error){showStatus('bankCount',error.message);}});
+    const questionForm=document.getElementById('questionForm');
+    questionForm.elements.body.value=readDraft(questionDraftKey);
+    document.addEventListener('input',e=>{if(e.target.matches('.answer-form textarea'))writeDraft(answerDraftKey(roomKey(),e.target.closest('.answer-form').dataset.id),e.target.value);else if(e.target.matches('#questionForm textarea'))writeDraft(questionDraftKey,e.target.value);});
+    questionForm.addEventListener('submit',async e=>{e.preventDefault();try{await postRoom({action:'add',question:new FormData(e.target).get('body'),author:user});e.target.reset();writeDraft(questionDraftKey,'');await refreshAfterMutation();showStatus('bankCount','My question is saved privately until we’re both ready.');}catch(error){showStatus('bankCount',error.message);}});
     document.getElementById('readyButton').addEventListener('click',()=>{if(socket&&socket.readyState===1)socket.send(JSON.stringify({type:'ready',ready:!roomState.ready[user]}));});
     document.getElementById('drawButton').addEventListener('click',async()=>{try{await postRoom({action:'draw',sessionDate:roomKey()});await loadQuestions();if(socket&&socket.readyState===1)socket.send(JSON.stringify({type:'refresh'}));}catch(error){showStatus('connectionStatus',error.message);}});
     document.getElementById('drawMoreButton').addEventListener('click',async()=>{try{await postRoom({action:'draw',sessionDate:roomKey()});await loadQuestions();if(socket&&socket.readyState===1)socket.send(JSON.stringify({type:'refresh'}));}catch(error){showStatus('connectionStatus',error.message);}});
-    document.addEventListener('submit',async e=>{const form=e.target.closest('.answer-form');if(!form)return;e.preventDefault();try{await postRoom({action:'answer',sessionDate:roomKey(),questionId:form.dataset.id,author:user,response:new FormData(form).get('response')});await loadQuestions();await loadHistory();if(socket&&socket.readyState===1)socket.send(JSON.stringify({type:'refresh'}));}catch(error){showStatus('connectionStatus',error.message);}});
+    document.addEventListener('submit',async e=>{const form=e.target.closest('.answer-form');if(!form)return;e.preventDefault();try{const session=roomKey(),id=form.dataset.id;await postRoom({action:'answer',sessionDate:session,questionId:id,author:user,response:new FormData(form).get('response')});writeDraft(answerDraftKey(session,id),'');await loadQuestions();await loadHistory();if(socket&&socket.readyState===1)socket.send(JSON.stringify({type:'refresh'}));}catch(error){showStatus('connectionStatus',error.message);}});
     document.addEventListener('click',async e=>{const button=e.target.closest('[data-remove-question]');if(!button)return;if(!await siteDialog.confirm('Remove this question from my saved list?',{title:'Remove question'}))return;try{await postRoom({action:'delete',id:button.dataset.removeQuestion,author:user});await refreshAfterMutation();}catch(error){showStatus('bankCount',error.message);}});
-    let currentRoomKey='';setInterval(()=>{const key=roomKey();if(key!==currentRoomKey){currentRoomKey=key;connectRoom();}else if(roomState.open)loadQuestions();renderRoom();},15000);
+    let currentRoomKey='';setInterval(()=>{const key=roomKey();if(key!==currentRoomKey){currentRoomKey=key;connectRoom();}renderRoom();},60000);
     loadMeta().then(()=>{currentRoomKey=roomKey();return loadHistory();}).catch(error=>{showStatus('connectionStatus',error.message);});
   </script>
 </body>

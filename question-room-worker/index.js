@@ -35,6 +35,7 @@ export class QuestionNightRoom {
   constructor(ctx, env) {
     this.ctx = ctx;
     this.env = env;
+    this.galleryQueue = Promise.resolve();
   }
 
   async fetch(request) {
@@ -133,7 +134,9 @@ export class QuestionNightRoom {
   }
 
   async handleGalleryInternal(request) {
-    return this.ctx.blockConcurrencyWhile(() => this.handleGalleryInternalLocked(request));
+    const result = this.galleryQueue.then(() => this.handleGalleryInternalLocked(request));
+    this.galleryQueue = result.then(() => undefined, () => undefined);
+    return result;
   }
 
   async handleGalleryInternalLocked(request) {

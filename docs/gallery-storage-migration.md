@@ -15,7 +15,7 @@ The existing B2 bucket is private, encrypted, and in `eu-central-003`:
 
 The bucket-restricted B2 key supplied by Luke is configured as an encrypted Cloudflare Pages secret and was used for migration. Because it was pasted into chat, replace and revoke it in Backblaze when convenient, then update `B2_APPLICATION_KEY_ID` and `B2_APPLICATION_KEY` in Pages. Never paste keys into chat or commit them. The gallery needs list, read, write, and delete access: delete is used only to permanently remove rejected or abandoned upload versions, and the gallery does not have a user-facing photo-delete control. Do not grant access to other buckets or use the master key.
 
-The public GitHub repository also contains the old browser-side login values in its Git history. Those values are no longer checked by the updated login page, but the history is public and is not rewritten. New separate login passwords are configured in Cloudflare secrets. Do not reuse the old values.
+The public GitHub repository contains the previous browser-side login values in its Git history. The same Luke and Charlotte values are now checked server-side from encrypted Cloudflare secrets so the selected profile still identifies who performed an action. The public history was not rewritten.
 
 ## Configure CORS on the private bucket
 
@@ -105,7 +105,7 @@ B2 keeps object versions. The app uses random keys for new originals and derived
 
 Automated tests cover signed-session validation, unauthenticated gallery rejection, disabled legacy upload behavior, Durable Object internal-secret checks, upload reservations, and repeatable migration seeding. Run `npm test` for these. They do not contact Backblaze or Cloudflare.
 
-The live migration verified private original and preview retrieval by downloading all 48 URLs and checking SHA-256 hashes. Login was smoke-tested against production, the authenticated gallery API returned JSON, and unauthenticated gallery access returned 401. No manual upload through a browser or regression run for Question Night, presence, shared playlist, bathroom check-ins, memories, and rules was completed as part of this migration.
+The live migration verified private original and preview retrieval by downloading all 48 URLs and checking SHA-256 hashes. Both original profile logins were smoke-tested against production, the authenticated gallery API returned JSON, and unauthenticated gallery access returned 401. The site now caches static assets in the browser for 60 seconds; private APIs stay `no-store`. Question Night draft recovery and live refreshes reduce text loss and repeated requests. No manual upload through a browser or regression run for Question Night, presence, shared playlist, bathroom check-ins, memories, and rules was completed as part of this migration.
 
 ## Known limits / unfinished steps
 

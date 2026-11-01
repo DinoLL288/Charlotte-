@@ -125,11 +125,12 @@
         roomConnected = true;
         clearInterval(roomPing);
         roomPing = setInterval(() => { if (roomSocket?.readyState === WebSocket.OPEN) roomSocket.send(JSON.stringify({ type: 'ping' })); }, 20000);
-        if (truthDare) renderTruthDare();
+        if (truthDare) { renderTruthDare(); loadTruthDare(); }
       };
       roomSocket.onmessage = event => {
         let message; try { message = JSON.parse(event.data); } catch { return; }
         if (message.type === 'state') { roomOnline = message.online || []; if (truthDare) renderTruthDare(); }
+        if (message.type === 'refresh' && truthDare) loadTruthDare();
       };
       roomSocket.onerror = () => { roomConnected = false; if (truthDare) renderTruthDare(); };
       roomSocket.onclose = () => {
@@ -141,8 +142,8 @@
     function renderTruthDare() {
       if (!truthDare) return;
       const rules = truthDare.rules || { maxDaresInRow: 3, dareAfterTruths: 5 };
-      tdRulesForm.elements.maxDaresInRow.value = rules.maxDaresInRow;
-      tdRulesForm.elements.dareAfterTruths.value = rules.dareAfterTruths;
+      if (document.activeElement !== tdRulesForm.elements.maxDaresInRow) tdRulesForm.elements.maxDaresInRow.value = rules.maxDaresInRow;
+      if (document.activeElement !== tdRulesForm.elements.dareAfterTruths) tdRulesForm.elements.dareAfterTruths.value = rules.dareAfterTruths;
       const current = truthDare.current;
       const pending = truthDare.pending;
       const togetherOnline = roomConnected && ['Charlotte', 'Luke'].every(name => roomOnline.includes(name));
@@ -209,7 +210,6 @@
     connectTruthDareRoom();
     window.addEventListener('pagehide', () => { clearInterval(roomPing); clearTimeout(roomReconnect); roomSocket?.close(); });
     loadTruthDare();
-    setInterval(() => { if (document.getElementById('panel-truthdare').classList.contains('active')) loadTruthDare(); }, 6000);
   </script>
 </body>
 </html>
