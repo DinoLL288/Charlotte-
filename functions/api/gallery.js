@@ -182,8 +182,10 @@ export async function onRequestPost({ request, env }) {
     try { bucketBytes = (await bucketUsage(client(env), env.B2_BUCKET_NAME)).bytes; }
     catch (error) {
       const httpStatus = Number(error?.$metadata?.httpStatusCode) || 0;
-      const errorName = String(error?.name || 'Error').slice(0, 60);
-      console.error('Gallery storage allowance check failed', { operation: 'list-photo-versions', errorName, httpStatus });
+      const errorCode = String(error?.Code || error?.code || error?.name || 'Error').slice(0, 60);
+      console.error('Gallery storage allowance check failed', { operation: 'list-photo-versions', errorCode, httpStatus });
+      if (errorCode === 'InvalidAccessKeyId') return json({ error: 'Backblaze does not recognize the application key ID saved for this site. Update the production B2_APPLICATION_KEY_ID and matching B2_APPLICATION_KEY together, then redeploy.' }, 503);
+      if (errorCode === 'SignatureDoesNotMatch') return json({ error: 'Backblaze rejected the saved application key pair. Make sure B2_APPLICATION_KEY_ID and B2_APPLICATION_KEY come from the same Backblaze key, then redeploy.' }, 503);
       if (httpStatus === 403) return json({ error: 'Backblaze denied listing our photo files. The key needs listFiles access to this bucket and the photos/ prefix.' }, 503);
       return json({ error: 'Could not check our free storage allowance. Please try again later.' }, 503);
     }
