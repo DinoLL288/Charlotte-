@@ -305,6 +305,7 @@
     if (!selected.length) { status.textContent = 'Choose an album first (or make one above).'; return; }
     const type = file.type.toLowerCase();
     if (!['image/jpeg', 'image/png', 'image/webp', 'image/gif', 'image/avif'].includes(type) || file.size > 200 * 1024 * 1024) { status.textContent = 'Choose a JPEG, PNG, WebP, GIF, or AVIF photo under 200 MB.'; return; }
+    const uploadFileName = file.name.normalize('NFKD').replace(/[^A-Za-z0-9._-]/g, '_').slice(0, 200) || 'memory';
     uploadButton.disabled = true; status.textContent = 'Adding our memory…';
     try {
       const token = await getGoogleAccessToken('');
@@ -315,7 +316,7 @@
         xhr.setRequestHeader('Content-Type', 'application/octet-stream');
         xhr.setRequestHeader('X-Goog-Upload-Content-Type', type);
         xhr.setRequestHeader('X-Goog-Upload-Protocol', 'raw');
-        xhr.setRequestHeader('X-Goog-Upload-File-Name', file.name.replace(/[\r\n]/g, '_').slice(0, 200));
+        xhr.setRequestHeader('X-Goog-Upload-File-Name', uploadFileName);
         xhr.upload.onprogress = event => {
           if (event.lengthComputable) status.textContent = `Saving our photo to Google Photos… ${Math.floor(event.loaded / event.total * 100)}%`;
         };
@@ -325,7 +326,7 @@
         xhr.send(file);
       });
       status.textContent = 'Adding our photo to the gallery…';
-      const createResponse = await fetch('https://photoslibrary.googleapis.com/v1/mediaItems:batchCreate', { method: 'POST', headers: { authorization: `Bearer ${token}`, 'content-type': 'application/json' }, body: JSON.stringify({ newMediaItems: [{ simpleMediaItem: { uploadToken, fileName: file.name.replace(/[\r\n]/g, '_').slice(0, 200) } }] }) });
+      const createResponse = await fetch('https://photoslibrary.googleapis.com/v1/mediaItems:batchCreate', { method: 'POST', headers: { authorization: `Bearer ${token}`, 'content-type': 'application/json' }, body: JSON.stringify({ newMediaItems: [{ simpleMediaItem: { uploadToken, fileName: uploadFileName } }] }) });
       const created = await createResponse.json().catch(() => ({}));
       const item = created.newMediaItemResults?.[0]?.mediaItem;
       if (!createResponse.ok || !item?.id) throw new Error(created.newMediaItemResults?.[0]?.status?.message || created.error?.message || 'Google Photos received the upload but could not add it to our library.');
