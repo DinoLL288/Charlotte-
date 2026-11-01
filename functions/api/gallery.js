@@ -272,11 +272,13 @@ export async function onRequestPost({ request, env }) {
       return json({ ok: true, photoId: photo.id });
     } catch (error) {
       const httpStatus = Number(error?.$metadata?.httpStatusCode) || 0;
-      const errorName = String(error?.name || 'Error').slice(0, 60);
+      const errorCode = String(error?.Code || error?.code || error?.name || 'Error').slice(0, 60);
       // Log only safe diagnostic fields. Never log request URLs, signed URLs,
       // credentials, image contents, or the full SDK error object.
-      console.error('Gallery upload completion failed', { step: verificationStep, errorName, httpStatus });
-      if (httpStatus === 403) return json({ error: `Private storage denied permission while trying to ${verificationStep}. The B2 application key needs file-read access.` }, 502);
+      console.error('Gallery upload completion failed', { step: verificationStep, errorCode, httpStatus });
+      if (errorCode === 'InvalidAccessKeyId') return json({ error: `Backblaze rejected the configured key ID while trying to ${verificationStep}. Check that the production key ID and secret are the matching pair.` }, 502);
+      if (errorCode === 'SignatureDoesNotMatch') return json({ error: `Backblaze rejected the configured key pair while trying to ${verificationStep}. Check that the production key ID and secret are the matching pair.` }, 502);
+      if (httpStatus === 403) return json({ error: `Backblaze rejected the photo check (HTTP 403, ${errorCode}) while trying to ${verificationStep}.` }, 502);
       if (httpStatus === 404) return json({ error: `Private storage could not find the uploaded file while trying to ${verificationStep}. Please retry the upload.` }, 502);
       return json({ error: `The upload reached private storage, but we could not ${verificationStep}. Please try again.` }, 502);
     }
