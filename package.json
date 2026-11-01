@@ -1,0 +1,31 @@
+{
+  "name": "charlotte-",
+  "version": "1.0.0",
+  "description": "A little site for Charlotte. Now split into a hub with multiple sections.",
+  "main": "avatar.js",
+  "scripts": {
+    "test": "node --test tests/*.test.mjs",
+    "gallery:migrate": "node scripts/migrate-gallery-to-b2.mjs"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/DinoLL288/Charlotte-.git"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "type": "module",
+  "bugs": {
+    "url": "https://github.com/DinoLL288/Charlotte-/issues"
+  },
+  "homepage": "https://github.com/DinoLL288/Charlotte-#readme",
+  "dependencies": {
+    "@aws-sdk/client-s3": "^3.1161.0",
+    "@aws-sdk/s3-request-presigner": "^3.1161.0",
+    "@xmldom/xmldom": "^0.9.12",
+    "image-size": "^2.0.4"
+  },
+  "devDependencies": {
+    "sharp": "^0.35.5"
+  }
+}

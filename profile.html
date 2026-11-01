@@ -237,8 +237,10 @@
     });
     
     document.getElementById('logout').addEventListener('click', () => {
-      localStorage.removeItem('charlotte-user');
-      window.location.href = 'login.html';
+      fetch('/api/auth/logout', { method: 'POST', credentials: 'same-origin' }).finally(() => {
+        localStorage.removeItem('charlotte-user');
+        window.location.href = 'login.html';
+      });
     });
   </script>
   <script src="dialog.js"></script>

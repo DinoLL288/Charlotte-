@@ -1,1 +1,10 @@
 .wrangler/
+node_modules/
+/gallery/**
+.dev.vars
+.dev.vars.*
+!.dev.vars.example
+.env
+.env.*
+!.env.example
+gallery-migration-report.json

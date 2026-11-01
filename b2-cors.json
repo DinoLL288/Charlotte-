@@ -1,0 +1,11 @@
+[
+  {
+    "AllowedOrigins": [
+      "https://charlotte-3ts.pages.dev",
+      "http://localhost:8788"
+    ],
+    "AllowedMethods": ["PUT"],
+    "AllowedHeaders": ["Content-Type"],
+    "MaxAgeSeconds": 3600
+  }
+]

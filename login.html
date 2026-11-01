@@ -61,23 +61,29 @@
   </div>
 
   <script>
-    const users = {
-      'Charlotte': '07212011',
-      'Luke': '09032012'
-    };
     const loginBtn = document.getElementById('loginBtn');
     const username = document.getElementById('username');
     const password = document.getElementById('password');
     const error = document.getElementById('error');
 
-    loginBtn.addEventListener('click', () => {
-      const u = username.value.trim();
-      const p = password.value.trim();
-      if (users[u] && users[u] === p) {
-        localStorage.setItem('charlotte-user', u);
+    loginBtn.addEventListener('click', async () => {
+      loginBtn.disabled = true;
+      error.textContent = '';
+      try {
+        const response = await fetch('/api/auth/login', {
+          method: 'POST',
+          headers: { 'content-type': 'application/json' },
+          credentials: 'same-origin',
+          body: JSON.stringify({ user: username.value.trim(), password: password.value })
+        });
+        const result = await response.json();
+        if (!response.ok) throw new Error(result.error || 'Could not log in.');
+        localStorage.setItem('charlotte-user', result.user);
         window.location.href = 'index.html';
-      } else {
-        error.textContent = 'Wrong username or password';
+      } catch (e) {
+        error.textContent = e.message;
+      } finally {
+        loginBtn.disabled = false;
       }
     });
 

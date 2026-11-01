@@ -3,9 +3,17 @@ name = "charlotte"
 pages_build_output_dir = "."
 compatibility_date = "2026-10-31"
 
+[vars]
+B2_ENDPOINT = "https://s3.eu-central-003.backblazeb2.com"
+B2_REGION = "eu-central-003"
+B2_BUCKET_NAME = "project-lover-boy-gallery"
+
 [env.production.vars]
 GITHUB_BRANCH = "main"
 GITHUB_REPO = "DinoLL288/Charlotte-"
+B2_ENDPOINT = "https://s3.eu-central-003.backblazeb2.com"
+B2_REGION = "eu-central-003"
+B2_BUCKET_NAME = "project-lover-boy-gallery"
 
 [[env.production.durable_objects.bindings]]
 name = "QUESTION_ROOM"

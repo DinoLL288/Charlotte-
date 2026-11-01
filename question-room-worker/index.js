@@ -32,13 +32,16 @@ const TRUTH_DARE_PROMPTS = {
 };
 
 export class QuestionNightRoom {
-  constructor(ctx) {
+  constructor(ctx, env) {
     this.ctx = ctx;
+    this.env = env;
   }
 
   async fetch(request) {
     const url = new URL(request.url);
     const sessionDate = url.searchParams.get('sessionDate') || '';
+
+    if (url.pathname.endsWith('/internal/gallery')) return this.handleGalleryInternal(request);
 
     if (url.pathname.endsWith('/state')) {
       return Response.json(await this.getState(sessionDate));
@@ -112,6 +115,7 @@ export class QuestionNightRoom {
       return new Response('WebSocket upgrade required', { status: 426 });
     }
 
+
     const user = url.searchParams.get('user');
     if (!['Charlotte', 'Luke'].includes(user)) return new Response('Unknown room member', { status: 403 });
     if (!/^\d{4}-\d{2}-\d{2}$/.test(sessionDate)) return new Response('Invalid question session', { status: 400 });
@@ -127,6 +131,98 @@ export class QuestionNightRoom {
     await this.broadcast(sessionDate);
     return new Response(null, { status: 101, webSocket: client });
   }
+
+  async handleGalleryInternal(request) {
+    return this.ctx.blockConcurrencyWhile(() => this.handleGalleryInternalLocked(request));
+  }
+
+  async handleGalleryInternalLocked(request) {
+    const supplied = request.headers.get('x-gallery-internal-secret') || '';
+    const expected = this.env?.GALLERY_INTERNAL_SECRET || '';
+    let mismatch = supplied.length ^ expected.length;
+    for (let i = 0; i < Math.max(supplied.length, expected.length); i++) mismatch |= (supplied.charCodeAt(i) || 0) ^ (expected.charCodeAt(i) || 0);
+    if (!expected || mismatch) return Response.json({ error: 'Not found' }, { status: 404 });
+    const data = await this.ctx.storage.get('galleryData') || { photos: [], pendingUploads: {} };
+    if (request.method === 'GET') return Response.json({ ok: true, photos: data.photos, pendingUploads: data.pendingUploads }, { headers: { 'cache-control': 'no-store' } });
+    if (request.method !== 'POST') return Response.json({ error: 'Method not allowed' }, { status: 405 });
+    let body;
+    try { body = await request.json(); } catch { return Response.json({ error: 'Invalid request' }, { status: 400 }); }
+
+    if (body.action === 'attempt-login') {
+      const ip = String(body.ip || 'unknown').slice(0, 100);
+      const user = String(body.user || 'unknown').slice(0, 20);
+      const key = `login:${ip}:${user}`;
+      const now = Date.now();
+      const attempts = (await this.ctx.storage.get(key) || []).filter(time => now - time < 15 * 60 * 1000);
+      if (attempts.length >= 8) return Response.json({ allowed: false });
+      if (body.success === true) await this.ctx.storage.delete(key);
+      else { attempts.push(now); await this.ctx.storage.put(key, attempts); }
+      return Response.json({ allowed: true });
+    }
+
+    const now = Date.now();
+    for (const [id, pending] of Object.entries(data.pendingUploads || {})) {
+      if (now - pending.createdMs > 60 * 60 * 1000) delete data.pendingUploads[id];
+    }
+    if (body.action === 'begin-upload') {
+      if (!body.upload || !['Charlotte', 'Luke'].includes(body.upload.user) || !/^photos\/[a-f0-9-]{36}\.[a-z0-9]{2,5}$/.test(body.upload.objectKey)) return Response.json({ error: 'Invalid upload reservation' }, { status: 400 });
+      const rates = await this.ctx.storage.get(`gallery-upload-rate:${body.upload.user}`) || [];
+      const recent = rates.filter(time => now - time < 24 * 60 * 60 * 1000);
+      if (recent.length >= 25) return Response.json({ error: 'We have reached today’s photo upload limit. Try again tomorrow.' }, { status: 429 });
+      const indexedBytes = [...new Map(data.photos.flatMap(photo => [[photo.objectKey, Number(photo.size) || 0], ...(photo.thumbnailObjectKey ? [[photo.thumbnailObjectKey, Number(photo.thumbnailSize) || 0]] : [])])).values()].reduce((sum, size) => sum + size, 0);
+      const pendingBytes = Object.values(data.pendingUploads).reduce((sum, pending) => sum + (Number(pending.size) || 0) + (Number(pending.thumbnailSize) || 0), 0);
+      const storageFloor = Math.max(indexedBytes, Number(body.bucketBytes) || 0);
+      if (storageFloor + pendingBytes + Number(body.upload.size) > 10_000_000_000) return Response.json({ error: 'This upload would take our bucket over the 10 GB free storage allowance. Remove files in Backblaze or wait for the monthly allowance to reset.' }, { status: 413 });
+      data.pendingUploads[body.upload.id] = { ...body.upload, createdMs: now };
+      await this.ctx.storage.put('galleryData', data);
+      recent.push(now);
+      await this.ctx.storage.put(`gallery-upload-rate:${body.upload.user}`, recent);
+      const reservedBytes = Object.values(data.pendingUploads).reduce((sum, pending) => sum + (Number(pending.size) || 0) + (Number(pending.thumbnailSize) || 0), 0);
+      return Response.json({ ok: true, reservedBytes });
+    }
+    if (body.action === 'complete-upload') {
+      const pending = data.pendingUploads?.[body.uploadId];
+      if (!pending || pending.user !== body.user) return Response.json({ error: 'Upload reservation not found.' }, { status: 404 });
+      const existing = data.photos.find(photo => photo.id === body.photo?.id);
+      if (!body.photo || body.photo.objectKey !== pending.objectKey || body.photo.size !== pending.size || body.photo.thumbnailObjectKey !== pending.thumbnailObjectKey || body.photo.thumbnailSize !== pending.thumbnailSize) return Response.json({ error: 'Upload details did not match the reservation.' }, { status: 400 });
+      if (!existing && data.photos.length >= 1000) return Response.json({ error: 'The gallery index is full. Please contact support.' }, { status: 413 });
+      if (!existing) data.photos.push({ ...body.photo, albums: [...new Set(pending.albums)], uploadedBy: pending.user, uploadedAt: pending.uploadedAt });
+      delete data.pendingUploads[body.uploadId];
+      await this.ctx.storage.put('galleryData', data);
+      return Response.json({ ok: true, photo: existing || data.photos[data.photos.length - 1] });
+    }
+    if (body.action === 'cancel-upload') {
+      const pending = data.pendingUploads?.[body.uploadId];
+      if (pending && pending.user !== body.user) return Response.json({ error: 'Upload reservation not found.' }, { status: 404 });
+      if (pending) { delete data.pendingUploads[body.uploadId]; await this.ctx.storage.put('galleryData', data); }
+      return Response.json({ ok: true, canceled: Boolean(pending), pending });
+    }
+    if (body.action === 'copy-to-album') {
+      const photo = data.photos.find(item => item.id === body.photoId);
+      if (!photo || typeof body.album !== 'string' || !body.album.trim() || body.album.length > 80) return Response.json({ error: 'Photo or album not found.' }, { status: 404 });
+      if (!(photo.albums || []).includes(body.album.trim()) && [...new Set(data.photos.flatMap(item => item.albums || []))].length >= 100) return Response.json({ error: 'The gallery already has 100 albums.' }, { status: 413 });
+      photo.albums = [...new Set([...(photo.albums || []), body.album.trim()])];
+      await this.ctx.storage.put('galleryData', data);
+      return Response.json({ ok: true });
+    }
+    if (body.action === 'seed-migration') {
+      if (!Array.isArray(body.photos) || body.photos.length > 1000) return Response.json({ error: 'Invalid migration manifest.' }, { status: 400 });
+      if (body.photos.some(photo => !photo || !/^legacy-[a-f0-9]{64}$/.test(photo.id) || !/^photos\/legacy\/[a-f0-9]{64}$/.test(photo.objectKey) || !/^photos\/thumbnails\/[a-f0-9]{64}\.webp$/.test(photo.thumbnailObjectKey) || !Number.isSafeInteger(photo.size) || !Number.isSafeInteger(photo.thumbnailSize) || !['image/jpeg', 'image/png', 'image/webp', 'image/gif', 'image/avif'].includes(photo.contentType) || !['Charlotte', 'Luke', 'Unknown'].includes(photo.uploadedBy) || typeof photo.album !== 'string' || photo.album.length > 80 || typeof photo.name !== 'string' || photo.name.length > 160 || typeof photo.uploadedAt !== 'string' || typeof photo.sha256 !== 'string' || typeof photo.thumbnailSha256 !== 'string')) return Response.json({ error: 'Invalid migration manifest.' }, { status: 400 });
+      const known = new Set(data.photos.map(photo => photo.id));
+      if (data.photos.length + new Set(body.photos.map(photo => photo.id).filter(id => !known.has(id))).size > 1000) return Response.json({ error: 'The gallery index cannot store this migration batch.' }, { status: 413 });
+      let added = 0;
+      for (const photo of body.photos) {
+        if (known.has(photo.id)) continue;
+        data.photos.push({ ...photo, albums: [photo.album] });
+        known.add(photo.id);
+        added++;
+      }
+      await this.ctx.storage.put('galleryData', data);
+      return Response.json({ ok: true, added, total: data.photos.length });
+    }
+    return Response.json({ error: 'Unknown gallery metadata action.' }, { status: 400 });
+  }
+
 
   async getQuestionData() {
     return await this.ctx.storage.get('questionData') || { schedule: null, questions: [], sessions: {}, responses: {} };

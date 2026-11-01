@@ -185,6 +185,7 @@
   <header class="gallery-hero"><div><p class="eyebrow">our little time capsule</p><h1>Photos</h1><p>All the smiles, silly moments, and favorite days we want to keep close.</p></div></header>
   <main class="screen">
     <div class="gallery-toolbar"><input id="photoSearch" class="gallery-search" type="search" placeholder="Search our photos and albums" aria-label="Search photos and albums"><div class="gallery-view-tabs" role="group" aria-label="Gallery view"><button type="button" id="allPhotosTab" aria-pressed="true">All Photos</button><button type="button" id="albumsTab" aria-pressed="false">Albums</button></div><button class="button" id="toggleUpload" type="button">＋ Add photos</button></div>
+    <p class="status" id="storageUsage" role="status">Checking our private storage use…</p><button class="small" id="checkStorage" type="button">Check B2 bucket usage</button>
     <div class="album-filters" id="albumFilters" aria-label="Filter by album"></div>
     <section class="upload-card" id="uploadCard" hidden>
       <div class="upload-title"><span class="upload-icon" aria-hidden="true">📸</span><div><strong>Add a little memory</strong><span>Choose where it belongs, then tuck it into our collection.</span></div></div>
@@ -194,7 +195,7 @@
         <button class="button" id="createFolderBtn" type="button">＋ Add folder</button>
       </div>
       <form id="uploadForm">
-        <div class="photo-drop"><span aria-hidden="true">🌤️</span><strong>Choose a photo to add</strong><div class="file-picker"><input id="photoInput" class="file-input" type="file" name="photo" accept="image/*" required><label class="choose-photo" for="photoInput">＋ Choose photo</label><span class="selected-file" id="selectedFileName" aria-live="polite">No photo selected yet</span></div></div>
+        <div class="photo-drop"><span aria-hidden="true">🌤️</span><strong>Choose a photo to add</strong><small>JPEG, PNG, WebP, GIF, or AVIF · up to 20 MB</small><div class="file-picker"><input id="photoInput" class="file-input" type="file" name="photo" accept=".jpg,.jpeg,.png,.webp,.gif,.avif,image/jpeg,image/png,image/webp,image/gif,image/avif" required><label class="choose-photo" for="photoInput">＋ Choose photo</label><span class="selected-file" id="selectedFileName" aria-live="polite">No photo selected yet</span></div></div>
         <button class="button" id="uploadBtn" type="submit">Save our memory ✨</button>
       </form>
       <div class="status" id="uploadStatus"></div>

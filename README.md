@@ -32,22 +32,10 @@ The real-time features use a small Cloudflare Durable Object Worker alongside th
 
 Each person has a private question queue; the other person can see its count but not its text until both are online and press **I’m ready**. A round starts with three questions from each person, with each author asking and their partner answering. Questions and responses persist in the Durable Object, and saved answers include their answer date and time. The shared music widget stores one Spotify playlist link and playback position in the Durable Object; the player attempts to sync play, pause, and position across both browsers. Some phones block remote autoplay and require a local tap. Bathroom check-ins and their recent activity history are also stored in the Durable Object.
 
-## Gallery photo uploads (Cloudflare Pages)
+## Private gallery storage (Backblaze B2)
 
-The gallery supports uploading photos directly from the website. They get committed to this repo via a Cloudflare Pages Function.
+Gallery originals and generated previews are stored in the private Backblaze B2 bucket `project-lover-boy-gallery` in region `eu-central-003`. The browser uploads directly to B2 with short-lived signed PUT URLs. Cloudflare Pages Functions verify uploads, issue short-lived signed GET URLs after login, and store gallery records in the existing Question Night Durable Object. New gallery images are not committed to GitHub. Existing images stay in the repository as requested and are migrated by the repeatable script described in [the setup and migration guide](docs/gallery-storage-migration.md).
 
-### Setup
-1. Deploy this repo to [Cloudflare Pages](https://pages.cloudflare.com/). Use the default build settings (static site, no build command needed).
-2. Create a GitHub personal access token (classic) with `repo` scope: https://github.com/settings/tokens
-3. In Cloudflare Pages > your project > Settings > Environment variables, add:
-   - `GITHUB_TOKEN` - your PAT
-   - `GITHUB_REPO` - `username/repo` (e.g. `DinoLL288/Charlotte-`)
-   - `GITHUB_BRANCH` - `main` (optional)
-4. Redeploy the project.
+Gallery login uses server-verified, signed, HttpOnly cookies. Configure the encrypted Cloudflare secrets in the guide before deploying the gallery change; the old browser-only login values have been removed from the login page. Keep new login passwords and B2 keys out of source control and chat.
 
-Once set up, photos uploaded from `gallery.html` go to `gallery/` in the repo and appear in the gallery.
-
-### Notes
-- GitHub Pages alone cannot do this - this site is hosted on Cloudflare Pages with Functions.
-- Large photos may take a moment to appear after upload.
-- If uploads fail, check the function logs in Cloudflare Pages.
+Cloudflare Pages continues to serve the site and API. The existing Durable Object remains in use for Question Night, presence, music, bathroom check-ins, and gallery metadata. GitHub-backed memories and rules are not migrated by this change.
