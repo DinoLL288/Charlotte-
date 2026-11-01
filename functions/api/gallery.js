@@ -206,6 +206,7 @@ export async function onRequestPost({ request, env }) {
     const metadata = await metadataResponse.json();
     const pending = metadata.pendingUploads?.[body.uploadId];
     if (!pending || pending.user !== user) return json({ error: 'Upload receipt expired. Please upload again.' }, 403);
+    let verificationStep = 'check the original photo in private storage';
     try {
       const b2 = client(env);
       const head = await b2.send(new HeadObjectCommand({ Bucket: env.B2_BUCKET_NAME, Key: pending.objectKey }));
@@ -215,6 +216,7 @@ export async function onRequestPost({ request, env }) {
         await roomRequest(env, { action: 'cancel-upload', uploadId: body.uploadId, user });
         return json({ error: 'The uploaded photo did not match its approved size or type.' }, 400);
       }
+      verificationStep = 'read the original photo data';
       const image = await b2.send(new GetObjectCommand({ Bucket: env.B2_BUCKET_NAME, Key: pending.objectKey, Range: 'bytes=0-31' }));
       const header = await image.Body.transformToByteArray();
       if (!validImageHeader(pending.contentType, header)) {
@@ -224,6 +226,7 @@ export async function onRequestPost({ request, env }) {
         return json({ error: 'The uploaded file is not a supported image.' }, 400);
       }
       if (pending.thumbnailObjectKey) {
+        verificationStep = 'check the preview in private storage';
         const thumbHead = await b2.send(new HeadObjectCommand({ Bucket: env.B2_BUCKET_NAME, Key: pending.thumbnailObjectKey }));
         if (thumbHead.ContentLength !== pending.thumbnailSize || thumbHead.ContentType !== 'image/webp') {
           await deleteAllVersions(b2, env.B2_BUCKET_NAME, pending.objectKey);
@@ -231,6 +234,7 @@ export async function onRequestPost({ request, env }) {
           await roomRequest(env, { action: 'cancel-upload', uploadId: body.uploadId, user });
           return json({ error: 'The preview upload did not match its reservation.' }, 400);
         }
+        verificationStep = 'read the preview image data';
         const thumb = await b2.send(new GetObjectCommand({ Bucket: env.B2_BUCKET_NAME, Key: pending.thumbnailObjectKey, Range: 'bytes=0-31' }));
         if (!validImageHeader('image/webp', await thumb.Body.transformToByteArray())) {
           await deleteAllVersions(b2, env.B2_BUCKET_NAME, pending.objectKey);
@@ -252,11 +256,19 @@ export async function onRequestPost({ request, env }) {
         width: pending.width,
         height: pending.height
       };
+      verificationStep = 'save the photo to our gallery';
       const complete = await roomRequest(env, { action: 'complete-upload', uploadId: body.uploadId, user, photo });
       if (!complete.ok) return json({ error: 'The upload could not be added to our gallery.' }, 409);
       return json({ ok: true, photoId: photo.id });
-    } catch {
-      return json({ error: 'Backblaze has not confirmed the photo yet. Please try saving again.' }, 502);
+    } catch (error) {
+      const httpStatus = Number(error?.$metadata?.httpStatusCode) || 0;
+      const errorName = String(error?.name || 'Error').slice(0, 60);
+      // Log only safe diagnostic fields. Never log request URLs, signed URLs,
+      // credentials, image contents, or the full SDK error object.
+      console.error('Gallery upload completion failed', { step: verificationStep, errorName, httpStatus });
+      if (httpStatus === 403) return json({ error: `Private storage denied permission while trying to ${verificationStep}. The B2 application key needs file-read access.` }, 502);
+      if (httpStatus === 404) return json({ error: `Private storage could not find the uploaded file while trying to ${verificationStep}. Please retry the upload.` }, 502);
+      return json({ error: `The upload reached private storage, but we could not ${verificationStep}. Please try again.` }, 502);
     }
   }
 
