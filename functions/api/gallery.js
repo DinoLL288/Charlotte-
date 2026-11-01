@@ -16,7 +16,9 @@ const TYPES = {
 async function bucketUsage(s3, bucket) {
   let bytes = 0, objects = 0, keyMarker, versionIdMarker;
   do {
-    const result = await s3.send(new ListObjectVersionsCommand({ Bucket: bucket, KeyMarker: keyMarker, VersionIdMarker: versionIdMarker }));
+    // Every application-managed gallery object lives under photos/. Keeping
+    // the listing in this prefix also supports a prefix-restricted B2 key.
+    const result = await s3.send(new ListObjectVersionsCommand({ Bucket: bucket, Prefix: 'photos/', KeyMarker: keyMarker, VersionIdMarker: versionIdMarker }));
     for (const item of result.Versions || []) { bytes += item.Size || 0; objects++; }
     keyMarker = result.NextKeyMarker;
     versionIdMarker = result.NextVersionIdMarker;
@@ -178,7 +180,13 @@ export async function onRequestPost({ request, env }) {
     const uploadedAt = new Date().toISOString();
     let bucketBytes;
     try { bucketBytes = (await bucketUsage(client(env), env.B2_BUCKET_NAME)).bytes; }
-    catch { return json({ error: 'Could not check our free storage allowance. Please try again later.' }, 503); }
+    catch (error) {
+      const httpStatus = Number(error?.$metadata?.httpStatusCode) || 0;
+      const errorName = String(error?.name || 'Error').slice(0, 60);
+      console.error('Gallery storage allowance check failed', { operation: 'list-photo-versions', errorName, httpStatus });
+      if (httpStatus === 403) return json({ error: 'Backblaze denied listing our photo files. The key needs listFiles access to this bucket and the photos/ prefix.' }, 503);
+      return json({ error: 'Could not check our free storage allowance. Please try again later.' }, 503);
+    }
     const reserve = await roomRequest(env, { action: 'begin-upload', bucketBytes, upload: { id: uploadId, user, objectKey, size, contentType: body.contentType, albums, name: cleanName(body.name), uploadedAt, thumbnailObjectKey, thumbnailSize, thumbnailContentType: thumbnailSize ? 'image/webp' : '', width, height } });
     if (!reserve.ok) {
       const error = await reserve.json().catch(() => ({}));
