@@ -25,8 +25,12 @@ async function readRepoFile(env, path, fallback) {
   return JSON.parse(decodeContent(file.content));
 }
 const toDate = value => String(value || '').replace(/-/g, '');
-function addAllDay(lines, uid, date, title, description = '') {
-  addAllDayRange(lines, uid, date, date, title, description);
+function addAllDay(lines, uid, date, title, description = '', recurring = false) {
+  const end = new Date(date + 'T00:00:00Z'); end.setUTCDate(end.getUTCDate() + 1);
+  lines.push('BEGIN:VEVENT', `UID:${uid}@project-lover-boy`, `DTSTAMP:${new Date().toISOString().replace(/[-:]/g, '').replace(/\.\d{3}/, '')}`, `DTSTART;VALUE=DATE:${toDate(date)}`, `DTEND;VALUE=DATE:${end.toISOString().slice(0, 10).replace(/-/g, '')}`, `SUMMARY:${escapeIcs(title)}`);
+  if (recurring) lines.push('RRULE:FREQ=YEARLY');
+  if (description) lines.push(`DESCRIPTION:${escapeIcs(description)}`);
+  lines.push('END:VEVENT');
 }
 function addAllDayRange(lines, uid, firstDate, lastDate, title, description = '') {
   const end = new Date(lastDate + 'T00:00:00Z'); end.setUTCDate(end.getUTCDate() + 1);
@@ -45,7 +49,7 @@ export async function onRequestGet({ request, env }) {
       readRepoFile(env, 'calendar/events.json', { events: {} }),
       readRepoFile(env, 'apart/apart.json', { entries: [] })
     ]);
-    const lines = ['BEGIN:VCALENDAR', 'VERSION:2.0', 'PRODID:-//Project Lover Boy//Shared Calendar//EN', 'CALSCALE:GREGORIAN', 'METHOD:PUBLISH', 'X-WR-CALNAME:Us'];
+    const lines = ['BEGIN:VCALENDAR', 'VERSION:2.0', 'PRODID:-//Project Lover Boy//Shared Calendar//EN', 'CALSCALE:GREGORIAN', 'METHOD:PUBLISH', 'REFRESH-INTERVAL;VALUE=DURATION:PT15M', 'X-PUBLISHED-TTL:PT15M', 'X-WR-CALNAME:Us'];
     for (const [date, items] of Object.entries(calendar.events || {})) {
       for (const event of Array.isArray(items) ? items : []) {
         const title = event.kind === 'whatsapp-call' ? `WhatsApp ${event.callType || ''} call`.trim() : event.title || 'Our event';
@@ -75,7 +79,7 @@ export async function onRequestGet({ request, env }) {
       { id: 'luke-birthday', title: '🎂 Luke’s birthday', month: '07', day: '21' },
       { id: 'anniversary', title: '💛 Our anniversary', month: '10', day: '26' }
     ]) {
-      for (let year = yearNow - 1; year <= yearNow + 5; year++) addAllDay(lines, special.id, `${year}-${special.month}-${special.day}`, special.title);
+      addAllDay(lines, special.id, `${yearNow}-${special.month}-${special.day}`, special.title, '', true);
     }
     lines.push('END:VCALENDAR');
     return new Response(lines.map(foldLine).join('\r\n') + '\r\n', {
