@@ -22,6 +22,9 @@
   let currentIndex = 0;
   let signedAt = 0;
   let refreshPromise = null;
+  let googleAccessToken = '';
+  let googleTokenExpiresAt = 0;
+  let googleTokenClient = null;
 
   const escapeHtml = value => { const el = document.createElement('span'); el.textContent = value || ''; return el.innerHTML; };
   const albumName = name => name === 'Old Photos' ? 'Older photos' : name === 'General' ? 'Our memories' : name;
@@ -32,6 +35,69 @@
   };
   const groupKey = photo => { const date = photoDate(photo); return date ? `${date.getFullYear()}-${String(date.getMonth() + 1).padStart(2, '0')}` : 'undated'; };
   const groupLabel = key => key === 'undated' ? 'A little while ago' : new Date(`${key}-01T12:00:00`).toLocaleDateString([], { month: 'long', year: 'numeric' });
+
+  async function waitForGoogleIdentity() {
+    for (let attempt = 0; attempt < 40; attempt++) {
+      if (window.google?.accounts?.oauth2) return;
+      await new Promise(resolve => setTimeout(resolve, 100));
+    }
+    throw new Error('Google sign-in did not load. Please refresh and try again.');
+  }
+  async function getGoogleAccessToken(prompt = '') {
+    if (googleAccessToken && Date.now() < googleTokenExpiresAt - 60_000) return googleAccessToken;
+    await waitForGoogleIdentity();
+    if (!googleTokenClient) {
+      const response = await fetch('/api/youtube-config', { credentials: 'same-origin', cache: 'no-store' });
+      const config = await response.json();
+      if (!response.ok || !config.clientId) throw new Error(config.error || 'Google Photos sign-in is not configured yet.');
+      googleTokenClient = google.accounts.oauth2.initTokenClient({
+        client_id: config.clientId,
+        scope: 'https://www.googleapis.com/auth/photoslibrary.appendonly https://www.googleapis.com/auth/photoslibrary.readonly.appcreateddata',
+        callback: () => {}
+      });
+    }
+    return new Promise((resolve, reject) => {
+      googleTokenClient.callback = response => {
+        if (response.error || !response.access_token) { reject(new Error(response.error_description || response.error || 'Google Photos sign-in was canceled.')); return; }
+        googleAccessToken = response.access_token;
+        googleTokenExpiresAt = Date.now() + (Number(response.expires_in) || 3600) * 1000;
+        resolve(googleAccessToken);
+      };
+      googleTokenClient.requestAccessToken({ prompt });
+    });
+  }
+  async function loadGooglePhotoUrls(allowPrompt = false) {
+    const googlePhotos = photos.filter(photo => photo.provider === 'google-photos');
+    if (!googlePhotos.length) return;
+    const uniquePhotos = [...new Map(googlePhotos.map(photo => [photo.mediaItemId, photo])).values()];
+    if (!allowPrompt && (!googleAccessToken || Date.now() >= googleTokenExpiresAt - 60_000)) {
+      googlePhotos.forEach(photo => { photo.url = ''; photo.fullUrl = ''; });
+      document.getElementById('googlePhotosConnect').textContent = 'Connect our Google Photos';
+      return;
+    }
+    const token = await getGoogleAccessToken(allowPrompt ? 'consent' : '');
+    const byMediaId = new Map();
+    googlePhotos.forEach(photo => { if (!byMediaId.has(photo.mediaItemId)) byMediaId.set(photo.mediaItemId, []); byMediaId.get(photo.mediaItemId).push(photo); });
+    for (let start = 0; start < uniquePhotos.length; start += 50) {
+      const batch = uniquePhotos.slice(start, start + 50);
+      const query = new URLSearchParams();
+      batch.forEach(photo => query.append('mediaItemIds', photo.mediaItemId));
+      const response = await fetch(`https://photoslibrary.googleapis.com/v1/mediaItems:batchGet?${query}`, { headers: { authorization: `Bearer ${token}` } });
+      const result = await response.json().catch(() => ({}));
+      if (!response.ok) {
+        if (response.status === 401) { googleAccessToken = ''; googleTokenExpiresAt = 0; googlePhotos.forEach(photo => { photo.url = ''; photo.fullUrl = ''; }); document.getElementById('googlePhotosConnect').textContent = 'Reconnect our Google Photos'; }
+        throw new Error(result.error?.message || 'Google Photos could not load our saved photos. Connect the shared account again.');
+      }
+      for (const entry of result.mediaItemResults || []) {
+        const media = entry.mediaItem;
+        const photo = batch.find(item => item.mediaItemId === media?.id);
+        if (!photo || !media?.baseUrl) continue;
+        byMediaId.get(media.id)?.forEach(copy => { copy.url = `${media.baseUrl}=w900-h900`; copy.fullUrl = `${media.baseUrl}=d`; });
+      }
+    }
+    document.getElementById('googlePhotosConnect').textContent = 'Google Photos connected ✓';
+    render();
+  }
 
   input.addEventListener('change', () => { filename.textContent = input.files?.[0]?.name || 'No photo selected yet'; });
   document.getElementById('toggleUpload').addEventListener('click', () => {
@@ -126,7 +192,7 @@
     const tile = document.createElement('div'); tile.className = 'tile' + (isVideo ? ' video-tile' : ''); tile.tabIndex = 0;
     tile.dataset.uploadedBy = photo.uploadedBy || photo.uploader || 'Unknown'; tile.dataset.path = itemKey(photo); tile.dataset.date = itemDate(photo)?.toLocaleDateString([], { dateStyle: 'medium' }) || '';
     if (isVideo) tile.dataset.title = photo.title || 'Our video';
-    const img = document.createElement('img'); img.src = isVideo ? `https://i.ytimg.com/vi/${encodeURIComponent(photo.videoId)}/hqdefault.jpg` : photo.url; img.alt = isVideo ? `Video: ${photo.title || 'Our video'}` : `Photo from ${albumName(photo.album)}`; img.loading = 'lazy';
+    const img = document.createElement('img'); img.src = isVideo ? `https://i.ytimg.com/vi/${encodeURIComponent(photo.videoId)}/hqdefault.jpg` : (photo.url || 'data:image/svg+xml,%3Csvg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 400 300"%3E%3Crect width="400" height="300" fill="%23e8f4f9"/%3E%3Ctext x="200" y="150" text-anchor="middle" font-size="52"%3E%F0%9F%93%B7%3C/text%3E%3C/svg%3E'); img.alt = isVideo ? `Video: ${photo.title || 'Our video'}` : `Photo from ${albumName(photo.album)}`; img.loading = 'lazy';
     tile.appendChild(img);
     if (isVideo) { const play = document.createElement('span'); play.className = 'video-play'; play.innerHTML = '<span aria-hidden="true">▶</span>'; tile.appendChild(play); }
     const copy = document.createElement('button'); copy.type = 'button'; copy.textContent = '+'; copy.title = `Add this ${isVideo ? 'video' : 'photo'} to another album`; copy.setAttribute('aria-label', 'Add to another album');
@@ -141,8 +207,11 @@
       } catch (error) { status.textContent = error.message; }
     });
     tile.appendChild(copy);
-    tile.addEventListener('click', () => openLightbox(photo));
-    tile.addEventListener('keydown', event => { if (event.key === 'Enter' || event.key === ' ') { event.preventDefault(); openLightbox(photo); } });
+    tile.addEventListener('click', () => {
+      if (!isVideo && photo.provider === 'google-photos' && !photo.url) { status.textContent = 'Connect our shared Google Photos account to view this memory.'; document.getElementById('googlePhotosConnect').focus(); return; }
+      openLightbox(photo);
+    });
+    tile.addEventListener('keydown', event => { if (event.key === 'Enter' || event.key === ' ') { event.preventDefault(); if (!isVideo && photo.provider === 'google-photos' && !photo.url) { status.textContent = 'Connect our shared Google Photos account to view this memory.'; document.getElementById('googlePhotosConnect').focus(); return; } openLightbox(photo); } });
     return tile;
   }
 
@@ -165,11 +234,12 @@
     if (!videoResponse?.ok) document.getElementById('videoUploadStatus').textContent = videoResult.error || 'Our video shelf could not load.';
     signedAt = Date.now();
     photos.sort((a, b) => (photoDate(b)?.getTime() || 0) - (photoDate(a)?.getTime() || 0));
+    try { await loadGooglePhotoUrls(false); } catch (error) { status.textContent = error.message; }
     renderAlbumFilters(); render();
     renderUploadFolders();
-    const bytes = Number(result.storage?.bytes || 0);
-    const percent = Math.min(100, bytes / 10_000_000_000 * 100);
-    document.getElementById('storageUsage').textContent = `Our gallery index lists ${formatBytes(bytes)} of the 10 GB B2 free storage allowance (${percent.toFixed(2)}%). Check bucket usage for the total including unindexed files.`;
+    const googleCount = photos.filter(photo => photo.provider === 'google-photos').length;
+    const olderCount = photos.filter(photo => photo.provider !== 'google-photos').length;
+    document.getElementById('storageUsage').textContent = `Our gallery has ${googleCount} photos saved in Google Photos and ${olderCount} older memories from previous storage. Google Photos manages the account’s storage allowance.`;
     })();
     try { await refreshPromise; } finally { refreshPromise = null; }
   }
@@ -197,18 +267,14 @@
     } catch { return null; }
     finally { bitmap?.close(); }
   }
-  document.getElementById('checkStorage').addEventListener('click', async event => {
+  document.getElementById('googlePhotosConnect').addEventListener('click', async event => {
     const button = event.currentTarget;
     button.disabled = true;
     try {
-      const response = await fetch('/api/gallery?usage=1', { cache: 'no-store', credentials: 'same-origin' });
-      const result = await response.json();
-      if (!response.ok) throw new Error(result.error || 'Could not check our bucket usage.');
-      const usage = result.storage;
-      const percent = Math.min(100, usage.bytes / usage.freeAllowanceBytes * 100);
-      const orphanNote = usage.objects !== usage.indexedObjects || usage.bytes !== usage.indexedBytes ? ` The bucket and gallery index differ (${usage.indexedPhotos} indexed photos).` : '';
-      document.getElementById('storageUsage').textContent = `B2 bucket: ${formatBytes(usage.bytes)} across ${usage.objects} files (${percent.toFixed(2)}% of the 10 GB free storage allowance).${orphanNote}`;
-    } catch (error) { document.getElementById('storageUsage').textContent = error.message; }
+      await getGoogleAccessToken('consent');
+      await loadGooglePhotoUrls(false);
+      status.textContent = 'Our shared Google Photos account is connected ✨';
+    } catch (error) { status.textContent = error.message; }
     finally { button.disabled = false; }
   });
 
@@ -237,45 +303,38 @@
     event.preventDefault(); const file = input.files?.[0]; if (!file) return;
     const selected = [...folderCheckboxes.querySelectorAll('input:checked')].map(box => box.value);
     if (!selected.length) { status.textContent = 'Choose an album first (or make one above).'; return; }
+    const type = file.type.toLowerCase();
+    if (!['image/jpeg', 'image/png', 'image/webp', 'image/gif', 'image/avif'].includes(type) || file.size > 200 * 1024 * 1024) { status.textContent = 'Choose a JPEG, PNG, WebP, GIF, or AVIF photo under 200 MB.'; return; }
     uploadButton.disabled = true; status.textContent = 'Adding our memory…';
-    let prepared = null;
     try {
-      const preparedImage = await makeThumbnail(file);
-      const thumbnail = preparedImage?.blob || null;
-      const preparedResponse = await fetch('/api/gallery', { method: 'POST', headers: { 'content-type': 'application/json' }, credentials: 'same-origin', body: JSON.stringify({ action: 'create-upload', name: file.name, contentType: file.type, size: file.size, thumbnailSize: thumbnail?.size || 0, width: preparedImage?.width || null, height: preparedImage?.height || null, albums: selected }) });
-      prepared = await preparedResponse.json();
-      if (!preparedResponse.ok) throw new Error(prepared.error || 'Could not prepare the upload.');
-      let uploadPercent = 0;
-      const putToB2 = (url, headers, blob, label) => new Promise((resolve, reject) => {
+      const token = await getGoogleAccessToken('');
+      const uploadToken = await new Promise((resolve, reject) => {
         const xhr = new XMLHttpRequest();
-        xhr.open('PUT', url);
-        Object.entries(headers || {}).forEach(([key, value]) => xhr.setRequestHeader(key, value));
+        xhr.open('POST', 'https://photoslibrary.googleapis.com/v1/uploads');
+        xhr.setRequestHeader('Authorization', `Bearer ${token}`);
+        xhr.setRequestHeader('Content-Type', 'application/octet-stream');
+        xhr.setRequestHeader('X-Goog-Upload-Content-Type', type);
+        xhr.setRequestHeader('X-Goog-Upload-Protocol', 'raw');
+        xhr.setRequestHeader('X-Goog-Upload-File-Name', file.name.replace(/[\r\n]/g, '_').slice(0, 200));
         xhr.upload.onprogress = event => {
-          if (!event.lengthComputable) return;
-          uploadPercent = Math.max(uploadPercent, Math.floor(event.loaded / event.total * 100));
-          status.textContent = `Uploading our memory… ${uploadPercent}%${label === 'preview' ? ' · preparing preview' : ''}`;
+          if (event.lengthComputable) status.textContent = `Saving our photo to Google Photos… ${Math.floor(event.loaded / event.total * 100)}%`;
         };
-        xhr.onload = () => xhr.status >= 200 && xhr.status < 300
-          ? resolve()
-          : reject(new Error(`Private photo storage rejected the ${label} (HTTP ${xhr.status}). Please try again.`));
-        xhr.onerror = () => reject(new Error(`The ${label} could not connect to private photo storage. Check your connection and try again.`));
-        xhr.onabort = () => reject(new Error(`The ${label} upload was interrupted. Please try again.`));
-        xhr.send(blob);
+        xhr.onload = () => xhr.status >= 200 && xhr.status < 300 ? resolve(xhr.responseText.trim()) : reject(new Error(`Google Photos rejected our upload (HTTP ${xhr.status}). ${xhr.responseText.slice(0, 500)}`));
+        xhr.onerror = () => reject(new Error('Could not connect to Google Photos. Check our connection and try again.'));
+        xhr.onabort = () => reject(new Error('The upload was interrupted. Please try again.'));
+        xhr.send(file);
       });
-      const uploads = await Promise.allSettled([
-        putToB2(prepared.uploadUrl, prepared.headers, file, 'photo'),
-        prepared.thumbnailUrl ? putToB2(prepared.thumbnailUrl, prepared.thumbnailHeaders, thumbnail, 'preview') : Promise.resolve()
-      ]);
-      const failedUpload = uploads.find(result => result.status === 'rejected');
-      if (failedUpload) throw failedUpload.reason;
-      status.textContent = 'Checking and saving our photo…';
-      const completeResponse = await fetch('/api/gallery', { method: 'POST', headers: { 'content-type': 'application/json' }, credentials: 'same-origin', body: JSON.stringify({ action: 'complete-upload', uploadId: prepared.uploadId }) });
-      const complete = await completeResponse.json();
-      if (!completeResponse.ok) throw new Error(complete.error || 'Could not save this photo to our gallery.');
-      status.textContent = 'Memory saved to our album ✨'; form.reset(); filename.textContent = 'No photo selected yet';
+      status.textContent = 'Adding our photo to the gallery…';
+      const createResponse = await fetch('https://photoslibrary.googleapis.com/v1/mediaItems:batchCreate', { method: 'POST', headers: { authorization: `Bearer ${token}`, 'content-type': 'application/json' }, body: JSON.stringify({ newMediaItems: [{ simpleMediaItem: { uploadToken, fileName: file.name.replace(/[\r\n]/g, '_').slice(0, 200) } }] }) });
+      const created = await createResponse.json().catch(() => ({}));
+      const item = created.newMediaItemResults?.[0]?.mediaItem;
+      if (!createResponse.ok || !item?.id) throw new Error(created.newMediaItemResults?.[0]?.status?.message || created.error?.message || 'Google Photos received the upload but could not add it to our library.');
+      const registerResponse = await fetch('/api/gallery', { method: 'POST', headers: { 'content-type': 'application/json' }, credentials: 'same-origin', body: JSON.stringify({ action: 'register-google-photo', mediaItemId: item.id, name: file.name, contentType: type, size: file.size, albums: selected }) });
+      const registered = await registerResponse.json();
+      if (!registerResponse.ok) throw new Error(registered.error || 'Google Photos saved the image, but our gallery could not index it. Refresh before retrying the upload.');
+      status.textContent = 'Memory saved to Google Photos and our gallery ✨'; form.reset(); filename.textContent = 'No photo selected yet';
       await loadLibrary();
     } catch (error) {
-      if (prepared?.uploadId) await fetch('/api/gallery', { method: 'POST', headers: { 'content-type': 'application/json' }, credentials: 'same-origin', body: JSON.stringify({ action: 'cancel-upload', uploadId: prepared.uploadId }) }).catch(() => {});
       status.textContent = error.message;
     }
     finally { uploadButton.disabled = false; }

@@ -88,7 +88,9 @@ function expandPhotos(photos, folder) {
         caption: photo.caption || '',
         width: photo.width || null,
         height: photo.height || null,
-        size: photo.size
+        size: photo.size,
+        provider: photo.provider || 'b2',
+        mediaItemId: photo.mediaItemId || ''
       });
     }
   }
@@ -99,18 +101,20 @@ async function getPhotos(env, folder) {
   const metadataResponse = await roomRequest(env, {}, 'GET');
   if (!metadataResponse.ok) throw new Error('Gallery metadata could not be loaded.');
   const metadata = await metadataResponse.json();
-  const all = metadata.photos || [];
+  const all = [...(metadata.photos || []), ...(metadata.googlePhotos || [])];
   const items = expandPhotos(all, folder);
   const photosById = new Map(all.map(photo => [photo.id, photo]));
-  const b2 = client(env);
   const signed = new Map();
   const keys = [...new Set(items.flatMap(item => { const photo = photosById.get(item.id); return [photo?.objectKey, photo?.thumbnailObjectKey].filter(Boolean); }))];
-  await Promise.all(keys.map(async key => {
-    signed.set(key, await getSignedUrl(b2, new GetObjectCommand({
-      Bucket: env.B2_BUCKET_NAME, Key: key,
-      ResponseCacheControl: 'private, max-age=600'
-    }), { expiresIn: SIGNED_URL_SECONDS }));
-  }));
+  if (keys.length && env.B2_ENDPOINT && env.B2_REGION && env.B2_BUCKET_NAME && env.B2_APPLICATION_KEY_ID && env.B2_APPLICATION_KEY) {
+    const b2 = client(env);
+    await Promise.all(keys.map(async key => {
+      signed.set(key, await getSignedUrl(b2, new GetObjectCommand({
+        Bucket: env.B2_BUCKET_NAME, Key: key,
+        ResponseCacheControl: 'private, max-age=600'
+      }), { expiresIn: SIGNED_URL_SECONDS }));
+    }));
+  }
   for (const item of items) {
     const photo = photosById.get(item.id);
     item.fullUrl = signed.get(photo?.objectKey) || '';
@@ -119,21 +123,21 @@ async function getPhotos(env, folder) {
   const folders = [...new Set(all.flatMap(photo => photo.albums || []))].sort((a, b) => a.localeCompare(b));
   if (!folders.includes('General')) folders.unshift('General');
   const objectSizes = new Map();
-  for (const photo of all) {
+  for (const photo of all.filter(photo => photo.objectKey)) {
     objectSizes.set(photo.objectKey, Number(photo.size) || 0);
     if (photo.thumbnailObjectKey) objectSizes.set(photo.thumbnailObjectKey, Number(photo.thumbnailSize) || 0);
   }
   const used = [...objectSizes.values()].reduce((sum, size) => sum + size, 0);
-  return { photos: items, folders, storage: { bytes: used, photos: new Set(all.map(photo => photo.objectKey)).size, freeAllowanceBytes: 10_000_000_000 } };
+  return { photos: items, folders, storage: { bytes: used, photos: new Set(all.filter(photo => photo.objectKey).map(photo => photo.objectKey)).size, freeAllowanceBytes: 10_000_000_000 }, googlePhotosCount: all.filter(photo => photo.provider === 'google-photos').length };
 }
 
 export async function onRequestGet({ request, env }) {
   const user = await getGalleryUser(request, env);
   if (!user) return json({ error: 'Please log in to view our private photos.' }, 401);
   try {
-    requireGalleryConfig(env);
     const url = new URL(request.url);
     if (url.searchParams.get('usage') === '1') {
+      requireGalleryConfig(env);
       const b2 = client(env);
       const { bytes, objects } = await bucketUsage(b2, env.B2_BUCKET_NAME);
       const metadataResponse = await roomRequest(env, {}, 'GET');
@@ -158,7 +162,6 @@ export async function onRequestPost({ request, env }) {
   const user = await getGalleryUser(request, env);
   if (!user) return json({ error: 'Please log in to change our photo gallery.' }, 401);
   if (!sameOrigin(request)) return json({ error: 'Gallery request rejected.' }, 403);
-  try { requireGalleryConfig(env); } catch { return json({ error: 'Photo storage is not configured yet.' }, 503); }
   if (!request.headers.get('content-type')?.toLowerCase().startsWith('application/json')) return json({ error: 'Send a valid gallery request.' }, 415);
   if (Number(request.headers.get('content-length')) > MAX_INDEX_BYTES) return json({ error: 'Gallery metadata requests are too large.' }, 413);
   let body;
@@ -166,6 +169,7 @@ export async function onRequestPost({ request, env }) {
   catch (error) { return json({ error: error.message === 'Request body is too large.' ? error.message : 'Invalid gallery request.' }, error.message === 'Request body is too large.' ? 413 : 400); }
 
   if (body.action === 'create-upload') {
+    try { requireGalleryConfig(env); } catch { return json({ error: 'Backblaze storage is not configured.' }, 503); }
     const extension = TYPES[body.contentType];
     const size = Number(body.size);
     const thumbnailSize = Number(body.thumbnailSize) || 0;
@@ -212,6 +216,18 @@ export async function onRequestPost({ request, env }) {
       await roomRequest(env, { action: 'cancel-upload', uploadId, user });
       return json({ error: 'Could not prepare the secure photo upload.' }, 503);
     }
+  }
+
+  if (body.action === 'register-google-photo') {
+    const mediaItemId = String(body.mediaItemId || '');
+    const size = Number(body.size);
+    const albums = Array.isArray(body.albums) ? [...new Set(body.albums.map(String))] : [];
+    const contentType = String(body.contentType || '');
+    if (!/^[A-Za-z0-9_-]{1,200}$/.test(mediaItemId) || !Number.isSafeInteger(size) || size < 1 || size > 200 * 1024 * 1024 || !TYPES[contentType] || typeof body.name !== 'string' || body.name.length > 250 || !albums.length || albums.length > 20 || !albums.every(isValidAlbum)) return json({ error: 'Google Photos returned invalid photo details.' }, 400);
+    const photo = { id: crypto.randomUUID(), provider: 'google-photos', mediaItemId, name: cleanName(body.name), size, contentType, uploadedAt: new Date().toISOString(), uploadedBy: user, width: Number.isSafeInteger(Number(body.width)) ? Number(body.width) : null, height: Number.isSafeInteger(Number(body.height)) ? Number(body.height) : null, albums };
+    const saved = await roomRequest(env, { action: 'register-google-photo', photo });
+    if (!saved.ok) return json({ error: 'The photo reached Google Photos, but our gallery index could not save it. Please refresh before trying the upload again.' }, 503);
+    return json({ ok: true, photoId: photo.id });
   }
 
   if (body.action === 'complete-upload') {

@@ -161,7 +161,7 @@ export class QuestionNightRoom {
     for (let i = 0; i < Math.max(supplied.length, expected.length); i++) mismatch |= (supplied.charCodeAt(i) || 0) ^ (expected.charCodeAt(i) || 0);
     if (!expected || mismatch) return Response.json({ error: 'Not found' }, { status: 404 });
     const data = await this.ctx.storage.get('galleryData') || { photos: [], pendingUploads: {} };
-    if (request.method === 'GET') return Response.json({ ok: true, photos: data.photos, pendingUploads: data.pendingUploads }, { headers: { 'cache-control': 'no-store' } });
+    if (request.method === 'GET') return Response.json({ ok: true, photos: data.photos, googlePhotos: data.googlePhotos || [], pendingUploads: data.pendingUploads }, { headers: { 'cache-control': 'no-store' } });
     if (request.method !== 'POST') return Response.json({ error: 'Method not allowed' }, { status: 405 });
     let body;
     try { body = await request.json(); } catch { return Response.json({ error: 'Invalid request' }, { status: 400 }); }
@@ -307,6 +307,16 @@ export class QuestionNightRoom {
       await this.ctx.storage.put('galleryData', data);
       return Response.json({ ok: true, photo: existing || data.photos[data.photos.length - 1] });
     }
+    if (body.action === 'register-google-photo') {
+      const photo = body.photo || {};
+      if (photo.provider !== 'google-photos' || !/^[A-Za-z0-9_-]{1,200}$/.test(String(photo.mediaItemId || '')) || !/^[a-f0-9-]{36}$/.test(String(photo.id || '')) || !['Luke', 'Charlotte'].includes(photo.uploadedBy) || !Number.isSafeInteger(photo.size) || photo.size < 1 || !Array.isArray(photo.albums) || !photo.albums.length || photo.albums.length > 20 || photo.albums.some(album => typeof album !== 'string' || !album.trim() || album.length > 80 || /[\\/\u0000-\u001f]/.test(album))) return Response.json({ error: 'Invalid Google Photos record.' }, { status: 400 });
+      data.googlePhotos ||= [];
+      const existing = data.googlePhotos.find(item => item.mediaItemId === photo.mediaItemId);
+      if (!existing && data.photos.length + data.googlePhotos.length >= 1000) return Response.json({ error: 'Our gallery index is full.' }, { status: 413 });
+      if (!existing) data.googlePhotos.push({ ...photo, albums: [...new Set(photo.albums.map(album => album.trim()))] });
+      await this.ctx.storage.put('galleryData', data);
+      return Response.json({ ok: true, photo: existing || data.googlePhotos[data.googlePhotos.length - 1] });
+    }
     if (body.action === 'cancel-upload') {
       const pending = data.pendingUploads?.[body.uploadId];
       if (pending && pending.user !== body.user) return Response.json({ error: 'Upload reservation not found.' }, { status: 404 });
@@ -314,9 +324,9 @@ export class QuestionNightRoom {
       return Response.json({ ok: true, canceled: Boolean(pending), pending });
     }
     if (body.action === 'copy-to-album') {
-      const photo = data.photos.find(item => item.id === body.photoId);
+      const photo = [...data.photos, ...(data.googlePhotos || [])].find(item => item.id === body.photoId);
       if (!photo || typeof body.album !== 'string' || !body.album.trim() || body.album.length > 80) return Response.json({ error: 'Photo or album not found.' }, { status: 404 });
-      if (!(photo.albums || []).includes(body.album.trim()) && [...new Set(data.photos.flatMap(item => item.albums || []))].length >= 100) return Response.json({ error: 'The gallery already has 100 albums.' }, { status: 413 });
+      if (!(photo.albums || []).includes(body.album.trim()) && [...new Set([...data.photos, ...(data.googlePhotos || [])].flatMap(item => item.albums || []))].length >= 100) return Response.json({ error: 'The gallery already has 100 albums.' }, { status: 413 });
       photo.albums = [...new Set([...(photo.albums || []), body.album.trim()])];
       await this.ctx.storage.put('galleryData', data);
       return Response.json({ ok: true });

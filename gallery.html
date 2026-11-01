@@ -188,17 +188,19 @@
   <main class="screen">
     <div class="gallery-toolbar"><input id="photoSearch" class="gallery-search" type="search" placeholder="Search our photos, videos, and albums" aria-label="Search gallery"><div class="gallery-view-tabs" role="group" aria-label="Gallery view"><button type="button" id="allPhotosTab" data-mode="all" aria-pressed="true">All</button><button type="button" id="photosTab" data-mode="photos" aria-pressed="false">Photos</button><button type="button" id="videosTab" data-mode="videos" aria-pressed="false">Videos</button><button type="button" id="albumsTab" data-mode="albums" aria-pressed="false">Albums</button></div><button class="button" id="toggleUpload" type="button">＋ Add to our gallery</button></div>
     <p class="media-count" id="mediaCount" aria-live="polite">Our shared memories are loading…</p>
-    <p class="status" id="storageUsage" role="status">Checking our private storage use…</p><button class="small" id="checkStorage" type="button">Check B2 bucket usage</button>
+    <p class="status" id="googlePhotosDisclosure">If we connect, this site can add photos to our shared Google Photos account and read only the photos added through this site so we can show them here. It stores their IDs and our album labels in the website. We can remove a photo from Google Photos at any time; it may then stop appearing here.</p>
+    <button class="button" id="googlePhotosConnect" type="button">Connect our shared Google Photos</button>
+    <p class="status" id="storageUsage" role="status">Both of us should connect the same Google Photos account to see our app-added photos. Google manages the account’s storage allowance.</p>
     <div class="album-filters" id="albumFilters" aria-label="Filter by album"></div>
     <section class="upload-card" id="uploadCard" hidden>
-      <div class="upload-title"><span class="upload-icon" aria-hidden="true">💌</span><div><strong>Add a little memory</strong><span>Photos stay in our private gallery; videos are uploaded to YouTube as Unlisted.</span></div></div>
+      <div class="upload-title"><span class="upload-icon" aria-hidden="true">💌</span><div><strong>Add a little memory</strong><span>New photos save to our shared Google Photos account. Videos are uploaded to YouTube as Unlisted.</span></div></div>
       <div class="folder-tools">
         <div id="folderCheckboxes" style="display:flex; gap:10px; flex-wrap:wrap; justify-content:center;"></div>
         <input id="newFolderInput" placeholder="New folder name" style="padding:10px 14px; border-radius:10px; border:1px solid #b9dcf5;">
         <button class="button" id="createFolderBtn" type="button">＋ Add folder</button>
       </div>
       <form id="uploadForm">
-        <div class="photo-drop"><span aria-hidden="true">🌤️</span><strong>Choose a photo to add</strong><small>JPEG, PNG, WebP, GIF, or AVIF · up to 20 MB</small><div class="file-picker"><input id="photoInput" class="file-input" type="file" name="photo" accept=".jpg,.jpeg,.png,.webp,.gif,.avif,image/jpeg,image/png,image/webp,image/gif,image/avif" required><label class="choose-photo" for="photoInput">＋ Choose photo</label><span class="selected-file" id="selectedFileName" aria-live="polite">No photo selected yet</span></div></div>
+        <div class="photo-drop"><span aria-hidden="true">🌤️</span><strong>Choose a photo to add</strong><small>JPEG, PNG, WebP, GIF, or AVIF · up to 200 MB. Large uploads count toward our Google account storage.</small><div class="file-picker"><input id="photoInput" class="file-input" type="file" name="photo" accept=".jpg,.jpeg,.png,.webp,.gif,.avif,image/jpeg,image/png,image/webp,image/gif,image/avif" required><label class="choose-photo" for="photoInput">＋ Choose photo</label><span class="selected-file" id="selectedFileName" aria-live="polite">No photo selected yet</span></div></div>
         <button class="button" id="uploadBtn" type="submit">Save our memory ✨</button>
       </form>
       <div class="status" id="uploadStatus"></div>

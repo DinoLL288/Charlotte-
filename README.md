@@ -32,10 +32,24 @@ The real-time features use a small Cloudflare Durable Object Worker alongside th
 
 Each person has a private question queue; the other person can see its count but not its text until both are online and press **I’m ready**. A round starts with three questions from each person, with each author asking and their partner answering. Questions and responses persist in the Durable Object, and saved answers include their answer date and time. The shared music widget stores one Spotify playlist link and playback position in the Durable Object; the player attempts to sync play, pause, and position across both browsers. Some phones block remote autoplay and require a local tap. Bathroom check-ins and their recent activity history are also stored in the Durable Object.
 
-## Private gallery storage (Backblaze B2)
+## Gallery photo storage (Google Photos)
 
-Gallery originals and generated previews are stored in the private Backblaze B2 bucket `project-lover-boy-gallery` in region `eu-central-003`. The browser uploads directly to B2 with short-lived signed PUT URLs. Cloudflare Pages Functions verify uploads, issue short-lived signed GET URLs after login, and store gallery records in the existing Question Night Durable Object. New gallery images are not committed to GitHub. Existing images stay in the repository as requested and are migrated by the repeatable script described in [the setup and migration guide](docs/gallery-storage-migration.md).
+New photo uploads go directly from the browser to the shared Google Photos account using the Google Photos Library API. Gallery metadata and website album assignments are stored in the existing Question Night Durable Object. The Google OAuth access token stays in that browser session and is not sent to Cloudflare or stored in the repository. Both of us need to connect the same shared Google account from the **Connect our shared Google Photos** button; the site login still identifies Luke or Charlotte as the uploader.
 
-Gallery login uses server-verified, signed, HttpOnly cookies. The encrypted Cloudflare secrets are configured and the updated site is deployed. The migration report for all 24 existing photo paths is saved locally as the ignored `gallery-migration-report.json`; setup and verification details are in the [B2 guide](docs/gallery-storage-migration.md). Keep login passwords and B2 keys out of source control and chat.
+Google Photos only lets this integration list and retrieve media items created through this app. It does not expose the rest of the account library or support API-managed shared albums. The website keeps its own album organization. Existing B2 and GitHub photos are preserved and are not automatically moved or deleted. The earlier B2 setup/migration notes remain available in [the historical storage guide](docs/gallery-storage-migration.md).
+
+### One-time Google setup
+
+In the Google Cloud project used by the website's existing OAuth web client:
+
+1. Enable **Photos Library API**.
+2. In OAuth consent **Data Access**, add `https://www.googleapis.com/auth/photoslibrary.appendonly` and `https://www.googleapis.com/auth/photoslibrary.readonly.appcreateddata`.
+3. Confirm the OAuth web client has `https://charlotte-3ts.pages.dev` as an authorized JavaScript origin. Add the exact local development origin too if testing locally.
+4. If the consent screen is in **Testing**, add the shared Google Photos account as a test user. Google may require app verification before wider production access to Photos scopes.
+5. In both browsers, sign in to the same shared Google Photos account on the gallery page and choose **Connect our shared Google Photos**. Google access tokens expire, so reconnect when the page asks.
+
+Uploads are stored at original quality and use the shared account's Google storage. The API does not offer a delete-media-item operation for this flow; deleting an item from Google Photos outside the website can leave a stale entry in our site index.
+
+Gallery login uses server-verified, signed, HttpOnly cookies. Keep login passwords and API credentials out of source control and chat.
 
 Cloudflare Pages continues to serve the site and API. The existing Durable Object remains in use for Question Night, presence, music, bathroom check-ins, and gallery metadata. GitHub-backed memories and rules are not migrated by this change.
