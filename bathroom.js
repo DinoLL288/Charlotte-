@@ -1,7 +1,7 @@
 (function () {
   const user = localStorage.getItem('charlotte-user') || '';
   const names = ['Charlotte', 'Luke'];
-  const data = { status: {}, events: [] };
+  const data = { status: {}, events: [], stats: { allTime: {}, daily: {}, baselineLimited: true } };
   const photos = {};
   const statusEl = document.getElementById('bathroomStatus');
   const escape = value => { const node = document.createElement('span'); node.textContent = value || ''; return node.innerHTML; };
@@ -19,25 +19,108 @@
     }));
   }
 
-  function formatDate(value) {
+  function dateKey(value) {
+    const parts = new Intl.DateTimeFormat('en-CA', { timeZone: 'Australia/Perth', year: 'numeric', month: '2-digit', day: '2-digit' }).formatToParts(new Date(value));
+    const get = type => parts.find(part => part.type === type)?.value || '';
+    return `${get('year')}-${get('month')}-${get('day')}`;
+  }
+  function formatDate(value, options = {}) {
     const date = new Date(value);
-    return Number.isNaN(date.getTime()) ? '' : date.toLocaleString([], { dateStyle: 'medium', timeStyle: 'short' });
+    return Number.isNaN(date.getTime()) ? '' : date.toLocaleString([], { timeZone: 'Australia/Perth', ...options });
+  }
+  function dayLabel(key) {
+    if (key === dateKey(new Date())) return 'Today';
+    const yesterday = new Date(Date.now() - 86400000);
+    if (key === dateKey(yesterday)) return 'Yesterday';
+    return new Date(`${key}T12:00:00+08:00`).toLocaleDateString([], { timeZone: 'Australia/Perth', weekday: 'long', day: 'numeric', month: 'long', year: 'numeric' });
   }
 
-  function render() {
+  function buildBreaks() {
+    const perUser = Object.fromEntries(names.map(name => [name, []]));
+    for (const name of names) {
+      let open = null;
+      const seen = new Set();
+      const events = data.events.filter(item => item.user === name).slice().sort((a, b) => Date.parse(a.at) - Date.parse(b.at)).filter(event => {
+        if (!event.addedLater) return true;
+        const signature = `${event.action}:${Math.floor(Date.parse(event.at) / 60000)}`;
+        if (seen.has(signature)) return false;
+        seen.add(signature);
+        return true;
+      });
+      for (const event of events) {
+        if (event.action === 'start') {
+          if (open) open.returnMissing = true;
+          open = { user: name, start: event, end: null, returnMissing: false };
+          perUser[name].push(open);
+        } else if (event.action === 'return') {
+          if (open) { open.end = event; open = null; }
+          else perUser[name].push({ user: name, start: null, end: event, returnMissing: false });
+        }
+      }
+      if (open) open.returnMissing = true;
+    }
+    return names.flatMap(name => perUser[name]).sort((a, b) => Date.parse(b.start?.at || b.end?.at || 0) - Date.parse(a.start?.at || a.end?.at || 0));
+  }
+
+  function renderPeople() {
+    const breaks = buildBreaks();
     document.getElementById('bathroomPeople').innerHTML = names.map(name => {
       const current = data.status[name] || { active: false };
       const active = Boolean(current.active);
-      const detail = active ? `Stepped away at ${formatDate(current.startedAt)}.` : current.returnedAt ? `Back since ${formatDate(current.returnedAt)}.` : 'Here with us. No break in progress.';
-      const control = name === user ? `<button class="button" type="button" data-toggle="${name}">${active ? 'I’m back' : 'I’m going now'}</button>` : `<span class="meta">${escape(name)} updates this check-in</span>`;
-      return `<article class="person"><img src="${escape(photos[name] || fallbackPhoto(name))}" alt="${escape(name)}’s profile photo"><h2>${escape(name)}</h2><p>${escape(detail)}</p>${control}</article>`;
+      const openBreak = breaks.find(item => item.user === name && item.start && !item.end && item.returnMissing);
+      const detail = active ? `Away since ${formatDate(current.startedAt, { dateStyle: 'medium', timeStyle: 'short' })}.` : openBreak ? `We haven’t recorded when ${name} got back from the ${formatDate(openBreak.start.at, { dateStyle: 'medium', timeStyle: 'short' })} break.` : current.returnedAt ? `Back since ${formatDate(current.returnedAt, { dateStyle: 'medium', timeStyle: 'short' })}.` : 'Here with us. No break in progress.';
+      const controls = name !== user ? `<span class="meta">${escape(name)} updates this check-in</span>` : active
+        ? `<button class="button" type="button" data-action="return">I’m back</button>`
+        : `<div class="bathroom-actions">${openBreak ? '<button class="button secondary" type="button" data-action="return">I’m back now</button>' : ''}<button class="button" type="button" data-action="start">I’m going now</button></div>`;
+      return `<article class="person"><img src="${escape(photos[name] || fallbackPhoto(name))}" alt="${escape(name)}’s profile photo"><h2>${escape(name)}</h2><p>${escape(detail)}</p>${controls}</article>`;
     }).join('');
-    document.getElementById('bathroomEvents').innerHTML = data.events.length ? data.events.map(event => {
-      const name = names.includes(event.user) ? event.user : 'One of us';
-      const action = event.action === 'start' ? 'stepped away for a bathroom break' : 'came back';
-      return `<article class="event"><img src="${escape(photos[name] || fallbackPhoto(name))}" alt=""><p><strong>${escape(name)}</strong> ${action}.${event.addedLater ? ' <span class="event-later">added later</span>' : ''}<br><time>${escape(formatDate(event.at))}</time></p></article>`;
-    }).join('') : '<div class="empty">Our check-in log is ready whenever we need it.</div>';
   }
+
+  function renderLeaderboard() {
+    const period = document.querySelector('[data-leaderboard-period][aria-pressed="true"]')?.dataset.leaderboardPeriod || 'month';
+    const now = new Date();
+    const today = dateKey(now);
+    const month = today.slice(0, 7);
+    const year = today.slice(0, 4);
+    const counts = { Charlotte: 0, Luke: 0 };
+    for (const [day, users] of Object.entries(data.stats.daily || {})) {
+      const include = period === 'all' || (period === 'day' && day === today) || (period === 'month' && day.startsWith(month)) || (period === 'year' && day.startsWith(year));
+      if (include) for (const name of names) counts[name] += Number(users?.[name]) || 0;
+    }
+    const max = Math.max(...Object.values(counts));
+    document.getElementById('bathroomLeaderboard').innerHTML = names.map(name => {
+      const pct = max ? Math.round(counts[name] / max * 100) : 0;
+      const leading = counts[name] > 0 && counts[name] === max;
+      return `<div class="leader-row"><img src="${escape(photos[name] || fallbackPhoto(name))}" alt=""><div class="leader-content"><div class="leader-label"><strong>${leading ? '✦ ' : ''}${escape(name)}</strong><span>${counts[name]} ${counts[name] === 1 ? 'break' : 'breaks'}</span></div><div class="leader-track"><span style="width:${pct}%"></span></div></div></div>`;
+    }).join('');
+    const label = { day: 'Today', month: 'This month', year: 'This year', all: 'All time' }[period];
+    document.getElementById('leaderboardCaption').textContent = period === 'all' ? `${label} · ${Number(data.stats.allTime?.Charlotte) || 0} Charlotte / ${Number(data.stats.allTime?.Luke) || 0} Luke` : label;
+    document.getElementById('leaderboardNote').hidden = period !== 'all' || !data.stats.baselineLimited;
+  }
+
+  function renderHistory() {
+    const target = document.getElementById('bathroomEvents');
+    const breaks = buildBreaks();
+    if (!breaks.length) { target.innerHTML = '<div class="empty">Our check-in log is ready whenever we need it.</div>'; return; }
+    const groups = new Map();
+    breaks.forEach(item => {
+      const stamp = item.start?.at || item.end?.at;
+      const key = dateKey(stamp);
+      if (!groups.has(key)) groups.set(key, []);
+      groups.get(key).push(item);
+    });
+    target.innerHTML = [...groups.entries()].map(([day, items]) => `<section class="day-group"><h3>${escape(dayLabel(day))}<span>${items.length} ${items.length === 1 ? 'break' : 'breaks'}</span></h3>${items.map(item => {
+      const name = item.user;
+      const starting = item.start ? formatDate(item.start.at, { timeStyle: 'short' }) : '';
+      const ending = item.end ? formatDate(item.end.at, { timeStyle: 'short' }) : '';
+      const summary = item.start ? `Stepped away at ${starting}` : `Return at ${ending} · start wasn’t logged`;
+      const result = item.end ? `Back at ${ending}` : (data.status[name]?.active && item.start?.id === data.events.find(event => event.user === name && event.action === 'start')?.id) ? 'Break in progress' : item.returnMissing ? 'Return not recorded' : '';
+      const later = item.start?.addedLater || item.end?.addedLater;
+      return `<article class="event"><img src="${escape(photos[name] || fallbackPhoto(name))}" alt=""><div class="event-copy"><p><strong>${escape(name)}</strong> · ${escape(summary)}</p><span>${escape(result)}${later ? ' · added later' : ''}</span></div></article>`;
+    }).join('')}</section>`).join('');
+  }
+
+  function render() { renderPeople(); renderLeaderboard(); renderHistory(); }
 
   async function load() {
     const response = await fetch('/api/question-room?view=bathroom', { cache: 'no-store' });
@@ -45,29 +128,31 @@
     if (!response.ok) throw new Error(json.error || 'Could not load our check-ins');
     data.status = json.status || {};
     data.events = json.events || [];
+    data.stats = json.stats || data.stats;
     render();
   }
 
   document.addEventListener('click', async event => {
-    const button = event.target.closest('[data-toggle]');
-    if (!button) return;
+    const periodButton = event.target.closest('[data-leaderboard-period]');
+    if (periodButton) {
+      document.querySelectorAll('[data-leaderboard-period]').forEach(button => button.setAttribute('aria-pressed', String(button === periodButton)));
+      renderLeaderboard();
+      return;
+    }
+    const button = event.target.closest('[data-action]');
+    if (!button || button.disabled) return;
     button.disabled = true;
     try {
-      const name = button.dataset.toggle;
-      const current = data.status[name] || {};
+      const active = button.dataset.action === 'start';
       const response = await fetch('/api/question-room', {
-        method: 'POST',
-        headers: { 'content-type': 'application/json' },
-        body: JSON.stringify({ action: 'bathroom', user, active: !current.active })
+        method: 'POST', headers: { 'content-type': 'application/json' },
+        body: JSON.stringify({ action: 'bathroom', user, active })
       });
       const json = await response.json();
       if (!response.ok) throw new Error(json.error || 'Could not save our check-in');
-      if (json.bathroom) { data.status = json.bathroom.status || {}; data.events = json.bathroom.events || []; render(); }
-      statusEl.textContent = current.active ? 'We’re back together.' : 'Our bathroom check-in is saved.';
-    } catch (error) {
-      statusEl.textContent = error.message;
-      button.disabled = false;
-    }
+      if (json.bathroom) { data.status = json.bathroom.status || {}; data.events = json.bathroom.events || []; data.stats = json.bathroom.stats || data.stats; render(); }
+      statusEl.textContent = active ? 'Our bathroom check-in is saved.' : 'We’re back together. Return recorded.';
+    } catch (error) { statusEl.textContent = error.message; button.disabled = false; }
   });
 
   const laterForm = document.getElementById('bathroomLaterForm');
@@ -80,7 +165,7 @@
   laterTime.max = laterTime.value;
   laterForm.addEventListener('submit', async event => {
     event.preventDefault();
-    if (!['Charlotte', 'Luke'].includes(user)) { laterStatus.textContent = 'Choose your own profile before saving a check-in.'; return; }
+    if (!names.includes(user)) { laterStatus.textContent = 'Choose your own profile before saving a check-in.'; return; }
     const localDate = new Date(laterTime.value);
     if (!laterTime.value || Number.isNaN(localDate.getTime())) { laterStatus.textContent = 'Choose when it happened.'; return; }
     const button = laterForm.querySelector('button[type="submit"]'); button.disabled = true; laterStatus.textContent = 'Saving our earlier check-in…';
@@ -90,14 +175,13 @@
         body: JSON.stringify({ action: 'bathroom-history', user, eventAction: laterForm.elements.namedItem('eventAction').value, at: localDate.toISOString() })
       });
       const json = await response.json(); if (!response.ok) throw new Error(json.error || 'Could not save our check-in.');
-      data.status = json.bathroom.status || {}; data.events = json.bathroom.events || []; render();
-      laterStatus.textContent = 'Added to our check-in history.';
+      data.status = json.bathroom.status || {}; data.events = json.bathroom.events || []; data.stats = json.bathroom.stats || data.stats; render();
+      laterStatus.textContent = json.duplicate ? 'We already had that check-in for this minute, so we kept one copy.' : 'Added to our check-in history.';
     } catch (error) { laterStatus.textContent = error.message; }
     finally { button.disabled = false; }
   });
 
   loadPhotos().then(load).catch(error => { statusEl.textContent = error.message; });
-
   let socket = null, pingTimer = null, reconnectTimer = null;
   function connect() {
     const protocol = location.protocol === 'https:' ? 'wss:' : 'ws:';
@@ -105,21 +189,11 @@
     socket.onmessage = event => {
       let message; try { message = JSON.parse(event.data); } catch { return; }
       if (message.type === 'bathroom') {
-        data.status = message.bathroom.status || {};
-        data.events = message.bathroom.events || [];
-        render();
+        data.status = message.bathroom.status || {}; data.events = message.bathroom.events || []; data.stats = message.bathroom.stats || data.stats; render();
       }
     };
-    socket.onopen = () => {
-      clearTimeout(reconnectTimer);
-      statusEl.textContent = 'Our check-ins are live.';
-      pingTimer = setInterval(() => { if (socket.readyState === WebSocket.OPEN) socket.send(JSON.stringify({ type: 'ping' })); }, 25000);
-    };
-    socket.onclose = () => {
-      clearInterval(pingTimer);
-      statusEl.textContent = 'Reconnecting to our live check-ins…';
-      reconnectTimer = setTimeout(connect, 2500);
-    };
+    socket.onopen = () => { clearTimeout(reconnectTimer); statusEl.textContent = 'Our check-ins are live.'; pingTimer = setInterval(() => { if (socket.readyState === WebSocket.OPEN) socket.send(JSON.stringify({ type: 'ping' })); }, 25000); };
+    socket.onclose = () => { clearInterval(pingTimer); statusEl.textContent = 'Reconnecting to our live check-ins…'; reconnectTimer = setTimeout(connect, 2500); };
   }
   connect();
 })();

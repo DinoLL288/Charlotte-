@@ -14,9 +14,11 @@
   let user = '';
   let folders = [];
   let photos = [];
+  let videos = [];
   let visiblePhotos = [];
+  let visibleItems = [];
   let activeAlbum = 'all';
-  let viewMode = 'photos';
+  let viewMode = 'all';
   let currentIndex = 0;
   let signedAt = 0;
   let refreshPromise = null;
@@ -36,14 +38,14 @@
     uploadCard.hidden = !uploadCard.hidden;
     if (!uploadCard.hidden) uploadCard.scrollIntoView({ behavior: 'smooth', block: 'center' });
   });
-  document.getElementById('allPhotosTab').addEventListener('click', () => setView('photos'));
-  document.getElementById('albumsTab').addEventListener('click', () => setView('albums'));
+  document.querySelectorAll('.gallery-view-tabs [data-mode]').forEach(button => button.addEventListener('click', () => setView(button.dataset.mode)));
   search.addEventListener('input', render);
 
   function setView(mode) {
     viewMode = mode;
-    document.getElementById('allPhotosTab').setAttribute('aria-pressed', String(mode === 'photos'));
-    document.getElementById('albumsTab').setAttribute('aria-pressed', String(mode === 'albums'));
+    const hash = mode === 'all' ? '' : `#${mode}`;
+    if (location.hash !== hash) history.replaceState(null, '', location.pathname + location.search + hash);
+    document.querySelectorAll('.gallery-view-tabs [data-mode]').forEach(button => button.setAttribute('aria-pressed', String(button.dataset.mode === mode)));
     albumFilters.hidden = mode === 'albums';
     render();
   }
@@ -61,64 +63,81 @@
     });
   }
 
-  function matchesSearch(photo, query) {
-    return !query || `${photo.name} ${photo.path} ${photo.uploadedBy || ''}`.toLowerCase().includes(query);
+  function itemDate(item) { return item.type === 'video' ? new Date(item.uploadedAt) : photoDate(item); }
+  function itemKey(item) { return item.type === 'video' ? `video:${item.videoId}` : `photo:${item.path}`; }
+  function itemAlbum(item) { return (item.albums || (item.album ? [item.album] : ['General']))[0] || 'General'; }
+  function matchesSearch(item, query) {
+    return !query || `${item.name || item.title || ''} ${item.path || ''} ${item.uploadedBy || item.uploader || ''} ${(item.albums || []).join(' ')} ${item.album || ''}`.toLowerCase().includes(query);
   }
 
   function render() {
     folderView.replaceChildren();
     const query = search.value.trim().toLowerCase();
     if (viewMode === 'albums') { renderAlbums(query); return; }
-    visiblePhotos = photos.filter(photo => matchesSearch(photo, query) && (activeAlbum === 'all' || photo.album === activeAlbum));
-    if (!visiblePhotos.length) {
+    const photoItems = photos.filter(photo => viewMode !== 'videos' && matchesSearch(photo, query) && (activeAlbum === 'all' || photo.album === activeAlbum)).map(photo => ({ ...photo, type: 'photo' }));
+    const videoItems = videos.filter(video => viewMode !== 'photos' && matchesSearch(video, query) && (activeAlbum === 'all' || (video.albums || ['General']).includes(activeAlbum))).map(video => ({ ...video, type: 'video' }));
+    visibleItems = [...photoItems, ...videoItems].sort((a, b) => (itemDate(b)?.getTime() || 0) - (itemDate(a)?.getTime() || 0));
+    visiblePhotos = visibleItems;
+    document.getElementById('mediaCount').textContent = `${visibleItems.length} ${visibleItems.length === 1 ? 'memory' : 'memories'}${viewMode === 'videos' ? ' · videos' : viewMode === 'photos' ? ' · photos' : ''}`;
+    if (!visibleItems.length) {
       const empty = document.createElement('div'); empty.className = 'folder-empty';
-      empty.textContent = photos.length ? 'No memories match that search yet.' : 'Our photo library is ready for its first memory.';
+      empty.textContent = photos.length || videos.length ? 'No memories match that search yet.' : 'Our shared gallery is ready for its first memory.';
       folderView.appendChild(empty); return;
     }
     const groups = new Map();
-    visiblePhotos.forEach(photo => { const key = groupKey(photo); if (!groups.has(key)) groups.set(key, []); groups.get(key).push(photo); });
+    visibleItems.forEach(item => {
+      const date = itemDate(item);
+      const key = date ? `${date.getFullYear()}-${String(date.getMonth() + 1).padStart(2, '0')}` : 'undated';
+      if (!groups.has(key)) groups.set(key, []); groups.get(key).push(item);
+    });
     [...groups.entries()].forEach(([key, group]) => {
       const section = document.createElement('section'); section.className = 'photo-section';
-      const heading = document.createElement('h2'); heading.innerHTML = `${escapeHtml(groupLabel(key))}<span>${group.length} ${group.length === 1 ? 'photo' : 'photos'}</span>`;
+      const heading = document.createElement('h2'); heading.innerHTML = `${escapeHtml(groupLabel(key))}<span>${group.length} ${group.length === 1 ? 'memory' : 'memories'}</span>`;
       const grid = document.createElement('div'); grid.className = 'grid';
-      group.forEach(photo => grid.appendChild(makeTile(photo)));
+      group.forEach(item => grid.appendChild(makeTile(item)));
       section.append(heading, grid); folderView.appendChild(section);
     });
   }
 
   function renderAlbums(query) {
+    const media = [...photos.map(photo => ({ ...photo, type: 'photo' })), ...videos.map(video => ({ ...video, type: 'video' }))];
     const albums = folders.filter(name => name !== 'Old Photos').map(name => ({
       name,
-      items: photos.filter(photo => photo.album === name && matchesSearch(photo, query))
+      items: media.filter(item => (item.albums || (item.album ? [item.album] : ['General'])).includes(name) && matchesSearch(item, query))
     })).filter(album => !query || album.name.toLowerCase().includes(query) || album.items.length);
+    document.getElementById('mediaCount').textContent = `${albums.length} ${albums.length === 1 ? 'album' : 'albums'}`;
     if (!albums.length) { const empty = document.createElement('div'); empty.className = 'folder-empty'; empty.textContent = 'We haven’t made any albums yet.'; folderView.appendChild(empty); return; }
     const grid = document.createElement('div'); grid.className = 'grid album-grid';
     albums.forEach(album => {
       const card = document.createElement('button'); card.type = 'button'; card.className = 'album-card';
       const cover = album.items[0];
-      card.innerHTML = cover ? `<img src="${escapeHtml(cover.url)}" alt="" loading="lazy"><span class="album-card-count">${album.items.length}</span>` : '<span class="album-card-empty">📁</span>';
+      const coverUrl = cover?.type === 'video' ? `https://i.ytimg.com/vi/${encodeURIComponent(cover.videoId)}/hqdefault.jpg` : cover?.url;
+      card.innerHTML = coverUrl ? `<img src="${escapeHtml(coverUrl)}" alt="" loading="lazy"><span class="album-card-count">${album.items.length}</span>` : '<span class="album-card-empty">📁</span>';
       const title = document.createElement('strong'); title.textContent = albumName(album.name);
-      const count = document.createElement('small'); count.textContent = `${album.items.length} ${album.items.length === 1 ? 'photo' : 'photos'}`;
-      card.append(title, count); card.addEventListener('click', () => { activeAlbum = album.name; setView('photos'); renderAlbumFilters(); });
+      const count = document.createElement('small'); count.textContent = `${album.items.length} ${album.items.length === 1 ? 'memory' : 'memories'}`;
+      card.append(title, count); card.addEventListener('click', () => { activeAlbum = album.name; renderAlbumFilters(); setView('all'); });
       grid.appendChild(card);
     });
     folderView.appendChild(grid);
   }
 
   function makeTile(photo) {
-    const tile = document.createElement('div'); tile.className = 'tile'; tile.tabIndex = 0;
-    tile.dataset.uploadedBy = photo.uploadedBy || 'Unknown'; tile.dataset.path = photo.path; tile.dataset.date = photoDate(photo)?.toLocaleDateString([], { dateStyle: 'medium' }) || '';
-    const img = document.createElement('img'); img.src = photo.url; img.alt = `Photo from ${albumName(photo.album)}`; img.loading = 'lazy';
+    const isVideo = photo.type === 'video';
+    const tile = document.createElement('div'); tile.className = 'tile' + (isVideo ? ' video-tile' : ''); tile.tabIndex = 0;
+    tile.dataset.uploadedBy = photo.uploadedBy || photo.uploader || 'Unknown'; tile.dataset.path = itemKey(photo); tile.dataset.date = itemDate(photo)?.toLocaleDateString([], { dateStyle: 'medium' }) || '';
+    if (isVideo) tile.dataset.title = photo.title || 'Our video';
+    const img = document.createElement('img'); img.src = isVideo ? `https://i.ytimg.com/vi/${encodeURIComponent(photo.videoId)}/hqdefault.jpg` : photo.url; img.alt = isVideo ? `Video: ${photo.title || 'Our video'}` : `Photo from ${albumName(photo.album)}`; img.loading = 'lazy';
     tile.appendChild(img);
-    const copy = document.createElement('button'); copy.type = 'button'; copy.textContent = '+'; copy.title = 'Add this photo to another album'; copy.setAttribute('aria-label', 'Add to another album');
+    if (isVideo) { const play = document.createElement('span'); play.className = 'video-play'; play.innerHTML = '<span aria-hidden="true">▶</span>'; tile.appendChild(play); }
+    const copy = document.createElement('button'); copy.type = 'button'; copy.textContent = '+'; copy.title = `Add this ${isVideo ? 'video' : 'photo'} to another album`; copy.setAttribute('aria-label', 'Add to another album');
     copy.addEventListener('click', async event => {
       event.stopPropagation();
-      const target = await siteDialog.prompt(`Add this photo to which album? ${folders.filter(x => x !== 'Old Photos').map(albumName).join(', ')}`);
+      const target = await siteDialog.prompt(`Add this ${isVideo ? 'video' : 'photo'} to which album? ${folders.filter(x => x !== 'Old Photos').map(albumName).join(', ')}`);
       if (!target) return;
       try {
-      const response = await fetch('/api/gallery', { method: 'POST', headers: { 'content-type': 'application/json' }, credentials: 'same-origin', body: JSON.stringify({ action: 'copy-to-album', photoId: photo.id, album: target.trim() }) });
-        const result = await response.json(); if (!response.ok) throw new Error(result.error || 'Could not add photo to that album.');
-        status.textContent = 'Photo added to the album.'; await loadLibrary();
+      const response = await fetch(isVideo ? '/api/youtube-videos' : '/api/gallery', { method: 'POST', headers: { 'content-type': 'application/json' }, credentials: 'same-origin', body: JSON.stringify(isVideo ? { action: 'add-to-album', videoId: photo.videoId, album: target.trim() } : { action: 'copy-to-album', photoId: photo.id, album: target.trim() }) });
+        const result = await response.json(); if (!response.ok) throw new Error(result.error || 'Could not add that memory to the album.');
+        status.textContent = 'Memory added to the album.'; await loadLibrary();
       } catch (error) { status.textContent = error.message; }
     });
     tile.appendChild(copy);
@@ -134,8 +153,16 @@
     const result = await response.json();
     if (response.status === 401) { localStorage.removeItem('charlotte-user'); location.href = 'login.html'; return; }
     if (!response.ok) throw new Error(result.error || 'Could not load our photos.');
-    folders = [...new Set([...(result.folders || []), 'General'])];
+    let videoResponse = null;
+    let videoResult = {};
+    try {
+      videoResponse = await fetch('/api/youtube-videos', { cache: 'no-store', credentials: 'same-origin' });
+      videoResult = await videoResponse.json().catch(() => ({}));
+    } catch (error) { videoResult.error = error.message || 'Our video shelf could not load.'; }
+    folders = [...new Set([...(result.folders || []), ...((videoResult.videos || []).flatMap(video => video.albums || ['General'])), 'General'])];
     photos = result.photos || [];
+    videos = videoResponse?.ok ? (videoResult.videos || []).map(video => ({ ...video, albums: video.albums?.length ? video.albums : ['General'] })) : [];
+    if (!videoResponse?.ok) document.getElementById('videoUploadStatus').textContent = videoResult.error || 'Our video shelf could not load.';
     signedAt = Date.now();
     photos.sort((a, b) => (photoDate(b)?.getTime() || 0) - (photoDate(a)?.getTime() || 0));
     renderAlbumFilters(); render();
@@ -198,6 +225,12 @@
       const checkbox = document.createElement('input'); checkbox.type = 'checkbox'; checkbox.value = name;
       label.append(checkbox, document.createTextNode(name)); folderCheckboxes.appendChild(label);
     });
+    const videoAlbum = document.getElementById('videoAlbum');
+    if (videoAlbum) {
+      const selected = videoAlbum.value || 'General';
+      videoAlbum.replaceChildren(...folders.filter(name => name !== 'Old Photos').map(name => { const option = document.createElement('option'); option.value = name; option.textContent = albumName(name); return option; }));
+      if (folders.includes(selected)) videoAlbum.value = selected;
+    }
   }
 
   form.addEventListener('submit', async event => {
@@ -234,24 +267,40 @@
 
   const lightbox = document.getElementById('lightbox');
   const lightboxImg = document.getElementById('lightboxImg');
+  const lightboxVideo = document.getElementById('lightboxVideo');
   const lightboxPfp = document.getElementById('lightboxPfp');
   const lightboxName = document.getElementById('lightboxName');
   function showLightboxPhoto() {
     if (!visiblePhotos.length) return;
-    const photo = visiblePhotos[currentIndex]; lightboxImg.src = photo.fullUrl || photo.url; lightboxImg.alt = `Photo from ${albumName(photo.album)}`;
-    const by = photo.uploadedBy || 'One of us'; lightboxName.textContent = `${by} · ${albumName(photo.album)}${photoDate(photo) ? ` · ${photoDate(photo).toLocaleDateString([], { dateStyle: 'medium' })}` : ''}`;
+    const photo = visiblePhotos[currentIndex];
+    const isVideo = photo.type === 'video';
+    lightboxImg.hidden = isVideo;
+    lightboxVideo.hidden = !isVideo;
+    if (isVideo) {
+      lightboxImg.removeAttribute('src');
+      lightboxVideo.src = `https://www.youtube-nocookie.com/embed/${encodeURIComponent(photo.videoId)}?autoplay=1`;
+    } else {
+      lightboxVideo.removeAttribute('src');
+      lightboxImg.src = photo.fullUrl || photo.url;
+      lightboxImg.alt = `Photo from ${albumName(photo.album)}`;
+    }
+    const by = photo.uploadedBy || photo.uploader || 'One of us';
+    const date = itemDate(photo);
+    const album = itemAlbum(photo);
+    lightboxName.textContent = `${by} · ${albumName(album)}${date ? ` · ${date.toLocaleDateString([], { dateStyle: 'medium' })}` : ''}${isVideo ? ` · ${photo.title || 'Our video'}` : ''}`;
     lightboxPfp.src = 'https://ui-avatars.com/api/?name=' + encodeURIComponent(by) + '&background=e8f6ff&color=2873a6&size=128';
     fetch('/api/profile?user=' + encodeURIComponent(by)).then(response => response.json()).then(profile => { if (profile.url) lightboxPfp.src = profile.url; }).catch(() => {});
     lightbox.classList.add('active');
   }
-  function openLightbox(photo) { currentIndex = visiblePhotos.findIndex(item => item.path === photo.path); if (currentIndex < 0) currentIndex = 0; showLightboxPhoto(); }
+  function openLightbox(photo) { currentIndex = visiblePhotos.findIndex(item => itemKey(item) === itemKey(photo)); if (currentIndex < 0) currentIndex = 0; showLightboxPhoto(); }
   function movePhoto(amount) { if (!visiblePhotos.length) return; currentIndex = (currentIndex + amount + visiblePhotos.length) % visiblePhotos.length; showLightboxPhoto(); }
   document.getElementById('photoPrev').addEventListener('click', () => movePhoto(-1));
   document.getElementById('photoNext').addEventListener('click', () => movePhoto(1));
-  document.getElementById('lightboxClose').addEventListener('click', () => lightbox.classList.remove('active'));
-  lightbox.addEventListener('click', event => { if (event.target === lightbox) lightbox.classList.remove('active'); });
+  function closeLightbox() { lightbox.classList.remove('active'); lightboxVideo.removeAttribute('src'); }
+  document.getElementById('lightboxClose').addEventListener('click', closeLightbox);
+  lightbox.addEventListener('click', event => { if (event.target === lightbox) closeLightbox(); });
   document.addEventListener('keydown', event => {
-    if (event.key === 'Escape') lightbox.classList.remove('active');
+    if (event.key === 'Escape') closeLightbox();
     if (lightbox.classList.contains('active') && event.key === 'ArrowLeft') movePhoto(-1);
     if (lightbox.classList.contains('active') && event.key === 'ArrowRight') movePhoto(1);
   });
@@ -264,4 +313,6 @@
   }).catch(error => { status.textContent = error.message || 'Please log in to open our private photos.'; });
   document.addEventListener('visibilitychange', () => { if (!document.hidden && Date.now() - signedAt > 12 * 60 * 1000) loadLibrary().catch(error => { status.textContent = error.message; }); });
   window.setInterval(() => { if (!document.hidden && Date.now() - signedAt > 12 * 60 * 1000) loadLibrary().catch(error => { status.textContent = error.message; }); }, 60 * 1000);
+  if (['all', 'photos', 'videos', 'albums'].includes(location.hash.slice(1))) setView(location.hash.slice(1));
+  window.refreshGalleryLibrary = () => loadLibrary().catch(error => { status.textContent = error.message; });
 })();

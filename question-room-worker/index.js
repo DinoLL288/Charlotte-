@@ -1,5 +1,20 @@
 const DEFAULT_SPOTIFY_PLAYLIST = 'https://open.spotify.com/playlist/0nd5Ut2ixgw4RfV0EfQHwx';
 
+function bathroomDayKey(value) {
+  const parts = new Intl.DateTimeFormat('en-CA', { timeZone: 'Australia/Perth', year: 'numeric', month: '2-digit', day: '2-digit' }).formatToParts(new Date(value));
+  const get = type => parts.find(part => part.type === type)?.value || '';
+  return `${get('year')}-${get('month')}-${get('day')}`;
+}
+
+function bathroomHasOpenBreak(events, user) {
+  let open = false;
+  for (const event of [...events].filter(item => item.user === user).sort((a, b) => Date.parse(a.at) - Date.parse(b.at))) {
+    if (event.action === 'start') open = true;
+    else if (event.action === 'return') open = false;
+  }
+  return open;
+}
+
 const TRUTH_DARE_PROMPTS = {
   text: {
     truth: [
@@ -212,7 +227,8 @@ export class QuestionNightRoom {
       return Response.json({ ok: true, clientId });
     }
     if (body.action === 'get-youtube-videos') {
-      return Response.json({ ok: true, videos: await this.ctx.storage.get('youtubeVideos') || [] });
+      const videos = (await this.ctx.storage.get('youtubeVideos') || []).map(video => ({ ...video, albums: Array.isArray(video.albums) && video.albums.length ? video.albums : [video.album || 'General'] }));
+      return Response.json({ ok: true, videos });
     }
     if (body.action === 'add-youtube-video') {
       const video = body.video || {};
@@ -226,11 +242,25 @@ export class QuestionNightRoom {
         description: String(video.description || '').trim().slice(0, 1000),
         uploader: body.uploader,
         uploadedAt: new Date().toISOString(),
-        privacy: 'unlisted'
+        privacy: 'unlisted',
+        albums: [typeof video.album === 'string' && video.album.trim() ? video.album.trim().slice(0, 80) : 'General']
       };
       videos.unshift(saved);
       await this.ctx.storage.put('youtubeVideos', videos);
       return Response.json({ ok: true, video: saved, videos });
+    }
+    if (body.action === 'move-youtube-video-to-album') {
+      const videoId = String(body.videoId || '');
+      const album = typeof body.album === 'string' ? body.album.trim().slice(0, 80) : '';
+      if (!/^[A-Za-z0-9_-]{11}$/.test(videoId) || !album || /[\\/\u0000-\u001f]/.test(album) || ['.', '..'].includes(album)) return Response.json({ error: 'Choose a valid video and album.' }, { status: 400 });
+      const videos = await this.ctx.storage.get('youtubeVideos') || [];
+      const video = videos.find(item => item.videoId === videoId);
+      if (!video) return Response.json({ error: 'Video not found.' }, { status: 404 });
+      const albums = Array.isArray(video.albums) && video.albums.length ? video.albums : [video.album || 'General'];
+      video.albums = [...new Set([...albums, album])];
+      delete video.album;
+      await this.ctx.storage.put('youtubeVideos', videos);
+      return Response.json({ ok: true, videos: videos.map(item => ({ ...item, albums: item.albums?.length ? item.albums : [item.album || 'General'] })) });
     }
 
     if (body.action === 'attempt-login') {
@@ -314,7 +344,41 @@ export class QuestionNightRoom {
   }
 
   async getBathroomData() {
-    return await this.ctx.storage.get('bathroomData') || { status: {}, events: [] };
+    const bathroom = await this.ctx.storage.get('bathroomData') || { status: {}, events: [] };
+    bathroom.status ||= {};
+    bathroom.events ||= [];
+    if (!bathroom.stats?.daily || !bathroom.stats?.allTime) {
+      const allTime = { Charlotte: 0, Luke: 0 };
+      const daily = {};
+      const seen = new Set();
+      for (const event of bathroom.events) {
+        if (event.action !== 'start' || !['Charlotte', 'Luke'].includes(event.user)) continue;
+        if (event.addedLater) {
+          const signature = `${event.user}:${event.action}:${Math.floor(Date.parse(event.at) / 60_000)}`;
+          if (seen.has(signature)) continue;
+          seen.add(signature);
+        }
+        const day = bathroomDayKey(event.at);
+        allTime[event.user]++;
+        daily[day] ||= { Charlotte: 0, Luke: 0 };
+        daily[day][event.user]++;
+      }
+      bathroom.stats = { allTime, daily, baselineLimited: bathroom.events.length >= 250 };
+      await this.ctx.storage.put('bathroomData', bathroom);
+    }
+    return bathroom;
+  }
+
+  recordBathroomEvent(bathroom, event) {
+    bathroom.events.push(event);
+    bathroom.events.sort((a, b) => Date.parse(b.at) - Date.parse(a.at));
+    bathroom.events = bathroom.events.slice(0, 5000);
+    if (event.action === 'start') {
+      bathroom.stats.allTime[event.user] = (bathroom.stats.allTime[event.user] || 0) + 1;
+      const day = bathroomDayKey(event.at);
+      bathroom.stats.daily[day] ||= { Charlotte: 0, Luke: 0 };
+      bathroom.stats.daily[day][event.user] = (bathroom.stats.daily[day][event.user] || 0) + 1;
+    }
   }
 
   async getTruthDareData() {
@@ -387,11 +451,12 @@ export class QuestionNightRoom {
         const bathroom = await this.getBathroomData();
         const active = Boolean(body.active);
         const previous = bathroom.status[user] || { active: false };
-        if (Boolean(previous.active) !== active) {
+        const openHistory = bathroomHasOpenBreak(bathroom.events, user);
+        const shouldRecordReturn = !active && !previous.active && openHistory;
+        if (Boolean(previous.active) !== active || shouldRecordReturn) {
           const at = new Date().toISOString();
           bathroom.status[user] = active ? { active: true, startedAt: at } : { active: false, startedAt: null, returnedAt: at };
-          bathroom.events.unshift({ id: crypto.randomUUID(), user, action: active ? 'start' : 'return', at });
-          bathroom.events = bathroom.events.slice(0, 250);
+          this.recordBathroomEvent(bathroom, { id: crypto.randomUUID(), user, action: active ? 'start' : 'return', at });
           await this.ctx.storage.put('bathroomData', bathroom);
           await this.broadcastBathroom(bathroom);
         }
@@ -404,9 +469,10 @@ export class QuestionNightRoom {
           return Response.json({ error: 'Choose whether we stepped away or came back, and enter a valid recent date and time.' }, { status: 400 });
         }
         const bathroom = await this.getBathroomData();
-        bathroom.events.unshift({ id: crypto.randomUUID(), user, action, at: at.toISOString(), addedLater: true });
-        bathroom.events.sort((a, b) => new Date(b.at) - new Date(a.at));
-        bathroom.events = bathroom.events.slice(0, 250);
+        const atIso = at.toISOString();
+        const duplicate = bathroom.events.some(event => event.user === user && event.action === action && Math.floor(Date.parse(event.at) / 60_000) === Math.floor(at.getTime() / 60_000));
+        if (duplicate) return Response.json({ ok: true, duplicate: true, bathroom });
+        this.recordBathroomEvent(bathroom, { id: crypto.randomUUID(), user, action, at: atIso, addedLater: true });
         await this.ctx.storage.put('bathroomData', bathroom);
         await this.broadcastBathroom(bathroom);
         return Response.json({ ok: true, bathroom });
