@@ -223,6 +223,27 @@
       line-height: 1.35;
     }
     .modal-hint.visible { display: block; }
+    .calendar-tools {
+      width: min(980px, 94vw);
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 14px;
+    }
+    .tool-card { background: #ffffffed; border-radius: 20px; padding: 18px; box-shadow: 0 10px 24px #347eac25; }
+    .tool-card h2 { margin: 0 0 8px; font-size: 1.15rem; color: #245b85; }
+    .tool-card p { margin: 0 0 12px; font-size: .88rem; line-height: 1.5; }
+    .tool-actions { display:flex; gap:8px; flex-wrap:wrap; }
+    .tool-actions .button { padding: 9px 13px; font-size: .85rem; }
+    .feed-link { display:none; width:100%; margin-top:10px; padding:9px; border:1px solid #b9dcf5; border-radius:10px; overflow-wrap:anywhere; font-size:.78rem; }
+    .feed-link.visible { display:block; }
+    .call-fields { display:grid; grid-template-columns:1fr 1fr; gap:9px; }
+    .call-fields label { display:flex; flex-direction:column; gap:4px; font-size:.76rem; font-weight:700; }
+    .call-fields input,.call-fields select { min-width:0; width:100%; border-radius:10px; border:1px solid #b9dcf5; padding:9px; font:inherit; color:#245b85; }
+    .call-history { display:grid; gap:5px; max-height:120px; overflow:auto; margin-top:10px; font-size:.78rem; }
+    .call-history div { background:#eff8ff; border-radius:9px; padding:6px 8px; }
+    .event.quiet-calendar-event { background:#f1edfa; color:#635080; border:1px solid #e1d8f1; cursor:default; }
+    .event.call-event { background:#fff0f4; color:#8a4561; }
+    @media(max-width:700px) { .calendar-tools { grid-template-columns:1fr; } }
   </style>
   <link rel="stylesheet" href="theme.css">
 </head>
@@ -243,6 +264,31 @@
       <button class="button" id="todayBtn">Today</button>
     </div>
     <p class="now-line" id="nowLabel"></p>
+    <section class="calendar-tools">
+      <div class="tool-card">
+        <h2>Sync our calendar</h2>
+        <p>Subscribe from Google Calendar or Apple Calendar. The private link includes our events, birthdays, anniversary, and quiet days. Anyone with the link can view it.</p>
+        <div class="tool-actions">
+          <button class="button" id="googleSync" type="button">Set up Google Calendar</button>
+          <button class="button" id="appleSync" type="button">Subscribe in Apple Calendar</button>
+          <button class="button" id="rotateFeed" type="button">Make a new private link</button>
+        </div>
+        <code class="feed-link" id="feedLink"></code>
+        <p id="feedStatus" role="status" style="margin:8px 0 0;"></p>
+      </div>
+      <div class="tool-card">
+        <h2>Log a WhatsApp call</h2>
+        <p>Add a call here after it happens. Our website can’t automatically read personal WhatsApp call history.</p>
+        <div class="call-fields">
+          <label>Day<input id="callDate" type="date"></label>
+          <label>Time<input id="callTime" type="time"></label>
+          <label>Type<select id="callType"><option value="voice">Voice call</option><option value="video">Video call</option></select></label>
+          <label>Minutes<input id="callDuration" type="number" min="1" max="1440" placeholder="Optional"></label>
+        </div>
+        <div class="tool-actions" style="margin-top:10px;"><button class="button" id="saveCall" type="button">Save call</button></div>
+        <div class="call-history" id="callHistory" aria-label="Recent WhatsApp calls"></div>
+      </div>
+    </section>
     <div class="calendar-grid" id="weekdayRow"></div>
     <div class="calendar-grid" id="daysGrid"></div>
   </main>
@@ -285,11 +331,15 @@
     const eventDateLabel = document.getElementById('eventDateLabel');
     const todayBtn = document.getElementById('todayBtn');
     const nowLabel = document.getElementById('nowLabel');
+    const feedLink = document.getElementById('feedLink');
+    const feedStatus = document.getElementById('feedStatus');
+    const callHistory = document.getElementById('callHistory');
 
     let current = new Date();
     let selectedDate = null;
     let editing = null;
     let events = {};
+    let apartEntries = [];
     let currentSha = null;
     let lastTickKey = '';
 
@@ -410,9 +460,15 @@
         events = {};
         currentSha = null;
       }
+      try {
+        const response = await fetch('/api/apart');
+        const json = await response.json();
+        apartEntries = Array.isArray(json.entries) ? json.entries : [];
+      } catch { apartEntries = []; }
       jumpToHash();
       updateNowLine();
       render();
+      refreshCallHistory();
     }
 
     window.addEventListener('hashchange', () => {
@@ -460,11 +516,16 @@
         const specialEvents = (window.CHARLOTTE_LUKE_SPECIAL_DATES || []).filter(item => item.date === `${pad2(month + 1)}-${pad2(d)}`).map(item => ({
           title: `${item.icon} ${item.title}`, time: 'Every year · reminder', specialDate: true
         }));
-        sortDayEvents([...(events[dateKey] || []), ...specialEvents]).forEach(({ event: ev, index }) => {
+        const quietEvents = apartEntries.filter(entry => entry.from <= dateKey && dateKey <= entry.until).map(entry => ({
+          title: '🌙 ' + (entry.author || 'Us') + ' · quiet day',
+          time: entry.note || 'A little space, with care',
+          quietDay: true
+        }));
+        sortDayEvents([...(events[dateKey] || []), ...specialEvents, ...quietEvents]).forEach(({ event: ev, index }) => {
           const status = eventStatus(dateKey, ev.startTime);
           const evEl = document.createElement('div');
-          evEl.className = 'event' + (status ? ' ' + status : '') + (ev.specialDate ? ' special-date' : '');
-          evEl.title = ev.specialDate ? 'Repeats every year' : 'Click to edit';
+          evEl.className = 'event' + (status ? ' ' + status : '') + (ev.specialDate ? ' special-date' : '') + (ev.quietDay ? ' quiet-calendar-event' : '') + (ev.kind === 'whatsapp-call' ? ' call-event' : '');
+          evEl.title = ev.specialDate ? 'Repeats every year' : ev.quietDay ? 'From Quiet Days' : 'Click to edit';
 
           const top = document.createElement('div');
           top.className = 'event-top';
@@ -503,14 +564,82 @@
 
           evEl.addEventListener('click', (e) => {
             e.stopPropagation();
-            if (ev.specialDate) return;
-            openEdit(dateKey, index);
+            if (ev.specialDate || ev.quietDay) return;
+            const savedIndex = (events[dateKey] || []).findIndex(saved => saved === ev || (saved.id && saved.id === ev.id));
+            if (savedIndex >= 0) openEdit(dateKey, savedIndex);
           });
           el.appendChild(evEl);
         });
         daysGrid.appendChild(el);
       }
     }
+
+    async function getFeedLink(rotate = false) {
+      feedStatus.textContent = 'Getting our private calendar link…';
+      try {
+        const response = await fetch('/api/calendar-sync', { method:'POST', headers:{'content-type':'application/json'}, body:JSON.stringify({action:rotate?'rotate':'get'}) });
+        const result = await response.json();
+        if (!response.ok) throw new Error(result.error || 'Could not create link');
+        feedLink.textContent = result.url;
+        feedLink.dataset.webcal = result.webcalUrl;
+        feedLink.classList.add('visible');
+        feedStatus.textContent = 'Private subscription link ready. Keep it between us; anyone who has it can view our calendar.';
+        return result;
+      } catch (error) { feedStatus.textContent = error.message; throw error; }
+    }
+    document.getElementById('googleSync').addEventListener('click', async () => {
+      try {
+        const link = await getFeedLink();
+        await navigator.clipboard?.writeText(link.url);
+        window.open('https://calendar.google.com/calendar/u/0/r/settings/addbyurl', '_blank', 'noopener');
+        feedStatus.textContent = 'Link copied. In Google Calendar, choose “From URL” and paste it. Google subscription can take a while to appear.';
+      } catch {}
+    });
+    document.getElementById('appleSync').addEventListener('click', async () => {
+      try {
+        const link = await getFeedLink();
+        window.location.href = link.webcalUrl;
+      } catch {}
+    });
+    document.getElementById('rotateFeed').addEventListener('click', async () => {
+      if (!await siteDialog.confirm('Make a new calendar link? The old link will stop working.')) return;
+      try { await getFeedLink(true); } catch {}
+    });
+    function refreshCallHistory() {
+      const calls = Object.entries(events).flatMap(([date, list]) => (list || []).filter(event => event.kind === 'whatsapp-call').map(event => ({ date, event }))).sort((a,b) => (b.date + (b.event.startTime||'')).localeCompare(a.date + (a.event.startTime||''))).slice(0,8);
+      callHistory.innerHTML = '';
+      if (!calls.length) { callHistory.textContent = 'No calls logged yet.'; return; }
+      calls.forEach(({date,event}) => {
+        const row = document.createElement('div');
+        row.textContent = `${date} · ${event.callType || 'voice'}${event.startTime ? ' · ' + formatClock(event.startTime) : ''}${event.durationMinutes ? ' · ' + event.durationMinutes + ' min' : ''} · ${event.initiatedBy || event.author || 'Us'}`;
+        callHistory.appendChild(row);
+      });
+    }
+    const callDate = document.getElementById('callDate');
+    callDate.value = todayKey();
+    document.getElementById('saveCall').addEventListener('click', async () => {
+      const date = callDate.value;
+      const duration = Number(document.getElementById('callDuration').value);
+      if (!/^\d{4}-\d{2}-\d{2}$/.test(date) || (duration && (!Number.isInteger(duration) || duration < 1 || duration > 1440))) {
+        siteDialog.alert('Choose a valid day and call duration.'); return;
+      }
+      const author = localStorage.getItem('charlotte-user') || 'Us';
+      const type = document.getElementById('callType').value;
+      const event = { title: `WhatsApp ${type} call`, kind:'whatsapp-call', callType:type, durationMinutes:duration || null, initiatedBy:author, startTime:document.getElementById('callTime').value || '', time:'', author, date:new Date().toISOString() };
+      const button = document.getElementById('saveCall');
+      button.disabled = true;
+      try {
+        const response = await fetch('/api/calendar', {method:'POST',headers:{'content-type':'application/json'},body:JSON.stringify({date,event})});
+        const result = await response.json();
+        if (!response.ok) throw new Error(result.error || 'Could not save call');
+        (events[date] ||= []).push({...event,id:result.id});
+        render();
+        refreshCallHistory();
+        document.getElementById('callDuration').value = '';
+        feedStatus.textContent = 'Call saved to our shared calendar.';
+      } catch(error) { siteDialog.alert(error.message); }
+      finally { button.disabled = false; }
+    });
 
     function escapeHtml(text) {
       const div = document.createElement('div');
@@ -582,7 +711,7 @@
         return;
       }
       const author = localStorage.getItem('charlotte-user') || 'Unknown';
-      const event = { title, startTime: eventStart.value || '', time: eventTime.value.trim(), author, date: new Date().toLocaleString() };
+      const event = { ...(editing?.event || {}), title, startTime: eventStart.value || '', time: eventTime.value.trim(), author, date: new Date().toLocaleString() };
       saveEvent.disabled = true;
       try {
         const target = editing ? { ...editing } : null;
@@ -611,7 +740,7 @@
           events[addDate].push({ ...event, id: json.id });
         }
         closeModal();
-        render();
+        render(); refreshCallHistory();
       } catch (e) {
         siteDialog.alert('Error: ' + e.message);
       } finally {
@@ -638,7 +767,7 @@
         list.splice(target.index, 1);
         if (list.length === 0) delete events[target.date];
         closeModal();
-        render();
+        render(); refreshCallHistory();
       } catch (e) {
         siteDialog.alert('Error: ' + e.message);
       } finally {

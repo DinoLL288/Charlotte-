@@ -151,6 +151,23 @@ export class QuestionNightRoom {
     let body;
     try { body = await request.json(); } catch { return Response.json({ error: 'Invalid request' }, { status: 400 }); }
 
+    if (body.action === 'get-calendar-feed-link' || body.action === 'rotate-calendar-feed-link') {
+      let token = body.action === 'get-calendar-feed-link' ? await this.ctx.storage.get('calendarFeedToken') : '';
+      if (!token) {
+        const bytes = crypto.getRandomValues(new Uint8Array(32));
+        token = Array.from(bytes, byte => byte.toString(16).padStart(2, '0')).join('');
+        await this.ctx.storage.put('calendarFeedToken', token);
+      }
+      return Response.json({ ok: true, token });
+    }
+    if (body.action === 'verify-calendar-feed-link') {
+      const token = String(body.token || '');
+      const saved = await this.ctx.storage.get('calendarFeedToken') || '';
+      let diff = token.length ^ saved.length;
+      for (let i = 0; i < Math.max(token.length, saved.length); i++) diff |= (token.charCodeAt(i) || 0) ^ (saved.charCodeAt(i) || 0);
+      return Response.json({ ok: Boolean(saved) && diff === 0 });
+    }
+
     if (body.action === 'attempt-login') {
       const ip = String(body.ip || 'unknown').slice(0, 100);
       const user = String(body.user || 'unknown').slice(0, 20);

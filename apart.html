@@ -153,6 +153,52 @@
       box-shadow: 0 24px 56px rgba(20, 63, 95, 0.2), inset 0 0 0 1px rgba(236, 215, 160, 0.5);
     }
 
+    .status-card.is-on {
+      isolation: isolate;
+      overflow: hidden;
+      min-height: 310px;
+      justify-content: center;
+      padding: clamp(28px, 7vw, 54px);
+      color: #fff;
+      border: 1px solid rgba(239, 222, 179, .58);
+      background:
+        radial-gradient(circle at 78% 23%, rgba(241, 220, 160, .22), transparent 24%),
+        radial-gradient(circle at 18% 100%, rgba(106, 165, 202, .2), transparent 45%),
+        linear-gradient(145deg, #10263b, #173c58 65%, #244f68);
+      box-shadow: 0 28px 70px rgba(10, 34, 53, .38), inset 0 0 0 1px rgba(255,255,255,.07);
+      animation: quiet-arrive .75s cubic-bezier(.2,.8,.2,1) both;
+    }
+    .status-card.is-on::before {
+      content: "☾";
+      position: absolute;
+      z-index: -1;
+      top: 16px;
+      right: clamp(22px, 7vw, 56px);
+      color: #fff0c9;
+      font-size: clamp(5rem, 18vw, 9rem);
+      line-height: 1;
+      opacity: .14;
+      transform: rotate(-18deg);
+    }
+    .status-card.is-on .eyebrow { color: #f1dca0; }
+    .status-card.is-on h2 { color: #fffaf0; font-size: clamp(2rem, 7vw, 3.1rem); }
+    .status-card.is-on p { color: #e1edf4; }
+    .quiet-day-count {
+      display: none;
+      margin-top: 12px;
+      padding: 8px 15px;
+      color: #fff3d4;
+      background: rgba(255,255,255,.1);
+      border: 1px solid rgba(255,255,255,.17);
+      border-radius: 999px;
+      font-size: .82rem;
+      font-weight: 700;
+      letter-spacing: .04em;
+    }
+    .status-card.is-on .quiet-day-count { display: inline-flex; }
+    body.quiet-active { background: linear-gradient(180deg, #dfeaf0, #f1f3ef 55%, #e3e9e7); }
+    @keyframes quiet-arrive { from { opacity: .7; transform: translateY(10px) scale(.985); } to { opacity: 1; transform: none; } }
+
     /* ---------- Form ---------- */
 
     .composer h2 {
@@ -427,6 +473,7 @@
       <p class="eyebrow" id="statusEyebrow">Right now</p>
       <h2 id="statusTitle">No quiet days marked</h2>
       <p id="statusText">When one of us needs a little space, add the days below.</p>
+      <span class="quiet-day-count" id="quietDayCount"></span>
     </section>
 
     <form class="card composer" id="apartForm">
@@ -472,6 +519,7 @@
     const statusEyebrow = document.getElementById('statusEyebrow');
     const statusTitle = document.getElementById('statusTitle');
     const statusText = document.getElementById('statusText');
+    const quietDayCount = document.getElementById('quietDayCount');
 
     const currentUser = localStorage.getItem('charlotte-user') || 'Unknown';
     const profilePics = {};
@@ -554,6 +602,8 @@
     function renderStatus() {
       if (loadError) {
         statusCard.classList.remove('is-on');
+        document.body.classList.remove('quiet-active');
+        quietDayCount.textContent = '';
         statusEyebrow.textContent = 'Having trouble';
         statusTitle.textContent = 'Quiet days could not load';
         statusText.textContent = 'Our connection dropped. Refresh and try again.';
@@ -564,14 +614,19 @@
       const upcoming = sortedEntries().find(entry => statusOf(entry) === 'upcoming');
 
       statusCard.classList.toggle('is-on', Boolean(active));
+      document.body.classList.toggle('quiet-active', Boolean(active));
 
       if (active) {
         const author = active.author || 'Someone';
         statusEyebrow.textContent = 'Quiet days are on';
         statusTitle.textContent = author + ' is taking a little space';
         statusText.textContent = 'We’re taking a few quiet days until ' + longDate(active.until) + '.';
+        const elapsed = Math.floor((toDate(todayString()) - toDate(active.from)) / 86400000) + 1;
+        const total = Math.floor((toDate(active.until) - toDate(active.from)) / 86400000) + 1;
+        quietDayCount.textContent = 'Day ' + elapsed + ' of ' + total + ' · a little breathing room';
         return;
       }
+      quietDayCount.textContent = '';
 
       if (upcoming) {
         const author = upcoming.author || 'Someone';
