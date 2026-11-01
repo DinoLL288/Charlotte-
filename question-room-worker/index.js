@@ -200,7 +200,10 @@ export class QuestionNightRoom {
       return Response.json({ ok: true, accounts });
     }
     if (body.action === 'get-youtube-client-id') {
-      return Response.json({ ok: true, clientId: await this.ctx.storage.get('youtubeClientId') || '' });
+      const saved = await this.ctx.storage.get('youtubeClientId') || '';
+      const clientId = saved || '924567335912-jgilvjvqvlf3gos5qojngpdcnn7dcvbu.apps.googleusercontent.com';
+      if (!saved) await this.ctx.storage.put('youtubeClientId', clientId);
+      return Response.json({ ok: true, clientId });
     }
     if (body.action === 'set-youtube-client-id') {
       const clientId = String(body.clientId || '').trim();
