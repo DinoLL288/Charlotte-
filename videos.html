@@ -1,0 +1,291 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <script src="site-shell-guard.js"></script>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Our videos</title>
+  <script>if (!localStorage.getItem('charlotte-user')) location.href='login.html';</script>
+  <link rel="stylesheet" href="theme.css">
+  <style>
+    :root{--blue:#245b85;--ink:#174866;--gold:#c9a24a}
+    *{box-sizing:border-box}
+    body{margin:0;min-height:100vh;color:var(--ink);background:linear-gradient(145deg,#eaf7ff,#c8edff 54%,#fff2dc);font-family:"Trebuchet MS",Arial,sans-serif}
+    .top-bar{position:fixed;top:16px;left:16px;z-index:5}
+    .button{border:0;border-radius:999px;padding:11px 19px;background:#fff;color:#2873a6;font:inherit;font-weight:700;font-size:.95rem;text-decoration:none;box-shadow:0 7px 20px #347eac30;cursor:pointer}
+    .shell{width:min(1000px,100%);margin:auto;padding:72px 18px 52px}
+    .hero{text-align:center;color:white;padding:22px 14px 25px;text-shadow:0 2px 10px #245b8570}
+    .hero .eyebrow{margin:0;color:#fff0c8;font-size:.75rem;font-weight:800;letter-spacing:.2em;text-transform:uppercase}
+    h1{margin:10px 0 7px;font:400 clamp(2.5rem,8vw,4.2rem) Georgia,serif}
+    .hero p:last-child{margin:0 auto;max-width:50ch;line-height:1.55}
+    .panel{border:1px solid #fff;border-radius:25px;background:#fffefaed;padding:clamp(18px,4vw,28px);box-shadow:0 18px 46px #17486620}
+    .upload-panel{margin:5px 0 30px}
+    .panel h2{margin:0 0 8px;color:#174866;font:700 1.45rem Georgia,serif}
+    .help{margin:0 0 17px;color:#607e92;font-size:.9rem;line-height:1.6}
+    .setup-warning{display:none;margin:0 0 16px;padding:12px 14px;border-radius:14px;background:#fff5dc;color:#73591f;line-height:1.5}
+    .setup-warning.visible{display:block}
+    .setup-warning a{color:#245b85;font-weight:700}
+    .form-grid{display:grid;grid-template-columns:1fr 1fr;gap:12px}
+    .field{display:grid;gap:6px;color:#486a83;font-size:.82rem;font-weight:700}
+    .field.full{grid-column:1/-1}
+    .field input,.field textarea{width:100%;border:1px solid #c8dceb;border-radius:13px;background:white;padding:12px 13px;color:#174866;font:inherit}
+    .field textarea{min-height:80px;resize:vertical}
+    .picker{display:grid;place-items:center;min-height:125px;padding:14px;border:2px dashed #b9d8e8;border-radius:17px;background:#f4faff;text-align:center;cursor:pointer}
+    .picker input{max-width:100%;color:#486a83}
+    .actions{display:flex;align-items:center;gap:12px;flex-wrap:wrap;margin-top:15px}
+    .actions .button{background:#245b85;color:white}
+    .button:disabled{opacity:.55;cursor:progress}
+    .status{min-height:1.4em;margin:12px 0 0;color:#607e92;font-size:.88rem;line-height:1.5}
+    .progress{width:100%;height:9px;margin-top:10px;border:0;border-radius:99px;overflow:hidden;background:#e2eef4}
+    .progress::-webkit-progress-bar{background:#e2eef4;border-radius:99px}
+    .progress::-webkit-progress-value{background:linear-gradient(90deg,#6eafd0,#c8a656);border-radius:99px}
+    .progress::-moz-progress-bar{background:linear-gradient(90deg,#6eafd0,#c8a656);border-radius:99px}
+    .section-head{display:flex;align-items:baseline;justify-content:space-between;gap:12px;margin:30px 4px 13px}
+    .section-head h2{margin:0;color:#174866;font:400 clamp(1.8rem,5vw,2.5rem) Georgia,serif}
+    .section-head span{color:#617f93;font-size:.82rem}
+    .video-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(min(100%,340px),1fr));gap:18px}
+    .video-card{overflow:hidden;border:1px solid #fff;border-radius:22px;background:#fffefa;box-shadow:0 14px 34px #1748661b}
+    .player{position:relative;aspect-ratio:16/9;background:#152e43}
+    .player iframe{position:absolute;inset:0;width:100%;height:100%;border:0}
+    .video-info{padding:15px 17px 17px}
+    .video-info h3{margin:0 0 6px;color:#174866;font:700 1.15rem Georgia,serif;overflow-wrap:anywhere}
+    .video-info p{margin:0;color:#607e92;font-size:.83rem;line-height:1.5;white-space:pre-wrap;overflow-wrap:anywhere}
+    .video-meta{display:flex;justify-content:space-between;gap:8px;margin-top:11px;color:#8297a5;font-size:.74rem}
+    .empty{padding:30px 18px;border:1px dashed #a9cada;border-radius:20px;background:#ffffff9e;color:#56748a;text-align:center}
+    @media(max-width:560px){.form-grid{grid-template-columns:1fr}.field.full{grid-column:auto}.shell{padding-top:78px}.hero{padding-top:10px}}
+    @media(prefers-reduced-motion:reduce){*{scroll-behavior:auto!important;transition:none!important}}
+  </style>
+  <script src="https://accounts.google.com/gsi/client" async defer></script>
+</head>
+<body>
+  <div class="top-bar"><a class="button" href="index.html">← Back to hub</a></div>
+  <main class="shell">
+    <header class="hero"><p class="eyebrow">A little movie shelf</p><h1>Our videos</h1><p>Upload a video to our shared YouTube channel, then watch it together here.</p></header>
+    <section class="panel upload-panel">
+      <h2>Add a video</h2>
+      <p class="help">Uploads are set to Unlisted, so they won’t show in YouTube search. Anyone who gets a video link can still watch it. We’ll sign in with Google only when uploading.</p>
+      <p class="setup-warning" id="setupWarning">Add our Google OAuth web client ID in <a href="profile.html#youtube-setup">Settings</a> before uploading.</p>
+      <div class="form-grid">
+        <label class="field full">Video file
+          <span class="picker"><input id="videoFile" type="file" accept="video/*"><span id="fileLabel">Choose a video from this device</span></span>
+        </label>
+        <label class="field full">Title<input id="videoTitle" maxlength="100" placeholder="A little title for our video"></label>
+        <label class="field full">Caption or memory<textarea id="videoDescription" maxlength="1000" placeholder="Optional note for us…"></textarea></label>
+      </div>
+      <div class="actions"><button class="button" id="uploadVideo" type="button" disabled>Upload unlisted video</button><span id="selectedChannel"></span></div>
+      <progress class="progress" id="uploadProgress" max="100" value="0" hidden></progress>
+      <p class="status" id="uploadStatus" role="status"></p>
+    </section>
+    <div class="section-head"><h2>Saved together</h2><span id="videoCount"></span></div>
+    <div class="video-grid" id="videoGrid"></div>
+  </main>
+  <script>
+    const currentUser = localStorage.getItem('charlotte-user') || '';
+    const videoFile = document.getElementById('videoFile');
+    const videoTitle = document.getElementById('videoTitle');
+    const videoDescription = document.getElementById('videoDescription');
+    const uploadButton = document.getElementById('uploadVideo');
+    const uploadStatus = document.getElementById('uploadStatus');
+    const uploadProgress = document.getElementById('uploadProgress');
+    const videoGrid = document.getElementById('videoGrid');
+    let googleClientId = '';
+    let tokenClient = null;
+    const uploadScope = 'https://www.googleapis.com/auth/youtube.upload https://www.googleapis.com/auth/youtube.readonly';
+
+    async function loadSetup() {
+      try {
+        const response = await fetch('/api/youtube-config');
+        const result = await response.json();
+        if (!response.ok) throw new Error(result.error || 'Could not load setup.');
+        googleClientId = result.clientId || '';
+      } catch (error) { uploadStatus.textContent = error.message; }
+      document.getElementById('setupWarning').classList.toggle('visible', !googleClientId);
+      uploadButton.disabled = !googleClientId;
+    }
+    videoFile.addEventListener('change', () => {
+      const file = videoFile.files?.[0];
+      document.getElementById('fileLabel').textContent = file ? file.name + ' · ' + (file.size / (1024 * 1024)).toFixed(1) + ' MB' : 'Choose a video from this device';
+      if (file && !videoTitle.value.trim()) videoTitle.value = file.name.replace(/\.[^.]+$/, '').slice(0, 100);
+    });
+    function getGoogleToken() {
+      return new Promise((resolve, reject) => {
+        if (!window.google?.accounts?.oauth2) return reject(new Error('Google sign-in is still loading. Try again in a moment.'));
+        tokenClient = window.google.accounts.oauth2.initTokenClient({
+          client_id: googleClientId,
+          scope: uploadScope,
+          callback: response => response?.access_token ? resolve(response.access_token) : reject(new Error(response?.error_description || response?.error || 'Google authorization did not finish.')),
+          error_callback: error => reject(new Error(error.message || 'Google sign-in was closed.'))
+        });
+        tokenClient.requestAccessToken({ prompt: 'select_account' });
+      });
+    }
+    async function getYoutubeChannel(accessToken) {
+      const response = await fetch('https://www.googleapis.com/youtube/v3/channels?part=snippet&mine=true', { headers: { authorization: 'Bearer ' + accessToken } });
+      const result = await response.json();
+      if (!response.ok || !result.items?.length) throw new Error(result.error?.message || 'This Google account has no accessible YouTube channel.');
+      return result.items[0];
+    }
+    function xhrRequest(url, method, accessToken, headers, body, onProgress) {
+      return new Promise((resolve, reject) => {
+        const xhr = new XMLHttpRequest();
+        xhr.open(method, url);
+        if (accessToken) xhr.setRequestHeader('Authorization', 'Bearer ' + accessToken);
+        Object.entries(headers || {}).forEach(([key, value]) => xhr.setRequestHeader(key, String(value)));
+        if (onProgress) xhr.upload.onprogress = event => { if (event.lengthComputable) onProgress(event.loaded, event.total); };
+        xhr.onload = () => resolve(xhr);
+        xhr.onerror = () => reject(new Error('The upload connection dropped. Try uploading again.'));
+        xhr.onabort = () => reject(new Error('The upload was cancelled.'));
+        xhr.send(body);
+      });
+    }
+    async function beginUpload(file, title, description, token) {
+      const endpoint = 'https://www.googleapis.com/upload/youtube/v3/videos?uploadType=resumable&part=snippet,status';
+      const response = await xhrRequest(endpoint, 'POST', token, {
+        'Content-Type': 'application/json; charset=UTF-8',
+        'X-Upload-Content-Length': file.size,
+        'X-Upload-Content-Type': file.type || 'application/octet-stream'
+      }, JSON.stringify({
+        snippet: { title, description, categoryId: '22' },
+        status: { privacyStatus: 'unlisted', selfDeclaredMadeForKids: false }
+      }));
+      if (response.status < 200 || response.status >= 300) {
+        let message = 'YouTube could not start the upload.';
+        try { message = JSON.parse(response.responseText).error?.message || message; } catch {}
+        throw new Error(message);
+      }
+      const location = response.getResponseHeader('Location');
+      if (!location || !location.startsWith('https://www.googleapis.com/upload/youtube/v3/videos')) throw new Error('YouTube did not return a valid resumable upload link.');
+      return location;
+    }
+    async function uploadChunks(file, uploadUrl, token) {
+      const chunkBytes = 16 * 1024 * 1024;
+      let offset = 0;
+      let finalResult = null;
+      while (offset < file.size) {
+        const end = Math.min(offset + chunkBytes, file.size);
+        const chunk = file.slice(offset, end);
+        uploadStatus.textContent = 'Uploading… ' + Math.round((offset / file.size) * 100) + '%';
+        let response;
+        try {
+          response = await xhrRequest(uploadUrl, 'PUT', token, {
+            'Content-Type': file.type || 'application/octet-stream',
+            'Content-Range': 'bytes ' + offset + '-' + (end - 1) + '/' + file.size
+          }, chunk, loaded => {
+            const total = offset + loaded;
+            uploadProgress.value = Math.min(100, total / file.size * 100);
+            uploadStatus.textContent = 'Uploading… ' + Math.floor(total / file.size * 100) + '%';
+          });
+        } catch (error) {
+          throw new Error(error.message + ' YouTube may keep the partial upload for a while; start again to retry.');
+        }
+        if (response.status === 308) { offset = end; continue; }
+        if (response.status >= 200 && response.status < 300) {
+          try { finalResult = JSON.parse(response.responseText); } catch {}
+          offset = end;
+          break;
+        }
+        let message = 'YouTube stopped the upload (HTTP ' + response.status + ').';
+        try { message = JSON.parse(response.responseText).error?.message || message; } catch {}
+        throw new Error(message);
+      }
+      if (!finalResult?.id) throw new Error('YouTube finished receiving the file but did not return its video ID.');
+      return finalResult;
+    }
+    uploadButton.addEventListener('click', async () => {
+      const file = videoFile.files?.[0];
+      if (!file || !file.type.startsWith('video/')) { siteDialog.alert('Choose a video file first.'); return; }
+      const title = videoTitle.value.trim();
+      if (!title) { videoTitle.focus(); return; }
+      uploadButton.disabled = true;
+      uploadProgress.hidden = false;
+      uploadProgress.value = 0;
+      uploadStatus.textContent = 'Choose the YouTube account to upload to…';
+      try {
+        const token = await getGoogleToken();
+        const channel = await getYoutubeChannel(token);
+        const channelName = channel.snippet?.title || 'YouTube channel';
+        const channelHandle = channel.snippet?.customUrl || '';
+        document.getElementById('selectedChannel').textContent = 'Google channel: ' + channelName + (channelHandle ? ' · ' + channelHandle : '');
+        const expected = '@secretdino.ll27';
+        const matches = channelHandle.toLowerCase().includes('secretdino.ll27');
+        const approval = 'Upload this as an unlisted video to ' + channelName + (channelHandle ? ' (' + channelHandle + ')' : '') + '?' + (matches ? '' : '\n\nThis may not be the shared @secretdino.ll27 channel.');
+        if (!await siteDialog.confirm(approval)) { uploadStatus.textContent = 'Upload cancelled.'; return; }
+        uploadStatus.textContent = 'Starting an Unlisted upload…';
+        const uploadUrl = await beginUpload(file, title, videoDescription.value.trim(), token);
+        const uploaded = await uploadChunks(file, uploadUrl, token);
+        const saved = await fetch('/api/youtube-videos', {
+          method: 'POST',
+          headers: { 'content-type': 'application/json' },
+          body: JSON.stringify({ videoId: uploaded.id, accessToken: token })
+        });
+        const result = await saved.json();
+        if (!saved.ok) throw new Error(result.error || 'The video uploaded but we could not add it to our list.');
+        uploadStatus.textContent = 'Uploaded as Unlisted and added to our shared video shelf.';
+        videoTitle.value = '';
+        videoDescription.value = '';
+        videoFile.value = '';
+        document.getElementById('fileLabel').textContent = 'Choose a video from this device';
+        renderVideos(result.videos || []);
+      } catch (error) { uploadStatus.textContent = error.message || 'The video upload failed.'; }
+      finally { uploadButton.disabled = !googleClientId; }
+    });
+    function renderVideos(videos) {
+      document.getElementById('videoCount').textContent = videos.length + (videos.length === 1 ? ' video' : ' videos');
+      videoGrid.replaceChildren();
+      if (!videos.length) {
+        const empty = document.createElement('div');
+        empty.className = 'empty';
+        empty.textContent = 'No videos saved yet. Our first one can go here.';
+        videoGrid.appendChild(empty);
+        return;
+      }
+      videos.forEach(video => {
+        const card = document.createElement('article');
+        card.className = 'video-card';
+        const player = document.createElement('div');
+        player.className = 'player';
+        const frame = document.createElement('iframe');
+        frame.src = 'https://www.youtube-nocookie.com/embed/' + encodeURIComponent(video.videoId);
+        frame.title = video.title || 'Our video';
+        frame.loading = 'lazy';
+        frame.referrerPolicy = 'strict-origin-when-cross-origin';
+        frame.allow = 'accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share';
+        frame.allowFullscreen = true;
+        player.appendChild(frame);
+        const info = document.createElement('div');
+        info.className = 'video-info';
+        const title = document.createElement('h3');
+        title.textContent = video.title || 'Our video';
+        const description = document.createElement('p');
+        description.textContent = video.description || 'An unlisted video, saved for us.';
+        const meta = document.createElement('div');
+        meta.className = 'video-meta';
+        const author = document.createElement('span');
+        author.textContent = 'Added by ' + (video.uploader || 'Us');
+        const link = document.createElement('a');
+        link.href = 'https://www.youtube.com/watch?v=' + encodeURIComponent(video.videoId);
+        link.target = '_blank';
+        link.rel = 'noopener noreferrer';
+        link.textContent = 'Open in YouTube ↗';
+        link.style.cssText = 'color:#347fa3;font-weight:700;text-decoration:none';
+        meta.append(author, link);
+        info.append(title, description, meta);
+        card.append(player, info);
+        videoGrid.appendChild(card);
+      });
+    }
+    async function loadVideos() {
+      try {
+        const response = await fetch('/api/youtube-videos');
+        const result = await response.json();
+        if (!response.ok) throw new Error(result.error || 'Could not load our videos.');
+        renderVideos(result.videos || []);
+      } catch (error) { videoGrid.textContent = error.message; }
+    }
+    loadSetup();
+    loadVideos();
+  </script>
+  <script src="dialog.js"></script>
+  <script src="avatar.js"></script>
+</body>
+</html>

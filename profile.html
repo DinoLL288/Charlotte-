@@ -107,6 +107,13 @@
       </div>
       <p class="settings-status" id="sharedAccountsStatus" role="status"></p>
     </section>
+    <section class="settings-group" id="youtube-setup">
+      <h2>YouTube upload connection</h2>
+      <p class="settings-help">For uploads, create a Google OAuth client ID for a web application and enable YouTube Data API v3 in its Google Cloud project. Add our site’s production origin as an authorized JavaScript origin, then save the client ID here. Add both of our Google accounts as test users while the consent screen is in testing. We’ll authorize YouTube in Google’s own popup when we upload.</p>
+      <label class="settings-row" for="youtubeClientId">Google OAuth web client ID<input id="youtubeClientId" type="text" maxlength="300" autocomplete="off" placeholder="…apps.googleusercontent.com"></label>
+      <div class="shared-account-actions"><button class="button" id="saveYoutubeClientId" type="button">Save YouTube connection</button><a class="button" href="https://console.cloud.google.com/apis/credentials" target="_blank" rel="noopener noreferrer">Open Google Cloud ↗</a></div>
+      <p class="settings-status" id="youtubeClientStatus" role="status"></p>
+    </section>
     <button class="button" id="savePreferences" type="button">Save our settings</button>
     <p class="settings-status" id="preferencesStatus" role="status"></p>
     <h2 class="section-title">Account</h2>
@@ -134,6 +141,8 @@
     const preferencesStatus = document.getElementById('preferencesStatus');
     const sharedAccountsList = document.getElementById('sharedAccountsList');
     const sharedAccountsStatus = document.getElementById('sharedAccountsStatus');
+    const youtubeClientIdInput = document.getElementById('youtubeClientId');
+    const youtubeClientStatus = document.getElementById('youtubeClientStatus');
     let sharedAccounts = [];
     const preferenceKey = 'charlotte-preferences-' + user;
     function applyPreferences(preferences) {
@@ -312,6 +321,28 @@
       finally { button.disabled = false; }
     });
     loadSharedAccounts();
+    async function loadYoutubeClientId() {
+      try {
+        const response = await fetch('/api/youtube-config');
+        const result = await response.json();
+        if (!response.ok) throw new Error(result.error || 'Could not load YouTube setup.');
+        youtubeClientIdInput.value = result.clientId || '';
+      } catch (error) { youtubeClientStatus.textContent = error.message; }
+    }
+    document.getElementById('saveYoutubeClientId').addEventListener('click', async () => {
+      const button = document.getElementById('saveYoutubeClientId');
+      button.disabled = true;
+      youtubeClientStatus.textContent = 'Saving YouTube setup…';
+      try {
+        const response = await fetch('/api/youtube-config', { method:'POST', headers:{'content-type':'application/json'}, body:JSON.stringify({clientId:youtubeClientIdInput.value.trim()}) });
+        const result = await response.json();
+        if (!response.ok) throw new Error(result.error || 'Could not save YouTube setup.');
+        youtubeClientIdInput.value = result.clientId || '';
+        youtubeClientStatus.textContent = result.clientId ? 'YouTube upload setup is saved for both of us.' : 'YouTube upload setup was cleared.';
+      } catch (error) { youtubeClientStatus.textContent = error.message; }
+      finally { button.disabled = false; }
+    });
+    loadYoutubeClientId();
     
     let selectedFile = null;
     avatarInput.addEventListener('change', (e) => {

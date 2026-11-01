@@ -172,8 +172,13 @@ export class QuestionNightRoom {
       if (!Array.isArray(accounts)) {
         accounts = [
           { id: 'tiktok', name: 'TikTok', platform: 'TikTok', handle: '@secretdino.ll27', profileUrl: 'https://www.tiktok.com/@secretdino.ll27', visibility: 'Public', note: '' },
-          { id: 'youtube', name: 'YouTube', platform: 'YouTube', handle: '@secretdino.ll27', profileUrl: 'https://www.youtube.com/@secretdino.ll27', visibility: 'Private videos', note: '' }
+          { id: 'youtube', name: 'YouTube', platform: 'YouTube', handle: '@secretdino.ll27', profileUrl: 'https://www.youtube.com/@secretdino.ll27', visibility: 'Unlisted videos · anyone with the link can watch', note: '' }
         ];
+        await this.ctx.storage.put('sharedAccounts', accounts);
+      }
+      const youtubeAccount = accounts.find(account => account.id === 'youtube');
+      if (youtubeAccount?.visibility === 'Private videos') {
+        youtubeAccount.visibility = 'Unlisted videos · anyone with the link can watch';
         await this.ctx.storage.put('sharedAccounts', accounts);
       }
       return Response.json({ ok: true, accounts });
@@ -193,6 +198,36 @@ export class QuestionNightRoom {
       }));
       await this.ctx.storage.put('sharedAccounts', accounts);
       return Response.json({ ok: true, accounts });
+    }
+    if (body.action === 'get-youtube-client-id') {
+      return Response.json({ ok: true, clientId: await this.ctx.storage.get('youtubeClientId') || '' });
+    }
+    if (body.action === 'set-youtube-client-id') {
+      const clientId = String(body.clientId || '').trim();
+      if (clientId && (!clientId.endsWith('.apps.googleusercontent.com') || clientId.length > 300)) return Response.json({ error: 'Enter a valid Google OAuth web client ID.' }, { status: 400 });
+      await this.ctx.storage.put('youtubeClientId', clientId);
+      return Response.json({ ok: true, clientId });
+    }
+    if (body.action === 'get-youtube-videos') {
+      return Response.json({ ok: true, videos: await this.ctx.storage.get('youtubeVideos') || [] });
+    }
+    if (body.action === 'add-youtube-video') {
+      const video = body.video || {};
+      if (!/^[A-Za-z0-9_-]{11}$/.test(String(video.videoId || '')) || !['Luke', 'Charlotte'].includes(body.uploader)) return Response.json({ error: 'Invalid YouTube video.' }, { status: 400 });
+      const videos = await this.ctx.storage.get('youtubeVideos') || [];
+      if (videos.some(item => item.videoId === video.videoId)) return Response.json({ ok: true, video: videos.find(item => item.videoId === video.videoId), videos });
+      if (videos.length >= 1000) return Response.json({ error: 'Our shared video list is full.' }, { status: 413 });
+      const saved = {
+        videoId: video.videoId,
+        title: String(video.title || 'Our video').trim().slice(0, 100),
+        description: String(video.description || '').trim().slice(0, 1000),
+        uploader: body.uploader,
+        uploadedAt: new Date().toISOString(),
+        privacy: 'unlisted'
+      };
+      videos.unshift(saved);
+      await this.ctx.storage.put('youtubeVideos', videos);
+      return Response.json({ ok: true, video: saved, videos });
     }
 
     if (body.action === 'attempt-login') {
