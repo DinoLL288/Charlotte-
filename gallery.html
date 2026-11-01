@@ -162,6 +162,8 @@
       font-size: 0.95rem;
       min-height: 1.2rem;
     }
+    #googlePhotosStatus[data-tone="error"] { color: #b3261e; }
+    #googlePhotosStatus[data-tone="success"] { color: #1c7a4a; }
   </style>
   <link rel="stylesheet" href="theme.css">
   <link rel="stylesheet" href="gallery-media.css">
@@ -190,6 +192,7 @@
     <p class="media-count" id="mediaCount" aria-live="polite">Our shared memories are loading…</p>
     <p class="status" id="googlePhotosDisclosure">If we connect, this site can add photos to our shared Google Photos account and read only the photos added through this site so we can show them here. It stores their IDs and our album labels in the website. We can remove a photo from Google Photos at any time; it may then stop appearing here.</p>
     <button class="button" id="googlePhotosConnect" type="button">Connect our shared Google Photos</button>
+    <p class="status" id="googlePhotosStatus" role="status" aria-live="polite"></p>
     <p class="status" id="storageUsage" role="status">Both of us should connect the same Google Photos account to see our app-added photos. Google manages the account’s storage allowance.</p>
     <div class="album-filters" id="albumFilters" aria-label="Filter by album"></div>
     <section class="upload-card" id="uploadCard" hidden>

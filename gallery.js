@@ -24,7 +24,31 @@
   let refreshPromise = null;
   let googleAccessToken = '';
   let googleTokenExpiresAt = 0;
+  let googleGrantedScopes = '';
   let googleTokenClient = null;
+  let googleClientIdPromise = null;
+  let googlePendingRequest = null;
+  const googlePhotosScopes = 'https://www.googleapis.com/auth/photoslibrary.appendonly https://www.googleapis.com/auth/photoslibrary.readonly.appcreateddata';
+  const googleConnectButton = document.getElementById('googlePhotosConnect');
+  const googleStatus = document.getElementById('googlePhotosStatus');
+
+  function setGoogleStatus(message, tone = 'info') {
+    if (!googleStatus) return;
+    googleStatus.textContent = message || '';
+    googleStatus.dataset.tone = tone;
+  }
+  function googleAuthMessage(code, detail) {
+    switch (code) {
+      case 'popup_closed': return 'Google sign-in was closed before it finished. Try Connect our shared Google Photos again.';
+      case 'popup_failed_to_open': return 'This browser blocked Google’s sign-in window. Allow pop-ups for this site, then try again.';
+      case 'access_denied': return 'Google did not allow access. Add the shared account (secretdino.ll27) as a test user on the OAuth consent screen, or submit the app for verification, then try again.';
+      case 'invalid_scope': return 'The Google app is not allowed to use the Photos scopes yet. Add photoslibrary.appendonly and photoslibrary.readonly.appcreateddata to the OAuth consent screen, then try again.';
+      case 'origin_mismatch': return 'This website is not an authorised JavaScript origin for the Google OAuth client. Add it in Google Cloud Console, then try again.';
+      case 'idpiframe_initialization_failed': return 'Google sign-in could not start in this browser. Third-party cookies may be blocked for this site.';
+      case 'interaction_required': return 'Google needs you to sign in again before it can connect our shared account.';
+      default: return `Google sign-in did not finish${code ? ` (${code})` : ''}.${detail ? ` ${detail}` : ''}`;
+    }
+  }
 
   const escapeHtml = value => { const el = document.createElement('span'); el.textContent = value || ''; return el.innerHTML; };
   const albumName = name => name === 'Old Photos' ? 'Older photos' : name === 'General' ? 'Our memories' : name;
@@ -43,37 +67,77 @@
     }
     throw new Error('Google sign-in did not load. Please refresh and try again.');
   }
-  async function getGoogleAccessToken(prompt = '') {
-    if (googleAccessToken && Date.now() < googleTokenExpiresAt - 60_000) return googleAccessToken;
+  async function getGoogleClientId() {
+    if (!googleClientIdPromise) {
+      googleClientIdPromise = fetch('/api/youtube-config', { credentials: 'same-origin', cache: 'no-store' })
+        .then(async response => {
+          const config = await response.json().catch(() => ({}));
+          if (!response.ok || !config.clientId) throw new Error(config.error || 'Google Photos sign-in is not configured yet.');
+          return config.clientId;
+        })
+        .catch(error => { googleClientIdPromise = null; throw error; });
+    }
+    return googleClientIdPromise;
+  }
+  async function getGoogleTokenClient() {
+    if (googleTokenClient) return googleTokenClient;
     await waitForGoogleIdentity();
+    const clientId = await getGoogleClientId();
     if (!googleTokenClient) {
-      const response = await fetch('/api/youtube-config', { credentials: 'same-origin', cache: 'no-store' });
-      const config = await response.json();
-      if (!response.ok || !config.clientId) throw new Error(config.error || 'Google Photos sign-in is not configured yet.');
       googleTokenClient = google.accounts.oauth2.initTokenClient({
-        client_id: config.clientId,
-        scope: 'https://www.googleapis.com/auth/photoslibrary.appendonly https://www.googleapis.com/auth/photoslibrary.readonly.appcreateddata',
-        callback: () => {}
+        client_id: clientId,
+        scope: googlePhotosScopes,
+        // Replaced for every request below. Keeping the handlers present means a
+        // cancelled or blocked popup always rejects instead of hanging forever.
+        callback: () => {},
+        error_callback: () => {}
       });
     }
-    return new Promise((resolve, reject) => {
-      googleTokenClient.callback = response => {
-        if (response.error || !response.access_token) { reject(new Error(response.error_description || response.error || 'Google Photos sign-in was canceled.')); return; }
+    return googleTokenClient;
+  }
+  async function getGoogleAccessToken(prompt = '', options = {}) {
+    if (!options.force && googleAccessToken && Date.now() < googleTokenExpiresAt - 60_000) return googleAccessToken;
+    if (googlePendingRequest) return googlePendingRequest;
+    const client = await getGoogleTokenClient();
+    let pending;
+    pending = new Promise((resolve, reject) => {
+      let settled = false;
+      const timer = setTimeout(() => finish(reject, new Error('Google sign-in did not finish in time. Check that pop-ups are allowed, then try again.')), 120_000);
+      function finish(settle, value) {
+        if (settled) return;
+        settled = true;
+        clearTimeout(timer);
+        if (googlePendingRequest === pending) googlePendingRequest = null;
+        settle(value);
+      }
+      client.callback = response => {
+        if (response?.error || !response?.access_token) { finish(reject, new Error(googleAuthMessage(response?.error, response?.error_description))); return; }
         googleAccessToken = response.access_token;
         googleTokenExpiresAt = Date.now() + (Number(response.expires_in) || 3600) * 1000;
-        resolve(googleAccessToken);
+        googleGrantedScopes = response.scope || '';
+        finish(resolve, googleAccessToken);
       };
-      googleTokenClient.requestAccessToken({ prompt });
+      client.error_callback = error => finish(reject, new Error(googleAuthMessage(error?.type, error?.message)));
+      try { client.requestAccessToken({ prompt }); }
+      catch (error) { finish(reject, new Error(`Google sign-in could not start. ${error?.message || ''}`.trim())); }
     });
+    googlePendingRequest = pending;
+    return pending;
+  }
+  function resetGoogleConnection(label = 'Connect our shared Google Photos') {
+    googleAccessToken = '';
+    googleTokenExpiresAt = 0;
+    googleGrantedScopes = '';
+    photos.forEach(photo => { if (photo.provider === 'google-photos') { photo.url = ''; photo.fullUrl = ''; } });
+    if (googleConnectButton) googleConnectButton.textContent = label;
   }
   async function loadGooglePhotoUrls(allowPrompt = false) {
     const googlePhotos = photos.filter(photo => photo.provider === 'google-photos');
-    if (!googlePhotos.length) return;
     const uniquePhotos = [...new Map(googlePhotos.map(photo => [photo.mediaItemId, photo])).values()];
+    if (!uniquePhotos.length) return 0;
     if (!allowPrompt && (!googleAccessToken || Date.now() >= googleTokenExpiresAt - 60_000)) {
-      googlePhotos.forEach(photo => { photo.url = ''; photo.fullUrl = ''; });
-      document.getElementById('googlePhotosConnect').textContent = 'Connect our Google Photos';
-      return;
+      resetGoogleConnection('Connect our shared Google Photos');
+      return 0;
     }
     const token = await getGoogleAccessToken(allowPrompt ? 'consent' : '');
     const byMediaId = new Map();
@@ -85,7 +149,7 @@
       const response = await fetch(`https://photoslibrary.googleapis.com/v1/mediaItems:batchGet?${query}`, { headers: { authorization: `Bearer ${token}` } });
       const result = await response.json().catch(() => ({}));
       if (!response.ok) {
-        if (response.status === 401) { googleAccessToken = ''; googleTokenExpiresAt = 0; googlePhotos.forEach(photo => { photo.url = ''; photo.fullUrl = ''; }); document.getElementById('googlePhotosConnect').textContent = 'Reconnect our Google Photos'; }
+        if (response.status === 401) resetGoogleConnection('Reconnect our shared Google Photos');
         throw new Error(result.error?.message || 'Google Photos could not load our saved photos. Connect the shared account again.');
       }
       for (const entry of result.mediaItemResults || []) {
@@ -95,8 +159,9 @@
         byMediaId.get(media.id)?.forEach(copy => { copy.url = `${media.baseUrl}=w900-h900`; copy.fullUrl = `${media.baseUrl}=d`; });
       }
     }
-    document.getElementById('googlePhotosConnect').textContent = 'Google Photos connected ✓';
+    if (googleConnectButton) googleConnectButton.textContent = 'Google Photos connected ✓';
     render();
+    return uniquePhotos.length;
   }
 
   input.addEventListener('change', () => { filename.textContent = input.files?.[0]?.name || 'No photo selected yet'; });
@@ -267,15 +332,32 @@
     } catch { return null; }
     finally { bitmap?.close(); }
   }
-  document.getElementById('googlePhotosConnect').addEventListener('click', async event => {
+  // Warm up Google sign-in before the first click: the OAuth popup needs the
+  // browser's user activation, so the click handler should not wait on network
+  // requests before asking Google for the token.
+  waitForGoogleIdentity().then(() => getGoogleTokenClient()).catch(() => {});
+  googleConnectButton?.addEventListener('click', async event => {
     const button = event.currentTarget;
+    if (button.disabled) return;
     button.disabled = true;
+    button.textContent = 'Connecting…';
+    setGoogleStatus('Opening Google sign-in for our shared account…');
     try {
-      await getGoogleAccessToken('select_account');
-      await loadGooglePhotoUrls(false);
-      status.textContent = 'Our shared Google Photos account is connected ✨';
-    } catch (error) { status.textContent = error.message; }
-    finally { button.disabled = false; }
+      await getGoogleAccessToken('select_account', { force: true });
+      const missingScopes = googlePhotosScopes.split(' ').filter(scope => !googleGrantedScopes.includes(scope));
+      if (missingScopes.length) {
+        resetGoogleConnection();
+        throw new Error('Google signed in, but it did not grant photo access. In Google Cloud (project molten-crowbar-513403-j7) add photoslibrary.appendonly and photoslibrary.readonly.appcreateddata to the OAuth consent screen, then connect again.');
+      }
+      button.textContent = 'Google Photos connected ✓';
+      let loaded = 0;
+      try { loaded = await loadGooglePhotoUrls(false); }
+      catch (error) { setGoogleStatus(`Connected to Google, but our saved photos could not load yet: ${error.message}`, 'error'); button.disabled = false; return; }
+      setGoogleStatus(loaded ? `Our shared Google Photos account is connected. Showing ${loaded} saved photo${loaded === 1 ? '' : 's'}.` : 'Our shared Google Photos account is connected. Choose albums and save a photo to add the first one.', 'success');
+    } catch (error) {
+      button.textContent = 'Connect our shared Google Photos';
+      setGoogleStatus(error.message, 'error');
+    } finally { button.disabled = false; }
   });
 
   createFolder.addEventListener('click', () => {
@@ -308,7 +390,10 @@
     const uploadFileName = file.name.normalize('NFKD').replace(/[^A-Za-z0-9._-]/g, '_').slice(0, 200) || 'memory';
     uploadButton.disabled = true; status.textContent = 'Adding our memory…';
     try {
-      if (!googleAccessToken || Date.now() >= googleTokenExpiresAt - 60_000) throw new Error('Connect our shared Google Photos account first, then save the photo.');
+      if (!googleAccessToken || Date.now() >= googleTokenExpiresAt - 60_000) {
+        setGoogleStatus('Connect our shared Google Photos account first, then save the photo.', 'error');
+        throw new Error('Connect our shared Google Photos account first, then save the photo.');
+      }
       const token = await getGoogleAccessToken('');
       const uploadToken = await new Promise((resolve, reject) => {
         const xhr = new XMLHttpRequest();
@@ -321,7 +406,11 @@
         xhr.upload.onprogress = event => {
           if (event.lengthComputable) status.textContent = `Saving our photo to Google Photos… ${Math.floor(event.loaded / event.total * 100)}%`;
         };
-        xhr.onload = () => xhr.status >= 200 && xhr.status < 300 ? resolve(xhr.responseText.trim()) : reject(new Error(`Google Photos rejected our upload (HTTP ${xhr.status}). ${xhr.responseText.slice(0, 500)}`));
+        xhr.onload = () => {
+          if (xhr.status >= 200 && xhr.status < 300) { resolve(xhr.responseText.trim()); return; }
+          if (xhr.status === 401) resetGoogleConnection('Reconnect our shared Google Photos');
+          reject(new Error(xhr.status === 401 ? 'Our Google Photos connection expired. Connect our shared Google Photos again, then save the photo.' : `Google Photos rejected our upload (HTTP ${xhr.status}). ${xhr.responseText.slice(0, 500)}`));
+        };
         xhr.onerror = () => reject(new Error('Could not connect to Google Photos. Check our connection and try again.'));
         xhr.onabort = () => reject(new Error('The upload was interrupted. Please try again.'));
         xhr.send(file);
