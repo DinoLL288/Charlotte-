@@ -83,18 +83,26 @@
     const month = today.slice(0, 7);
     const year = today.slice(0, 4);
     const counts = { Charlotte: 0, Luke: 0 };
-    for (const [day, users] of Object.entries(data.stats.daily || {})) {
-      const include = period === 'all' || (period === 'day' && day === today) || (period === 'month' && day.startsWith(month)) || (period === 'year' && day.startsWith(year));
-      if (include) for (const name of names) counts[name] += Number(users?.[name]) || 0;
+    if (period === 'all') {
+      for (const name of names) counts[name] = Number(data.stats.allTime?.[name]) || 0;
+    } else {
+      for (const [day, users] of Object.entries(data.stats.daily || {})) {
+        const include = (period === 'day' && day === today) || (period === 'month' && day.startsWith(month)) || (period === 'year' && day.startsWith(year));
+        if (include) for (const name of names) counts[name] += Number(users?.[name]) || 0;
+      }
     }
+    const ranking = names.map(name => ({ name, count: counts[name] })).sort((a, b) => b.count - a.count || names.indexOf(a.name) - names.indexOf(b.name));
     const max = Math.max(...Object.values(counts));
-    document.getElementById('bathroomLeaderboard').innerHTML = names.map(name => {
-      const pct = max ? Math.round(counts[name] / max * 100) : 0;
-      const leading = counts[name] > 0 && counts[name] === max;
-      return `<div class="leader-row"><img src="${escape(photos[name] || fallbackPhoto(name))}" alt=""><div class="leader-content"><div class="leader-label"><strong>${leading ? '✦ ' : ''}${escape(name)}</strong><span>${counts[name]} ${counts[name] === 1 ? 'break' : 'breaks'}</span></div><div class="leader-track"><span style="width:${pct}%"></span></div></div></div>`;
+    const tied = counts.Charlotte === counts.Luke;
+    document.getElementById('bathroomLeaderboard').innerHTML = ranking.map(({ name, count }, index) => {
+      const pct = max ? Math.round(count / max * 100) : 0;
+      const rank = tied ? '↔' : String(index + 1);
+      return `<div class="leader-row${!tied && index === 0 && count > 0 ? ' is-leading' : ''}"><span class="leader-rank" aria-label="${tied ? 'Tied' : `Place ${index + 1}`}" title="${tied ? 'Tied' : `Place ${index + 1}`}">${rank}</span><img src="${escape(photos[name] || fallbackPhoto(name))}" alt=""><div class="leader-content"><div class="leader-label"><strong>${escape(name)}</strong><span>${count} ${count === 1 ? 'break' : 'breaks'}</span></div><div class="leader-track"><span style="width:${pct}%"></span></div></div></div>`;
     }).join('');
     const label = { day: 'Today', month: 'This month', year: 'This year', all: 'All time' }[period];
-    document.getElementById('leaderboardCaption').textContent = period === 'all' ? `${label} · ${Number(data.stats.allTime?.Charlotte) || 0} Charlotte / ${Number(data.stats.allTime?.Luke) || 0} Luke` : label;
+    const leadName = ranking[0].name;
+    const leadBy = Math.abs(counts.Charlotte - counts.Luke);
+    document.getElementById('leaderboardCaption').textContent = tied ? `We’re tied${max ? '' : ' so far'} · ${label}` : `${leadName} is ahead by ${leadBy} ${leadBy === 1 ? 'break' : 'breaks'} · ${label}`;
     document.getElementById('leaderboardNote').hidden = period !== 'all' || !data.stats.baselineLimited;
   }
 
@@ -157,26 +165,30 @@
 
   const laterForm = document.getElementById('bathroomLaterForm');
   const laterStatus = document.getElementById('bathroomLaterStatus');
-  const laterTime = laterForm.elements.namedItem('at');
+  const startTime = laterForm.elements.namedItem('startAt');
+  const returnTime = laterForm.elements.namedItem('returnAt');
   function localDateTimeValue(date) {
     return `${date.getFullYear()}-${String(date.getMonth() + 1).padStart(2, '0')}-${String(date.getDate()).padStart(2, '0')}T${String(date.getHours()).padStart(2, '0')}:${String(date.getMinutes()).padStart(2, '0')}`;
   }
-  laterTime.value = localDateTimeValue(new Date());
-  laterTime.max = laterTime.value;
+  startTime.value = localDateTimeValue(new Date());
+  startTime.max = startTime.value;
+  returnTime.max = startTime.value;
   laterForm.addEventListener('submit', async event => {
     event.preventDefault();
     if (!names.includes(user)) { laterStatus.textContent = 'Choose your own profile before saving a check-in.'; return; }
-    const localDate = new Date(laterTime.value);
-    if (!laterTime.value || Number.isNaN(localDate.getTime())) { laterStatus.textContent = 'Choose when it happened.'; return; }
+    const leftAt = new Date(startTime.value);
+    const returnedAt = returnTime.value ? new Date(returnTime.value) : null;
+    if (!startTime.value || Number.isNaN(leftAt.getTime())) { laterStatus.textContent = 'Choose when we stepped away.'; return; }
+    if (returnedAt && (Number.isNaN(returnedAt.getTime()) || returnedAt.getTime() <= leftAt.getTime())) { laterStatus.textContent = 'The return time needs to be after the leaving time.'; return; }
     const button = laterForm.querySelector('button[type="submit"]'); button.disabled = true; laterStatus.textContent = 'Saving our earlier check-in…';
     try {
       const response = await fetch('/api/question-room', {
         method: 'POST', headers: { 'content-type': 'application/json' },
-        body: JSON.stringify({ action: 'bathroom-history', user, eventAction: laterForm.elements.namedItem('eventAction').value, at: localDate.toISOString() })
+        body: JSON.stringify({ action: 'bathroom-history-session', user, startAt: leftAt.toISOString(), returnAt: returnedAt?.toISOString() || '' })
       });
       const json = await response.json(); if (!response.ok) throw new Error(json.error || 'Could not save our check-in.');
       data.status = json.bathroom.status || {}; data.events = json.bathroom.events || []; data.stats = json.bathroom.stats || data.stats; render();
-      laterStatus.textContent = json.duplicate ? 'We already had that check-in for this minute, so we kept one copy.' : 'Added to our check-in history.';
+      laterStatus.textContent = json.duplicate ? 'A check-in at that time is already in our history, so nothing was duplicated.' : returnedAt ? 'Both times were added to our break history.' : 'Leaving time added. We can record the return later.';
     } catch (error) { laterStatus.textContent = error.message; }
     finally { button.disabled = false; }
   });

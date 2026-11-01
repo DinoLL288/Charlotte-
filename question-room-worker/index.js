@@ -366,6 +366,10 @@ export class QuestionNightRoom {
       bathroom.stats = { allTime, daily, baselineLimited: bathroom.events.length >= 250 };
       await this.ctx.storage.put('bathroomData', bathroom);
     }
+    bathroom.stats.allTime.Charlotte ||= 0;
+    bathroom.stats.allTime.Luke ||= 0;
+    bathroom.stats.allTime.Charlotte = Number(bathroom.stats.allTime.Charlotte) || 0;
+    bathroom.stats.allTime.Luke = Number(bathroom.stats.allTime.Luke) || 0;
     return bathroom;
   }
 
@@ -374,10 +378,10 @@ export class QuestionNightRoom {
     bathroom.events.sort((a, b) => Date.parse(b.at) - Date.parse(a.at));
     bathroom.events = bathroom.events.slice(0, 5000);
     if (event.action === 'start') {
-      bathroom.stats.allTime[event.user] = (bathroom.stats.allTime[event.user] || 0) + 1;
+      bathroom.stats.allTime[event.user] = (Number(bathroom.stats.allTime[event.user]) || 0) + 1;
       const day = bathroomDayKey(event.at);
       bathroom.stats.daily[day] ||= { Charlotte: 0, Luke: 0 };
-      bathroom.stats.daily[day][event.user] = (bathroom.stats.daily[day][event.user] || 0) + 1;
+      bathroom.stats.daily[day][event.user] = (Number(bathroom.stats.daily[day][event.user]) || 0) + 1;
     }
   }
 
@@ -460,6 +464,22 @@ export class QuestionNightRoom {
           await this.ctx.storage.put('bathroomData', bathroom);
           await this.broadcastBathroom(bathroom);
         }
+        return Response.json({ ok: true, bathroom });
+      } else if (body.action === 'bathroom-history-session') {
+        const user = body.user;
+        const startAt = new Date(body.startAt || '');
+        const returnAt = body.returnAt ? new Date(body.returnAt) : null;
+        const lowerBound = Date.now() - 10 * 365 * 24 * 60 * 60 * 1000;
+        if (!['Charlotte', 'Luke'].includes(user) || Number.isNaN(startAt.getTime()) || startAt.getTime() > Date.now() + 5 * 60 * 1000 || startAt.getTime() < lowerBound || (returnAt && (Number.isNaN(returnAt.getTime()) || returnAt.getTime() <= startAt.getTime() || returnAt.getTime() > Date.now() + 5 * 60 * 1000 || returnAt.getTime() < lowerBound))) {
+          return Response.json({ error: 'Choose a valid time for when we left and, if known, when we got back.' }, { status: 400 });
+        }
+        const bathroom = await this.getBathroomData();
+        const duplicateAt = (action, time) => bathroom.events.some(event => event.user === user && event.action === action && Math.floor(Date.parse(event.at) / 60_000) === Math.floor(time.getTime() / 60_000));
+        if (duplicateAt('start', startAt) || (returnAt && duplicateAt('return', returnAt))) return Response.json({ ok: true, duplicate: true, bathroom });
+        this.recordBathroomEvent(bathroom, { id: crypto.randomUUID(), user, action: 'start', at: startAt.toISOString(), addedLater: true });
+        if (returnAt) this.recordBathroomEvent(bathroom, { id: crypto.randomUUID(), user, action: 'return', at: returnAt.toISOString(), addedLater: true });
+        await this.ctx.storage.put('bathroomData', bathroom);
+        await this.broadcastBathroom(bathroom);
         return Response.json({ ok: true, bathroom });
       } else if (body.action === 'bathroom-history') {
         const user = body.user;
