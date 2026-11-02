@@ -15,7 +15,10 @@
       "title": "I Loveee youuu",
       "body": "I lovee youuuuuu sooo much forever and forever and forver",
       "date": "01/11/2026, 21:28:57",
-      "author": "Luke"
+      "author": "Luke",
+      "locked": true,
+      "lockedBy": "Charlotte",
+      "lockedAt": "11/2/2026, 11:22:33 PM"
     }
   ]
 }
