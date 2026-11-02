@@ -3,376 +3,203 @@
 <head>
   <script src="site-shell-guard.js"></script>
   <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
   <title>Charlotte &amp; Luke</title>
   <script>
     if (!localStorage.getItem('charlotte-user')) {
       window.location.href = 'login.html';
     }
   </script>
+  <script>
+    /* Lets the page arrive gently. If scripts or motion are off, everything is simply visible. */
+    (function () {
+      var root = document.documentElement;
+      var off = window.matchMedia && window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+      if (!off) {
+        root.classList.add('motion-ok');
+        setTimeout(function () { root.classList.add('motion-failsafe'); }, 3500);
+      }
+    })();
+  </script>
+  <link rel="stylesheet" href="theme.css">
   <style>
-    :root {
-      --ink: #f7fbff;
-      --gold: #ecd7a0;
-      --display: Georgia, "Times New Roman", serif;
-    }
-
-    * { box-sizing: border-box; }
-    html { scroll-behavior: smooth; }
-
-    body {
-      margin: 0;
-      min-height: 100vh;
-      color: #10344f;
-    }
-
-    /* ---------- Opening ---------- */
-
-    .hero {
+    /* ---------- Hero: one photo, one title, one number ---------- */
+    .hub-hero {
       position: relative;
-      min-height: 100vh;
-      min-height: 100svh;
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      padding: 96px 20px 72px;
+      display: grid;
+      place-items: center;
+      min-height: 460px;
+      padding: 96px 22px 64px;
       overflow: hidden;
-      isolation: isolate;
+      color: #ffffff;
+      text-align: center;
+      background: #16324a;
     }
 
-    .hero::before {
-      content: "";
+    .hub-hero-photo {
       position: absolute;
-      inset: -3%;
-      z-index: -2;
-      background: url('holding-hands.jpg') center 35% / cover no-repeat;
-      animation: breathe 34s ease-in-out infinite alternate;
+      inset: 0;
+      background: url("holding-hands.jpg") center 35% / cover no-repeat;
     }
 
-    .hero::after {
+    .hub-hero-photo::after {
       content: "";
       position: absolute;
       inset: 0;
-      z-index: -1;
-      background:
-        radial-gradient(80% 60% at 50% 20%, rgba(6, 26, 43, 0.15) 0%, rgba(6, 26, 43, 0.72) 100%),
-        linear-gradient(180deg, rgba(6, 24, 40, 0.55) 0%, rgba(7, 28, 46, 0.62) 45%, rgba(6, 22, 37, 0.88) 100%);
+      background: linear-gradient(180deg, rgba(18, 40, 58, 0.55) 0%, rgba(18, 40, 58, 0.62) 55%, rgba(18, 40, 58, 0.82) 100%);
     }
 
-    @keyframes breathe {
-      from { transform: scale(1.02); }
-      to { transform: scale(1.09); }
+    .hub-hero-inner { position: relative; width: min(560px, 100%); }
+
+    .hub-hero .eyebrow { color: #ecd7a0; font-size: 1rem; font-family: var(--font-display); font-style: italic; font-weight: 400; }
+
+    .hub-hero h1 {
+      margin: 10px 0 14px;
+      color: #ffffff;
+      font-size: clamp(2.5rem, 9vw, 4.2rem);
+      line-height: 1.08;
     }
 
-    .hero-inner {
-      position: relative;
-      width: min(820px, 100%);
-      display: flex;
-      flex-direction: column;
-      align-items: center;
-      text-align: center;
-      color: #fff;
-    }
+    .hub-hero .word { display: inline-block; }
 
-    .hero .eyebrow {
-      color: var(--gold);
-      text-shadow: 0 2px 12px rgba(4, 18, 30, 0.55);
-    }
-
-    .hero h1 {
-      margin: 14px 0 10px;
-      font-family: var(--display);
-      font-weight: 400;
-      font-size: clamp(2.7rem, 9vw, 5.6rem);
-      line-height: 1.02;
-      letter-spacing: -0.02em;
-      text-shadow: 0 4px 30px rgba(3, 15, 26, 0.55);
-    }
-
-    .hero-sub {
-      margin: 0 0 30px;
+    .hub-hero-sub {
       max-width: 34ch;
-      color: #eaf6ff;
-      font-size: clamp(0.98rem, 2.4vw, 1.12rem);
+      margin: 0 auto 30px;
+      color: rgba(255, 255, 255, 0.9);
+      font-size: 1.05rem;
       line-height: 1.6;
-      text-shadow: 0 2px 12px rgba(3, 15, 26, 0.6);
     }
 
-    .together {
-      color: #fff;
-      padding: 18px 8px;
-      border-radius: 22px;
-      background: rgba(9, 32, 51, 0.34);
-      border: 1px solid rgba(255, 255, 255, 0.18);
-      box-shadow: 0 20px 50px rgba(3, 15, 26, 0.35), inset 0 1px 0 rgba(255, 255, 255, 0.16);
-      -webkit-backdrop-filter: blur(14px) saturate(1.1);
-      backdrop-filter: blur(14px) saturate(1.1);
-    }
+    .together-since { margin: 16px 0 0; color: rgba(255, 255, 255, 0.78); font-size: 0.9rem; }
 
-    .together-since {
-      margin: 14px 0 0;
-      color: #dcecf7;
-      font-size: 0.82rem;
-      letter-spacing: 0.04em;
-      text-shadow: 0 1px 10px rgba(3, 15, 26, 0.6);
-    }
-
-    .hero-scroll {
-      margin-top: 34px;
-      display: inline-flex;
-      align-items: center;
-      gap: 10px;
-      padding: 12px 24px;
-      border-radius: 999px;
-      border: 1px solid rgba(236, 215, 160, 0.55);
-      color: #f3e4bf;
-      font-size: 0.86rem;
-      font-weight: 700;
-      letter-spacing: 0.12em;
-      text-transform: uppercase;
-      text-decoration: none;
-      background: rgba(255, 255, 255, 0.06);
-      transition: background 0.25s ease, transform 0.25s ease, border-color 0.25s ease;
-    }
-
-    .hero-scroll:hover {
-      background: rgba(236, 215, 160, 0.16);
-      border-color: var(--gold);
-      transform: translateY(-2px);
-    }
-
-    @media (max-height: 720px) {
-      .hero { padding-top: 84px; padding-bottom: 48px; }
-      .hero-sub { margin-bottom: 22px; }
-      .hero-scroll { margin-top: 24px; }
-    }
-
-    /* ---------- Quiet days banner ---------- */
-
+    /* ---------- Quiet days notice ---------- */
     .quiet-banner {
-      position: relative;
-      z-index: 3;
-      width: min(680px, calc(100% - 40px));
-      margin: -34px auto 0;
       display: flex;
       align-items: center;
       gap: 14px;
-      padding: 16px 20px;
-      border-radius: 20px;
+      width: min(1040px, calc(100% - 40px));
+      margin: 22px auto 0;
+      padding: 14px 18px;
+      border: 1px solid #dfd6ef;
+      border-radius: var(--r-md);
+      color: #4c3d6b;
+      background: #f3eefa;
       text-decoration: none;
-      color: #123a58;
-      background: rgba(255, 253, 247, 0.97);
-      border: 1px solid rgba(201, 162, 74, 0.55);
-      box-shadow: 0 18px 44px rgba(20, 63, 95, 0.22);
-      text-align: left;
-      transition: transform 0.22s ease, box-shadow 0.22s ease;
     }
-
     .quiet-banner[hidden] { display: none; }
+    .quiet-text { display: grid; flex: 1; gap: 2px; }
+    .quiet-label { font-weight: 700; }
+    .quiet-detail { font-size: 0.92rem; opacity: 0.85; }
+    .quiet-arrow { opacity: 0.7; }
 
-    .quiet-banner:hover,
-    .quiet-banner:focus-visible {
-      transform: translateY(-3px);
-      box-shadow: 0 24px 52px rgba(20, 63, 95, 0.28);
-    }
+    /* ---------- Rooms ---------- */
+    .explore { width: min(1040px, calc(100% - 40px)); margin: 0 auto; padding: 44px 0 24px; }
 
-    .quiet-banner:focus-visible {
-      outline: 3px solid var(--gold);
-      outline-offset: 3px;
-    }
+    .explore-head { margin: 0 0 26px; text-align: center; }
+    .explore-head h2 { margin: 0 0 6px; font-size: clamp(1.7rem, 5vw, 2.2rem); font-weight: 400; }
+    .explore-head p { margin: 0; color: var(--ink-soft); }
 
-    .quiet-icon {
-      flex: none;
-      display: grid;
-      place-items: center;
-      width: 42px;
-      height: 42px;
-      border-radius: 50%;
-      font-size: 1.25rem;
-      background: linear-gradient(145deg, #eef6fc, #dceefb);
-      border: 1px solid rgba(201, 162, 74, 0.35);
-    }
+    .groups { display: grid; gap: 28px; }
 
-    .quiet-text {
-      display: flex;
-      flex-direction: column;
-      gap: 2px;
-      min-width: 0;
-    }
-
-    .quiet-label {
-      font-size: 0.7rem;
+    .group-title {
+      margin: 0 0 10px 6px;
+      color: var(--ink-soft);
+      font-family: var(--font-body);
+      font-size: 0.95rem;
       font-weight: 700;
-      letter-spacing: 0.16em;
-      text-transform: uppercase;
-      color: #8a6d2b;
+      letter-spacing: 0.01em;
     }
 
-    .quiet-detail {
-      font-family: var(--display);
-      font-size: 1.08rem;
-      font-weight: 700;
-      line-height: 1.3;
+    .group-card {
+      overflow: hidden;
+      border: 1px solid var(--line);
+      border-radius: var(--r-lg);
+      background: var(--surface);
+      box-shadow: var(--shadow);
     }
 
-    .quiet-arrow {
-      margin-left: auto;
-      flex: none;
-      color: #8a6d2b;
-      font-size: 1.1rem;
-      opacity: 0.55;
-    }
-
-    @media (max-width: 520px) {
-      .quiet-banner {
-        margin-top: -24px;
-        padding: 14px 16px;
-        gap: 11px;
-      }
-      .quiet-icon { width: 36px; height: 36px; font-size: 1.05rem; }
-      .quiet-detail { font-size: 0.98rem; }
-    }
-
-    /* ---------- Explore ---------- */
-
-    .explore {
-      padding: clamp(56px, 9vw, 96px) 20px clamp(48px, 8vw, 88px);
+    .hub-row {
       display: flex;
-      flex-direction: column;
       align-items: center;
-      text-align: center;
-    }
-
-    .explore .eyebrow { color: #8a6d2b; }
-
-    .explore h2 {
-      margin: 14px 0 6px;
-      font-family: var(--display);
-      font-weight: 400;
-      color: #123a58;
-      font-size: clamp(2rem, 5vw, 3rem);
-      letter-spacing: -0.02em;
-    }
-
-    .explore-sub {
-      margin: 0 0 38px;
-      max-width: 46ch;
-      color: #3a6483;
-      line-height: 1.65;
-      font-size: 0.98rem;
-    }
-
-    .hub-grid {
-      width: min(900px, 100%);
-      display: grid;
-      grid-template-columns: repeat(auto-fit, minmax(248px, 1fr));
-      gap: 16px;
-      text-align: left;
-    }
-
-    .hub-card {
-      position: relative;
-      display: flex;
-      flex-direction: column;
-      gap: 4px;
-      padding: 24px 22px 22px;
-      border-radius: 22px;
+      gap: 14px;
+      min-height: 68px;
+      padding: 12px 16px;
+      color: var(--ink);
       text-decoration: none;
-      color: #123a58;
-      background: rgba(255, 255, 255, 0.66);
-      border: 1px solid rgba(255, 255, 255, 0.92);
-      box-shadow: 0 18px 42px rgba(29, 90, 128, 0.13);
-      -webkit-backdrop-filter: blur(10px);
-      backdrop-filter: blur(10px);
-      transition: transform 0.22s ease, box-shadow 0.22s ease, border-color 0.22s ease;
+      -webkit-tap-highlight-color: transparent;
     }
 
-    .hub-card:hover,
-    .hub-card:focus-visible {
-      transform: translateY(-6px);
-      border-color: rgba(201, 162, 74, 0.55);
-      box-shadow: 0 28px 54px rgba(29, 90, 128, 0.2);
+    .hub-row + .hub-row { border-top: 1px solid var(--line); }
+    .hub-row:hover { background: var(--accent-soft); }
+
+    .row-icon {
+      display: grid;
+      flex: 0 0 auto;
+      place-items: center;
+      width: 44px;
+      height: 44px;
+      border-radius: 14px;
+      background: var(--surface-soft);
+      font-size: 1.4rem;
+      line-height: 1;
     }
 
-    .hub-card:focus-visible {
-      outline: 3px solid var(--gold);
-      outline-offset: 3px;
-    }
+    .row-text { display: grid; flex: 1; gap: 1px; min-width: 0; }
+    .row-title { font-weight: 700; font-size: 1.05rem; line-height: 1.3; }
+    .row-sub { color: var(--ink-soft); font-size: 0.92rem; line-height: 1.4; }
 
-    .card-top {
-      display: flex;
-      align-items: center;
-      justify-content: space-between;
-      margin-bottom: 10px;
+    .row-chev {
+      color: var(--ink-faint);
+      font-size: 1.5rem;
+      line-height: 1;
+      transition: transform 0.35s var(--ease-out), color 0.2s ease;
     }
-
-    .card-icon { font-size: 1.55rem; line-height: 1; }
-
-    .card-arrow {
-      color: #8a6d2b;
-      font-size: 1.05rem;
-      opacity: 0.45;
-      transition: transform 0.22s ease, opacity 0.22s ease;
-    }
-
-    .hub-card:hover .card-arrow {
-      transform: translateX(5px);
-      opacity: 1;
-    }
-
-    .card-title {
-      font-family: var(--display);
-      font-size: 1.32rem;
-      font-weight: 700;
-      letter-spacing: -0.01em;
-    }
-
-    .card-sub {
-      color: #4a7291;
-      font-size: 0.92rem;
-      line-height: 1.5;
-      font-weight: 500;
-    }
+    .hub-row:hover .row-chev { color: var(--accent-ink); transform: translateX(4px); }
 
     /* ---------- Footer ---------- */
-
     footer {
-      padding: 30px 20px 46px;
+      width: min(620px, calc(100% - 40px));
+      margin: 0 auto;
+      padding: 28px 0 calc(110px + env(safe-area-inset-bottom, 0px));
+      color: var(--ink-soft);
+      font-size: 0.88rem;
+      line-height: 1.6;
       text-align: center;
-      color: #ffffff;
-      font-size: 0.86rem;
-      letter-spacing: 0.08em;
-      text-shadow: 0 1px 8px rgba(23, 74, 106, 0.35);
+    }
+    footer p { margin: 0 0 12px; }
+    footer a { color: var(--ink-soft); }
+    .footer-links { display: inline-flex; flex-wrap: wrap; justify-content: center; gap: 6px 18px; margin-top: 4px; }
+
+    @media (min-width: 860px) {
+      .groups { grid-template-columns: 1fr 1fr; align-items: start; gap: 28px 32px; }
+      .hub-hero { min-height: 520px; }
     }
 
-    @media (prefers-reduced-motion: reduce) {
-      html { scroll-behavior: auto; }
-      *, *::before, *::after {
-        animation-duration: 0.01ms !important;
-        animation-iteration-count: 1 !important;
-        transition-duration: 0.01ms !important;
-      }
+    /* ---------- Arrival (runs once) ---------- */
+    @keyframes photo-settle { from { transform: scale(1.08); } to { transform: scale(1); } }
+
+    @media (prefers-reduced-motion: no-preference) {
+      .hub-hero-photo { animation: photo-settle 2.8s var(--ease-out) both; }
+      .hub-hero .eyebrow { animation: focus-in 0.9s var(--ease-out) 0.1s backwards; }
+      .hub-hero .word { animation: focus-in 0.95s var(--ease-out) backwards; animation-delay: calc(var(--i) * 110ms + 250ms); }
+      .hub-hero-sub { animation: focus-in 0.9s var(--ease-out) 0.85s backwards; }
+      .hub-hero .together { animation: focus-in 0.9s var(--ease-out) 1.05s backwards; }
+      .together-since { animation: focus-in 0.9s var(--ease-out) 1.2s backwards; }
     }
   </style>
-  <link rel="stylesheet" href="theme.css">
-  <style>
-    .explore{position:relative;overflow:hidden;padding-top:76px}.explore:before,.explore:after{position:absolute;z-index:-1;pointer-events:none;font-size:clamp(3rem,8vw,6rem);opacity:.28}.explore:before{content:"✦";top:120px;left:7%;color:#d7ae55;transform:rotate(-15deg)}.explore:after{content:"✧";top:260px;right:7%;color:#6da8c1;transform:rotate(12deg)}.explore .eyebrow{display:inline-flex;align-items:center;gap:8px;padding:8px 15px;border:1px solid #eadbb7;border-radius:999px;background:#fffaf0;color:#836520;letter-spacing:.18em}.explore .eyebrow:before{content:"🧭";font-size:1rem;letter-spacing:0}.explore h2{margin:12px 0 6px;font-size:clamp(2.25rem,5.7vw,3.7rem)}.explore-sub{max-width:52ch;margin-bottom:32px;font-size:1.04rem}.hub-grid{width:min(1120px,100%);grid-template-columns:repeat(4,minmax(0,1fr));grid-auto-flow:dense;gap:15px;text-align:left}.hub-card{min-height:188px;gap:7px;overflow:hidden;padding:21px;border:1px solid #fff;border-radius:28px;background:linear-gradient(145deg,#fffefa,#f2f9fd);box-shadow:0 13px 32px #17486618;backdrop-filter:none;-webkit-backdrop-filter:none;transition:transform .24s cubic-bezier(.2,.8,.2,1),box-shadow .24s ease,border-color .24s ease}.hub-card:nth-child(4n+1){background:linear-gradient(145deg,#fff9e7,#fffefa 75%)}.hub-card:nth-child(4n+2){background:linear-gradient(145deg,#eef9fd,#fffefa 78%)}.hub-card:nth-child(4n+3){background:linear-gradient(145deg,#f1f7ff,#fffefa 78%)}.hub-card:nth-child(4n){background:linear-gradient(145deg,#fff5e3,#fffefa 78%)}.hub-card:nth-child(1),.hub-card:nth-child(10),.hub-card:nth-child(11),.hub-card:nth-child(12){grid-column:span 2;min-height:205px}.hub-card:before{content:"";position:absolute;right:-31px;bottom:-43px;width:118px;height:118px;border:1px solid #d7e6ec;border-radius:50%;background:#ffffff50;transition:transform .3s ease}.hub-card:hover,.hub-card:focus-visible{transform:translateY(-5px) rotate(-.6deg);border-color:#e1cb91;box-shadow:0 22px 42px #17486626}.hub-card:nth-child(even):hover{transform:translateY(-5px) rotate(.6deg)}.card-top{position:relative;z-index:1;justify-content:flex-start;gap:11px;margin-bottom:7px}.card-icon{display:grid;place-items:center;width:49px;height:49px;flex:none;border:1px solid #fff;border-radius:17px;background:#ffffffc9;font-size:1.55rem;box-shadow:0 5px 14px #17486612}.hub-card:nth-child(4n+1) .card-icon{background:#fff0c7}.hub-card:nth-child(4n+2) .card-icon{background:#dcf1fa}.hub-card:nth-child(4n+3) .card-icon{background:#e8efff}.hub-card:nth-child(4n) .card-icon{background:#ffefd1}.card-tag{color:#876c2c;font-size:.66rem;font-weight:800;letter-spacing:.14em;text-transform:uppercase}.card-arrow{display:grid;place-items:center;width:34px;height:34px;margin-left:auto;border:1px solid #ffffff;background:#ffffffb8;border-radius:50%;opacity:.78;transition:transform .22s ease,background .22s ease}.hub-card:hover .card-arrow{transform:rotate(-35deg) translateX(2px);background:#fff}.card-title{position:relative;z-index:1;font-size:1.48rem}.card-sub{position:relative;z-index:1;max-width:36ch;font-size:.94rem}.hub-card:nth-child(1) .card-title,.hub-card:nth-child(10) .card-title{font-size:1.7rem}.hub-card:nth-child(1) .card-icon,.hub-card:nth-child(10) .card-icon{width:56px;height:56px;font-size:1.8rem}.quiet-banner{border:1px solid #fff;background:linear-gradient(110deg,#fffefa,#f1f9fd);box-shadow:0 15px 35px #17486620}
-    @media(max-width:900px){.hub-grid{grid-template-columns:repeat(3,minmax(0,1fr))}.hub-card:nth-child(1),.hub-card:nth-child(10),.hub-card:nth-child(11),.hub-card:nth-child(12){grid-column:span 2}}
-    @media(max-width:680px){.hub-grid{grid-template-columns:repeat(2,minmax(0,1fr));gap:11px}.hub-card{min-height:174px;padding:17px;border-radius:23px}.hub-card:nth-child(1),.hub-card:nth-child(10),.hub-card:nth-child(11),.hub-card:nth-child(12){grid-column:span 2;min-height:185px}.card-icon{width:43px;height:43px;border-radius:15px}.card-title{font-size:1.24rem}.card-sub{font-size:.87rem}.card-tag{font-size:.6rem}}
-    @media(max-width:440px){.explore{padding-right:14px;padding-left:14px}.hub-grid{gap:9px}.hub-card{min-height:164px;padding:14px;border-radius:21px}.hub-card:nth-child(1),.hub-card:nth-child(10),.hub-card:nth-child(11),.hub-card:nth-child(12){min-height:177px}.card-top{gap:7px}.card-icon{width:38px;height:38px;font-size:1.3rem}.card-arrow{width:29px;height:29px}.card-title{font-size:1.12rem}.card-sub{font-size:.8rem}}
-    @media(prefers-reduced-motion:reduce){.hub-card,.hub-card:before,.card-arrow{transition:none}}
-  </style>
+  <link rel="stylesheet" href="motion.css">
+  <script src="motion.js" defer></script>
 </head>
+
 <body>
-  <header class="hero">
-    <div class="hero-inner">
+  <header class="hub-hero">
+    <div class="hub-hero-photo" aria-hidden="true"></div>
+    <div class="hub-hero-inner">
       <p class="eyebrow">Charlotte &amp; Luke</p>
-      <h1>Our little universe</h1>
-      <p class="hero-sub">Every note, photo, plan and promise — kept in one quiet corner of the internet.</p>
-      <p class="hero-sub" style="max-width:62ch;margin:10px auto 0;font-size:.93rem">Our video shelf lets us upload videos to YouTube as Unlisted so we can watch them together here. Google access is requested only when we choose to upload or confirm a video. <a href="privacy.html" style="color:inherit;text-decoration:underline">How our data is used</a>.</p>
+      <h1><span class="word" style="--i:0">Our</span> <span class="word" style="--i:1">little</span> <span class="word" style="--i:2">universe</span></h1>
+      <p class="hub-hero-sub">Every note, photo, plan and promise — kept in one quiet corner of the internet.</p>
       <div class="together" data-together role="timer" aria-label="Time we have been together"></div>
       <p class="together-since">Together since 26 October 2026 · 5:46 pm</p>
-      <a class="hero-scroll" href="#explore">Wander through <span aria-hidden="true">↓</span></a>
     </div>
   </header>
 
@@ -386,75 +213,55 @@
   </a>
 
   <main class="explore" id="explore">
-    <p class="eyebrow">Our little adventure map</p>
-    <h2>Pick a mood, wander in</h2>
-    <p class="explore-sub">Keep a memory close, make a new plan, or find something that makes us grin. Every room has a little piece of us.</p>
+    <div class="explore-head">
+      <h2>Pick a mood, wander in</h2>
+      <p>Every room has a little piece of us.</p>
+    </div>
 
-    <div class="hub-grid">
-      <a class="hub-card" href="love.html">
-        <span class="card-top"><span class="card-icon" aria-hidden="true">🤍</span><span class="card-tag">our story</span><span class="card-arrow" aria-hidden="true">↗</span></span>
-        <span class="card-title">Our love</span>
-        <span class="card-sub">The heart &amp; our little memory</span>
-      </a>
-      <a class="hub-card" href="messages.html">
-        <span class="card-top"><span class="card-icon" aria-hidden="true">✉️</span><span class="card-tag">little words</span><span class="card-arrow" aria-hidden="true">↗</span></span>
-        <span class="card-title">Notes</span>
-        <span class="card-sub">Messages we leave for each other</span>
-      </a>
-      <a class="hub-card" href="bathroom.html">
-        <span class="card-top"><span class="card-icon" aria-hidden="true">🚻</span><span class="card-tag">tiny check-in</span><span class="card-arrow" aria-hidden="true">↗</span></span>
-        <span class="card-title">Bathroom check-ins</span>
-        <span class="card-sub">A little update when one of us steps away</span>
-      </a>
-      <a class="hub-card" href="rules.html">
-        <span class="card-top"><span class="card-icon" aria-hidden="true">🕊️</span><span class="card-tag">care for us</span><span class="card-arrow" aria-hidden="true">↗</span></span>
-        <span class="card-title">Rules &amp; boundaries</span>
-        <span class="card-sub">What we agree on and what we need</span>
-      </a>
-      <a class="hub-card" href="calendar.html">
-        <span class="card-top"><span class="card-icon" aria-hidden="true">📅</span><span class="card-tag">make a plan</span><span class="card-arrow" aria-hidden="true">↗</span></span>
-        <span class="card-title">Calendar</span>
-        <span class="card-sub">Dates, plans and countdowns</span>
-      </a>
-      <a class="hub-card" href="gallery.html">
-        <span class="card-top"><span class="card-icon" aria-hidden="true">📷</span><span class="card-tag">memory lane</span><span class="card-arrow" aria-hidden="true">↗</span></span>
-        <span class="card-title">Photos &amp; videos</span>
-        <span class="card-sub">Our albums, photos and little movies</span>
-      </a>
-      <a class="hub-card" href="tiktok.html">
-        <span class="card-top"><span class="card-icon" aria-hidden="true">🎵</span><span class="card-tag">dance break</span><span class="card-arrow" aria-hidden="true">↗</span></span>
-        <span class="card-title">TikTok plans</span>
-        <span class="card-sub">Videos we want to dance to</span>
-      </a>
-      <a class="hub-card" href="timeline.html">
-        <span class="card-top"><span class="card-icon" aria-hidden="true">🌅</span><span class="card-tag">our story so far</span><span class="card-arrow" aria-hidden="true">↗</span></span>
-        <span class="card-title">Our timeline</span>
-        <span class="card-sub">The story so far, in pictures</span>
-      </a>
-      <a class="hub-card" href="apart.html">
-        <span class="card-top"><span class="card-icon" aria-hidden="true">🌙</span><span class="card-tag">slow down</span><span class="card-arrow" aria-hidden="true">↗</span></span>
-        <span class="card-title">Quiet days</span>
-        <span class="card-sub">When one of us needs some space</span>
-      </a>
-      <a class="hub-card" href="play.html">
-        <span class="card-top"><span class="card-icon" aria-hidden="true">🎲</span><span class="card-tag">giggles</span><span class="card-arrow" aria-hidden="true">↗</span></span>
-        <span class="card-title">Play &amp; ask</span>
-        <span class="card-sub">A question ritual and little games</span>
-      </a>
-      <a class="hub-card" href="question-night.html">
-        <span class="card-top"><span class="card-icon" aria-hidden="true">💬</span><span class="card-tag">just us</span><span class="card-arrow" aria-hidden="true">↗</span></span>
-        <span class="card-title">Question night</span>
-        <span class="card-sub">A shared room that opens when we’re both ready</span>
-      </a>
-      <a class="hub-card" href="our-life.html">
-        <span class="card-top"><span class="card-icon" aria-hidden="true">🧩</span><span class="card-tag">little by little</span><span class="card-arrow" aria-hidden="true">↗</span></span>
-        <span class="card-title">Things we make together</span>
-        <span class="card-sub">Recipes, recommendations, awards and projects</span>
-      </a>
+    <div class="groups">
+      <section class="reveal" aria-labelledby="g-memories">
+        <h3 class="group-title" id="g-memories">Memories</h3>
+        <div class="group-card">
+          <a class="hub-row glow" href="love.html"><span class="row-icon" aria-hidden="true">🤍</span><span class="row-text"><span class="row-title">Our love</span><span class="row-sub">The heart &amp; our little memory</span></span><span class="row-chev" aria-hidden="true">›</span></a>
+          <a class="hub-row glow" href="timeline.html"><span class="row-icon" aria-hidden="true">🌅</span><span class="row-text"><span class="row-title">Our timeline</span><span class="row-sub">The story so far, in pictures</span></span><span class="row-chev" aria-hidden="true">›</span></a>
+          <a class="hub-row glow" href="gallery.html"><span class="row-icon" aria-hidden="true">📷</span><span class="row-text"><span class="row-title">Photos &amp; videos</span><span class="row-sub">Our albums, photos and little movies</span></span><span class="row-chev" aria-hidden="true">›</span></a>
+          <a class="hub-row glow" href="messages.html"><span class="row-icon" aria-hidden="true">✉️</span><span class="row-text"><span class="row-title">Notes</span><span class="row-sub">Messages we leave for each other</span></span><span class="row-chev" aria-hidden="true">›</span></a>
+        </div>
+      </section>
+
+      <section class="reveal" style="--d:80ms" aria-labelledby="g-plans">
+        <h3 class="group-title" id="g-plans">Plans</h3>
+        <div class="group-card">
+          <a class="hub-row glow" href="calendar.html"><span class="row-icon" aria-hidden="true">📅</span><span class="row-text"><span class="row-title">Calendar</span><span class="row-sub">Dates, plans and countdowns</span></span><span class="row-chev" aria-hidden="true">›</span></a>
+          <a class="hub-row glow" href="tiktok.html"><span class="row-icon" aria-hidden="true">🎵</span><span class="row-text"><span class="row-title">TikTok plans</span><span class="row-sub">Videos we want to dance to</span></span><span class="row-chev" aria-hidden="true">›</span></a>
+          <a class="hub-row glow" href="our-life.html"><span class="row-icon" aria-hidden="true">🧩</span><span class="row-text"><span class="row-title">Things we make together</span><span class="row-sub">Recipes, recommendations, awards and projects</span></span><span class="row-chev" aria-hidden="true">›</span></a>
+        </div>
+      </section>
+
+      <section class="reveal" aria-labelledby="g-play">
+        <h3 class="group-title" id="g-play">Play</h3>
+        <div class="group-card">
+          <a class="hub-row glow" href="play.html"><span class="row-icon" aria-hidden="true">🎲</span><span class="row-text"><span class="row-title">Play &amp; ask</span><span class="row-sub">A question ritual and little games</span></span><span class="row-chev" aria-hidden="true">›</span></a>
+          <a class="hub-row glow" href="question-night.html"><span class="row-icon" aria-hidden="true">💬</span><span class="row-text"><span class="row-title">Question night</span><span class="row-sub">A shared room that opens when we’re both ready</span></span><span class="row-chev" aria-hidden="true">›</span></a>
+        </div>
+      </section>
+
+      <section class="reveal" style="--d:80ms" aria-labelledby="g-care">
+        <h3 class="group-title" id="g-care">Looking after us</h3>
+        <div class="group-card">
+          <a class="hub-row glow" href="rules.html"><span class="row-icon" aria-hidden="true">🕊️</span><span class="row-text"><span class="row-title">Rules &amp; boundaries</span><span class="row-sub">What we agree on and what we need</span></span><span class="row-chev" aria-hidden="true">›</span></a>
+          <a class="hub-row glow" href="apart.html"><span class="row-icon" aria-hidden="true">🌙</span><span class="row-text"><span class="row-title">Quiet days</span><span class="row-sub">When one of us needs some space</span></span><span class="row-chev" aria-hidden="true">›</span></a>
+          <a class="hub-row glow" href="bathroom.html"><span class="row-icon" aria-hidden="true">🚻</span><span class="row-text"><span class="row-title">Bathroom check-ins</span><span class="row-sub">A little update when one of us steps away</span></span><span class="row-chev" aria-hidden="true">›</span></a>
+        </div>
+      </section>
     </div>
   </main>
 
-  <footer>Charlotte &amp; Luke · made with care<br><span style="display:inline-flex;gap:14px;margin-top:10px;letter-spacing:normal"><a href="privacy.html" style="color:inherit">Privacy Policy</a><a href="terms.html" style="color:inherit">Terms of Service</a><a href="vault.html" target="_top" style="color:inherit">Our little safe</a></span></footer>
+  <footer>
+    <p>Our video shelf lets us upload videos to YouTube as Unlisted so we can watch them together here. Google access is requested only when we choose to upload or confirm a video. <a href="privacy.html">How our data is used</a>.</p>
+    <p>Charlotte &amp; Luke · made with care</p>
+    <span class="footer-links"><a href="privacy.html">Privacy Policy</a><a href="terms.html">Terms of Service</a><a href="vault.html" target="_top">Our little safe</a></span>
+  </footer>
 
   <script>
     (function () {
