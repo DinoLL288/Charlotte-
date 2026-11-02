@@ -246,6 +246,7 @@
     @media(max-width:700px) { .calendar-tools { grid-template-columns:1fr; } }
   </style>
   <link rel="stylesheet" href="theme.css">
+  <link rel="stylesheet" href="site-polish.css" data-site-polish="true"><link rel="stylesheet" href="site-theme.css" data-site-theme="true"><link rel="stylesheet" href="motion.css">
 </head>
 <body>
   <div class="top-bar">
@@ -264,6 +265,10 @@
       <button class="button" id="todayBtn">Today</button>
     </div>
     <p class="now-line" id="nowLabel"></p>
+    <div class="calendar-grid" id="weekdayRow"></div>
+    <div class="calendar-grid" id="daysGrid"></div>
+    <details class="fold">
+      <summary>Calendar sync and call log</summary>
     <section class="calendar-tools">
       <div class="tool-card">
         <h2>Sync our calendar</h2>
@@ -289,8 +294,7 @@
         <div class="call-history" id="callHistory" aria-label="Recent WhatsApp calls"></div>
       </div>
     </section>
-    <div class="calendar-grid" id="weekdayRow"></div>
-    <div class="calendar-grid" id="daysGrid"></div>
+    </details>
   </main>
 
   <div class="modal" id="eventModal">
@@ -502,7 +506,7 @@
         const el = document.createElement('div');
         el.className = 'day' + (isToday ? ' today' : '');
         const todayTag = isToday ? '<span class="today-tag">Today</span>' : '';
-        el.innerHTML = `<div class="day-header"><span class="day-number">${d}</span>${todayTag}<button class="add-btn" title="Add event">+</button></div>`;
+        el.innerHTML = `<div class="day-header"><span class="day-number" data-dow="${new Date(year, month, d).toLocaleDateString(undefined, { weekday: 'short' })}">${d}</span>${todayTag}<button class="add-btn" title="Add event" aria-label="Add event on day ${d}">+</button></div>`;
         el.title = 'Click to add an event';
         el.addEventListener('click', (e) => {
           if (e.target.closest('.event') || e.target.closest('.add-btn')) return;
@@ -775,8 +779,13 @@
       }
     });
 
-    prevMonth.addEventListener('click', () => { current.setMonth(current.getMonth() - 1); render(); });
-    nextMonth.addEventListener('click', () => { current.setMonth(current.getMonth() + 1); render(); });
+    function slideMonth(direction) {
+      daysGrid.classList.remove('slide-next', 'slide-prev');
+      void daysGrid.offsetWidth;
+      daysGrid.classList.add(direction > 0 ? 'slide-next' : 'slide-prev');
+    }
+    prevMonth.addEventListener('click', () => { current.setMonth(current.getMonth() - 1); render(); slideMonth(-1); });
+    nextMonth.addEventListener('click', () => { current.setMonth(current.getMonth() + 1); render(); slideMonth(1); });
     todayBtn.addEventListener('click', () => {
       current = new Date();
       render();
