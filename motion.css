@@ -1,0 +1,191 @@
+/*
+  Motion for the whole site.
+
+  One rule: things arrive and settle, then stay still. Nothing loops, nothing
+  drifts, nothing moves while you are trying to read. Movement only happens
+  when a page opens, when something new shows up, or when you touch something.
+
+  It is switched off completely by either
+    - the device's "reduce motion" setting, or
+    - "Reduce animations and movement" in our Settings page.
+
+  Curves and timings come from the tokens in theme.css.
+*/
+
+/* ---------- Keyframes ---------- */
+
+@keyframes settle-in {
+  from { opacity: 0; transform: translate3d(0, 14px, 0); }
+  to { opacity: 1; transform: none; }
+}
+
+/* Used on headings, where a little softness at the start feels like focus arriving. */
+@keyframes focus-in {
+  from { opacity: 0; transform: translate3d(0, 10px, 0); filter: blur(6px); }
+  to { opacity: 1; transform: none; filter: none; }
+}
+
+@keyframes pop-in {
+  from { opacity: 0; transform: scale(0.94); }
+  to { opacity: 1; transform: none; }
+}
+
+@keyframes dialog-in {
+  from { opacity: 0; transform: translateY(14px) scale(0.96); }
+  to { opacity: 1; transform: none; }
+}
+
+@keyframes backdrop-in { from { opacity: 0; } to { opacity: 1; } }
+
+@keyframes progress-sweep {
+  0% { transform: translateX(-100%); }
+  100% { transform: translateX(260%); }
+}
+
+/* ---------- Page arrival ---------- */
+/*
+  The first screen of every page arrives in a short, staggered sequence.
+  "backwards" fill means nothing is held afterwards, so hover and press
+  effects on the same elements keep working.
+*/
+
+@media (prefers-reduced-motion: no-preference) {
+  header.hero > *,
+  .gallery-hero > div > *,
+  main.screen > h1,
+  main.screen > .subtitle,
+  .card > h1 {
+    animation: focus-in 0.8s var(--ease-out) backwards;
+  }
+
+  header.hero > :nth-child(2), .gallery-hero > div > :nth-child(2), main.screen > .subtitle { animation-delay: 0.08s; }
+  header.hero > :nth-child(3), .gallery-hero > div > :nth-child(3) { animation-delay: 0.16s; }
+
+  main.shell > :nth-child(-n + 6),
+  main.screen > :nth-child(n + 3):nth-child(-n + 8) {
+    animation: settle-in 0.75s var(--ease-out) backwards;
+    animation-delay: calc(var(--n, 0) * 80ms + 160ms);
+  }
+
+  main.shell > :nth-child(1), main.screen > :nth-child(3) { --n: 0; }
+  main.shell > :nth-child(2), main.screen > :nth-child(4) { --n: 1; }
+  main.shell > :nth-child(3), main.screen > :nth-child(5) { --n: 2; }
+  main.shell > :nth-child(4), main.screen > :nth-child(6) { --n: 3; }
+  main.shell > :nth-child(5), main.screen > :nth-child(7) { --n: 4; }
+  main.shell > :nth-child(6), main.screen > :nth-child(8) { --n: 5; }
+
+  /* Things that appear after the page has loaded (saved notes, new plans, and so on). */
+  .motion-in {
+    animation: settle-in 0.6s var(--ease-out) backwards;
+    animation-delay: var(--d, 0ms);
+  }
+
+  /* ---------- Touch ---------- */
+  /* A soft press and a springy release on anything you can tap. */
+
+  :is(.button, .small, .mini, .small-button, .primary, .tab, .album-filter, .chip, .leader-tabs button,
+      .gallery-view-tabs button, .top-bar .button, .site-dialog-button, .hub-row, .add-btn, .day, .event, .tile) {
+    transition: transform 0.35s var(--ease-spring), background-color 0.2s ease, border-color 0.2s ease,
+      color 0.2s ease, box-shadow 0.25s ease;
+  }
+
+  :is(.button, .small, .mini, .small-button, .primary, .tab, .album-filter, .chip, .leader-tabs button,
+      .gallery-view-tabs button, .top-bar .button, .site-dialog-button, .hub-row):active {
+    transform: scale(0.97);
+    transition-duration: 0.08s;
+  }
+
+  .day:active, .event:active, .tile:active { transform: scale(0.985); transition-duration: 0.08s; }
+
+  /* ---------- Dialogs ---------- */
+
+  .site-dialog[open] { animation: dialog-in 0.4s var(--ease-spring); }
+  .site-dialog[open]::backdrop { animation: backdrop-in 0.3s ease-out; }
+
+  /* ---------- Month changes on the calendar ---------- */
+
+  #daysGrid.slide-next { animation: slide-from-right 0.5s var(--ease-out); }
+  #daysGrid.slide-prev { animation: slide-from-left 0.5s var(--ease-out); }
+
+  /* ---------- Floating buttons step aside while you scroll ---------- */
+
+  html body #couple-reactions,
+  html body #shared-music,
+  html body #special-date-reminder {
+    transition: transform 0.5s var(--ease-out), opacity 0.35s ease;
+  }
+
+  html.dock-away body #couple-reactions,
+  html.dock-away body #shared-music:not(:has(#shared-music-panel:not([hidden]))) {
+    transform: translateY(calc(100% + 28px));
+    opacity: 0;
+    pointer-events: none;
+  }
+
+  html.dock-away body #special-date-reminder {
+    transform: translate(-50%, calc(100% + 28px));
+    opacity: 0;
+    pointer-events: none;
+  }
+}
+
+@keyframes slide-from-right { from { opacity: 0; transform: translate3d(28px, 0, 0); } to { opacity: 1; transform: none; } }
+@keyframes slide-from-left { from { opacity: 0; transform: translate3d(-28px, 0, 0); } to { opacity: 1; transform: none; } }
+
+/* ---------- Reveal on scroll ---------- */
+/*
+  Elements marked class="reveal" ease in once, the first time they scroll into
+  view. The hidden starting state only exists when scripts are running and
+  motion is allowed (html.motion-ok), and a failsafe shows everything anyway.
+*/
+
+html.motion-ok .reveal {
+  opacity: 0;
+  transform: translate3d(0, 18px, 0);
+  transition: opacity 0.8s var(--ease-out), transform 0.8s var(--ease-out);
+  transition-delay: var(--d, 0ms);
+}
+
+html.motion-ok .reveal.is-in { opacity: 1; transform: none; }
+html.motion-failsafe .reveal { opacity: 1 !important; transform: none !important; }
+
+/* ---------- Light that follows the pointer (desktop only) ---------- */
+
+@media (hover: hover) and (pointer: fine) and (prefers-reduced-motion: no-preference) {
+  .glow { position: relative; isolation: isolate; }
+  .glow::before {
+    content: "";
+    position: absolute;
+    inset: 0;
+    z-index: -1;
+    border-radius: inherit;
+    opacity: 0;
+    background: radial-gradient(260px circle at var(--mx, 50%) var(--my, 50%), color-mix(in srgb, var(--accent) 12%, transparent), transparent 70%);
+    transition: opacity 0.4s ease;
+    pointer-events: none;
+  }
+  .glow:hover::before { opacity: 1; }
+}
+
+/* ---------- Switched off ---------- */
+
+@media (prefers-reduced-motion: reduce) {
+  *, *::before, *::after {
+    animation: none !important;
+    scroll-behavior: auto !important;
+    transition-duration: 0.01ms !important;
+    transition-delay: 0s !important;
+  }
+  .reveal { opacity: 1 !important; transform: none !important; }
+}
+
+:root[data-reduced-motion="true"] *,
+:root[data-reduced-motion="true"] *::before,
+:root[data-reduced-motion="true"] *::after {
+  animation: none !important;
+  scroll-behavior: auto !important;
+  transition-duration: 0.01ms !important;
+  transition-delay: 0s !important;
+}
+
+:root[data-reduced-motion="true"] .reveal { opacity: 1 !important; transform: none !important; }
