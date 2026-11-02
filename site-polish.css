@@ -1,67 +1,400 @@
-:root {
-  --polish-surface: #fffefa;
-  --polish-sky: #eaf6fc;
-  --polish-line: #d8e8ef;
-  --polish-blue: #1b4d6b;
-  --polish-shadow: 0 14px 34px #1748661c;
-}
+/*
+  Calm layer for every inner page.
 
-html { scroll-behavior: smooth; }
+  Each page still has its own small <style> block for layout, but this file loads
+  after it and brings the pages onto one shared look: the same header, the same
+  flat surfaces, one set of buttons and form controls, and floating widgets that
+  stay out of the way. Tokens (colours, radii, shadows) live in theme.css.
+*/
+
+/* ---------- Frame ---------- */
+
+/* Pages bring their own backgrounds; they all rest on the same calm one now. */
 body {
-  background-color: #dceefa;
-  background-image: radial-gradient(950px 520px at 6% 0%, #fff7e4 0%, transparent 66%),
-    radial-gradient(1000px 700px at 96% 4%, #f1faff 0%, transparent 64%),
-    linear-gradient(155deg, #eaf6fc 0%, #cce7f5 58%, #b5dbea 100%);
+  color: var(--ink);
+  font-family: var(--font-body);
+  background-color: var(--bg);
+  background-image: linear-gradient(180deg, #e8f0f5 0, var(--bg) 360px);
+  background-repeat: no-repeat;
 }
 
-h1, h2, h3 { text-wrap: pretty; }
-.top-bar .button, .button, .small-button, .small, .primary,
-.tab, .composer button, form button, .actions button {
+img, video, canvas, svg { max-width: 100%; }
+main, .shell, .screen { min-width: 0; }
+
+/* Leave room at the bottom so the floating buttons never sit on the last item. */
+body > main.screen,
+body > main.shell {
+  padding-bottom: calc(96px + env(safe-area-inset-bottom, 0px));
+}
+
+.top-bar { z-index: 25; }
+
+/* ---------- Page headers ---------- */
+
+/* Pages with a header block share one calm, light header. */
+header.hero,
+.gallery-hero {
+  position: relative;
+  min-height: 0 !important;
+  margin: 0 !important;
+  padding: 88px 20px 8px !important;
+  border: 0 !important;
+  border-radius: 0 !important;
+  overflow: visible !important;
+  color: var(--ink) !important;
+  text-align: center;
+  background: none !important;
+  box-shadow: none !important;
+}
+
+header.hero::before,
+header.hero::after,
+.gallery-hero::before,
+.gallery-hero::after { content: none !important; display: none !important; }
+
+header.hero h1,
+.gallery-hero h1 {
+  margin: 6px 0 10px;
+  color: var(--ink) !important;
+  font-size: clamp(2rem, 6vw, 2.8rem) !important;
+  text-shadow: none !important;
+}
+
+header.hero p,
+.gallery-hero p {
+  max-width: 46ch;
+  margin: 0 auto;
+  color: var(--ink-soft) !important;
+  font-size: 1rem !important;
+  line-height: 1.6;
+  text-shadow: none !important;
+}
+
+header.hero .eyebrow,
+.gallery-hero .eyebrow {
+  color: var(--gold-ink) !important;
+  font-size: 0.9rem !important;
+  font-weight: 600 !important;
+  letter-spacing: 0.01em !important;
+  text-transform: none !important;
+  text-shadow: none !important;
+}
+
+/* Cards used to overlap the header banner; the header is light now, so they sit below it. */
+.shell, .upload-card { margin-top: 0 !important; }
+
+/* Pages that start straight with a heading. */
+.subtitle { color: var(--ink-soft) !important; text-shadow: none !important; }
+main h1 { text-shadow: none; color: var(--ink); }
+main.shell, main.screen { margin-top: 0; }
+.top-bar + .card, .top-bar + .panel { margin-top: 76px; }
+
+/* ---------- Surfaces ---------- */
+
+:is(.panel, .card, .composer, .note, .entry, .history-card, .person, .tool-card, .moment, .plan,
+    .upload-card, .gallery-toolbar, .album-card, .modal-card, .td-current, .td-custom, .td-history,
+    .td-rules, .prompt-card, .settings-group, .shared-account, .status-card) {
+  color: var(--ink);
+  background: var(--surface);
+  background-image: none;
+  border: 1px solid var(--line);
+  border-radius: var(--r-lg);
+  box-shadow: var(--shadow);
+}
+
+/* A surface inside a surface turns into a quiet inset instead of a second card. */
+:is(.panel, .card, .tool-card, .upload-card, .settings-group, .td-current, .td-custom, .td-history, .td-rules) :is(.composer, .card, .person, .settings-group, .tool-card) {
+  background: var(--surface-soft);
+  border-color: transparent;
+  border-radius: var(--r-md);
+  box-shadow: none;
+}
+
+:is(.item, .td-history-item, .leader-row, .question-count, .presence-note, .revealed-clue,
+    .later-details, .call-history div, .quiet-day-count, .empty) {
+  color: var(--ink);
+  background: var(--surface-soft);
+  background-image: none;
+  border: 1px solid transparent;
+  border-radius: var(--r-sm);
+  box-shadow: none;
+}
+
+.empty {
+  color: var(--ink-soft);
+  background: transparent;
+  border: 1px dashed var(--line-strong);
+  border-radius: var(--r-md);
+}
+
+.panel h2, .card h2 { color: var(--ink); text-shadow: none; }
+.intro, .hint, .composer-hint, .form-hint, .meta, .note-meta, .note-date, .entry-meta, .event-by,
+.event-details, .modal-hint { color: var(--ink-soft); }
+.note-title, .note-lock { color: var(--ink); }
+p.status, .page-status, .status {
+  color: var(--ink-soft);
+  font-size: 0.92rem;
+  font-weight: 400;
+  line-height: 1.55;
+  text-shadow: none;
+}
+
+/* ---------- Buttons ---------- */
+
+:is(.button, .small, .mini, .small-button, .primary, .tab, .album-filter, .chip,
+    .leader-tabs button, .gallery-view-tabs button) {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.4rem;
+  min-height: 44px;
+  padding: 0.6rem 1.2rem;
+  border: 1px solid var(--accent);
   border-radius: 999px;
-  transition: transform .18s ease, box-shadow .18s ease, background-color .18s ease;
-}
-.button:hover, .small-button:hover, .small:hover, .primary:hover,
-.tab:hover, .composer button:hover, form button:hover {
-  transform: translateY(-2px);
-  box-shadow: 0 10px 24px #1748662a;
+  color: #ffffff;
+  background: var(--accent);
+  box-shadow: none;
+  font: 600 0.95rem/1.25 var(--font-body);
+  text-decoration: none;
+  cursor: pointer;
+  transition: background-color 0.2s ease, border-color 0.2s ease, color 0.2s ease;
 }
 
-input:not([type="file"]):not([type="checkbox"]):not([type="radio"]),
-textarea, select {
-  border-color: #c8dce7;
-  border-radius: 13px;
-  background-color: #fffefa;
-  transition: border-color .18s ease, box-shadow .18s ease;
+:is(.button, .small, .mini, .small-button, .primary):hover {
+  background: color-mix(in srgb, var(--accent) 88%, #000000);
+  box-shadow: none;
+  transform: none;
 }
+
+/* Quieter, secondary style for small controls, navigation and cancel-type actions. */
+:is(.small, .mini, .small-button, .tab, .album-filter, .chip, .leader-tabs button,
+    .gallery-view-tabs button, .calendar-header .button, .note-actions .button, .note-action,
+    .button.secondary, .button.ghost, .person .button.secondary, .cancel-edit) {
+  min-height: 40px;
+  padding: 0.45rem 1rem;
+  color: var(--accent-ink);
+  background: var(--surface);
+  border-color: var(--line-strong);
+}
+
+:is(.small, .mini, .small-button, .tab, .album-filter, .chip, .leader-tabs button,
+    .gallery-view-tabs button, .calendar-header .button, .note-actions .button, .note-action,
+    .button.secondary, .button.ghost, .cancel-edit):hover {
+  color: var(--accent-ink);
+  background: var(--accent-soft);
+  transform: none;
+}
+
+/* The selected one in a set of choices. */
+.tab[aria-selected="true"],
+.album-filter[aria-pressed="true"],
+.chip.is-active,
+.leader-tabs button[aria-pressed="true"],
+.gallery-view-tabs button[aria-pressed="true"] {
+  color: #ffffff;
+  background: var(--accent);
+  border-color: var(--accent);
+}
+
+:is(.danger, .delete-btn, .delete-entry, .delete-moment, .remove-account) {
+  color: var(--danger);
+  background: var(--danger-soft);
+  border-color: transparent;
+}
+:is(.danger, .delete-btn):hover { background: #f6dcd7; color: var(--danger); }
+
+:is(.button, .small, .mini, .primary):disabled,
+:is(.button, .small, .mini, .primary)[disabled] {
+  color: var(--ink-faint);
+  background: var(--surface-soft);
+  border-color: var(--line);
+  cursor: not-allowed;
+}
+
+/* Tabs wrap instead of hiding options off the edge of the screen. */
+.tabs {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: center;
+  gap: 8px;
+  overflow: visible;
+}
+
+/* ---------- Forms ---------- */
+
+input:not([type="file"]):not([type="checkbox"]):not([type="radio"]):not([type="range"]):not([type="color"]),
+textarea,
+select {
+  min-height: 44px;
+  padding: 0.65rem 0.85rem;
+  color: var(--ink);
+  background-color: #ffffff;
+  border: 1px solid var(--line-strong);
+  border-radius: var(--r-sm);
+  font: inherit;
+  font-size: 1rem;
+  transition: border-color 0.2s ease, box-shadow 0.2s ease;
+}
+
+textarea { line-height: 1.5; }
+::placeholder { color: var(--ink-faint); opacity: 1; }
+
 input:not([type="file"]):not([type="checkbox"]):not([type="radio"]):focus-visible,
-textarea:focus-visible, select:focus-visible {
-  outline: 3px solid #b8ddec;
-  outline-offset: 1px;
-  border-color: #6ea9c4;
+textarea:focus-visible,
+select:focus-visible {
+  outline: none;
+  border-color: var(--accent);
+  box-shadow: 0 0 0 4px color-mix(in srgb, var(--accent) 22%, transparent);
 }
+
+label { color: var(--ink-soft); }
+.composer-label, .field > span, label > span:first-child { font-weight: 600; }
+
 input[type="file"]::file-selector-button {
   margin-right: 10px;
-  padding: 9px 15px;
-  border: 0;
+  padding: 0.5rem 1rem;
+  border: 1px solid var(--line-strong);
   border-radius: 999px;
-  background: linear-gradient(135deg, #194762, #347fa3);
-  color: white;
+  color: var(--accent-ink);
+  background: var(--surface);
   font: inherit;
-  font-weight: 700;
+  font-weight: 600;
   cursor: pointer;
 }
 
-.panel, .card, .upload-card, .composer, .entry, .history-card,
-.rule-card, .person, .event {
-  border-color: #ffffffd9;
-  box-shadow: var(--polish-shadow);
-}
-.panel, .card, .upload-card { border-radius: 24px; }
-.composer { border-radius: 19px; background: linear-gradient(145deg, #f1f9fd, #fff9e9); }
-.page-status, .status { line-height: 1.5; }
-a { text-underline-offset: .2em; }
+input[type="checkbox"], input[type="radio"] { accent-color: var(--accent); }
 
-@media (prefers-reduced-motion: reduce) {
-  html { scroll-behavior: auto; }
-  *, *::before, *::after { animation-duration: .01ms !important; transition-duration: .01ms !important; }
+/* ---------- Decoration we no longer use ---------- */
+
+.hero::after, .hero::before,
+.panel::after, .card::before, .card::after,
+.td-current::before, .td-current::after,
+.bingo-square::after,
+#panel-jokes h2::before, #panel-bingo h2::before, #panel-hunt h2::before, #panel-truthdare h2::before {
+  content: none !important;
+  display: none !important;
 }
+
+.card-sticker, .td-game-sticker { display: none !important; }
+.panel-icon { background: var(--surface-soft) !important; box-shadow: none !important; }
+
+/* ---------- Playful tilts and lifts are gone; things stay level ---------- */
+
+.tile, .tile:nth-child(3n + 1), .tile:nth-child(3n),
+.card:hover, .bingo-square:hover { transform: none !important; }
+.tile:hover { transform: translateY(-3px) !important; }
+.tabs { padding: 0; border: 0; background: none; box-shadow: none; }
+.album-filters { display: flex; flex-wrap: wrap; gap: 8px; }
+
+.calendar-tools { grid-template-columns: minmax(0, 1fr); }
+.call-fields { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+.call-fields > *, .tool-card { min-width: 0; }
+.feed-link { overflow-wrap: anywhere; }
+.upload-card .button, .gallery-toolbar .button { background-image: none !important; }
+.gallery-view-tabs { display: flex; flex-wrap: wrap; gap: 6px; min-width: 0; max-width: 100%; }
+.gallery-view-tabs button { flex: 1 1 auto; padding: 0.4rem 0.8rem; }
+@media (max-width: 620px) { .gallery-view-tabs { flex: 1 1 100%; } }
+
+/* Cards no longer climb up over the page header. */
+.status-card, .shell > .composer, main > .composer { margin-top: 20px !important; }
+
+/* Headings that sat directly on the page background used to be white. */
+.group > h2, .screen > h2, .screen > h3, .section-heading { color: var(--ink) !important; text-shadow: none !important; }
+
+/* Timeline entries without a photo: a soft date plate instead of a dark gradient block. */
+.moment-photo.no-photo { color: var(--ink); background: var(--accent-soft) !important; background-image: none !important; }
+.moment-photo.no-photo .big-date { color: var(--ink) !important; text-shadow: none !important; }
+.moment-photo.no-photo .big-sub { color: var(--ink-soft) !important; }
+
+/* Optional tools tucked away until wanted. */
+details.fold { margin: 18px 0 0; border: 1px solid var(--line); border-radius: var(--r-lg); background: var(--surface); box-shadow: var(--shadow); }
+details.fold > summary { cursor: pointer; padding: 16px 20px; color: var(--ink); font-weight: 700; list-style: none; display: flex; align-items: center; justify-content: space-between; border-radius: inherit; }
+details.fold > summary::-webkit-details-marker { display: none; }
+details.fold > summary::after { content: "+"; color: var(--ink-faint); font-size: 1.4rem; line-height: 1; transition: transform 0.3s var(--ease-out); }
+details.fold[open] > summary::after { transform: rotate(45deg); }
+details.fold > .calendar-tools { padding: 0 16px 16px; margin: 0; }
+
+/* ---------- Calendar ---------- */
+
+.calendar-grid { grid-template-columns: repeat(7, minmax(0, 1fr)); }
+.calendar-header, .now-line, .weekday { color: var(--ink) !important; text-shadow: none !important; }
+.now-line { color: var(--ink-soft) !important; font-weight: 600; }
+.day { min-width: 0; background: var(--surface); border: 1px solid var(--line); box-shadow: none; }
+.day:hover { box-shadow: var(--shadow); }
+.day.muted { opacity: 0.45; }
+.day.today { border-color: var(--accent); box-shadow: 0 0 0 2px color-mix(in srgb, var(--accent) 30%, transparent); }
+.day.today .day-number { color: var(--accent-ink); }
+.today-tag { background: var(--accent); }
+.day-number { color: var(--ink); }
+.add-btn { color: var(--accent-ink); }
+.event { background: var(--accent-soft); color: var(--ink); }
+.event-top { flex-wrap: wrap; gap: 2px 8px; }
+.event-top strong { min-width: 0; overflow-wrap: anywhere; }
+.event-clock { flex: none; }
+.event-details { overflow-wrap: anywhere; }
+.event:hover { background: #d6e8f1; }
+.event.now { background: var(--ok-soft); box-shadow: 0 0 0 2px #7fc3a0 inset; }
+.event.quiet-calendar-event { background: #efeaf7; color: #5a4a78; border-color: #ded5ee; }
+.event.call-event { background: #f6ece6; color: #7a4a35; }
+
+@media (max-width: 640px) {
+  /* A phone is too narrow for seven columns, so each day becomes a row. */
+  #weekdayRow { display: none; }
+  #daysGrid { display: flex; flex-direction: column; gap: 8px; width: 100%; }
+  .day.muted { display: none; }
+  .day { min-height: 0; padding: 12px 14px; gap: 8px; }
+  .day-header { justify-content: flex-start; }
+  .day-header .add-btn { margin-left: auto; font-size: 1.3rem; min-width: 40px; min-height: 40px; }
+  .day-number { font-size: 1.05rem; }
+  .day-number[data-dow]::after { content: " " attr(data-dow); color: var(--ink-soft); font-weight: 500; font-size: 0.9rem; }
+  .day:not(:has(.event)) { padding-top: 6px; padding-bottom: 6px; }
+}
+
+/* ---------- Floating widgets ---------- */
+/* Quiet, neutral, small, and out of the way. Higher specificity beats the widgets' own rules. */
+
+html body .profile-pfp {
+  top: 12px;
+  right: 12px;
+  width: 40px;
+  height: 40px;
+  border: 2px solid #ffffff;
+  box-shadow: var(--shadow-sm);
+}
+
+html body #reaction-toggle,
+html body #shared-music-toggle {
+  width: 44px;
+  height: 44px;
+  color: var(--ink-soft);
+  background: rgba(255, 255, 255, 0.94);
+  border: 1px solid var(--line);
+  box-shadow: var(--shadow);
+  font-size: 1.05rem;
+  -webkit-backdrop-filter: blur(8px);
+  backdrop-filter: blur(8px);
+}
+
+html body #shared-music-toggle { font-size: 1.1rem; }
+
+html body #couple-reactions { left: 12px; bottom: calc(12px + env(safe-area-inset-bottom, 0px)); }
+html body #shared-music { right: 12px; bottom: calc(12px + env(safe-area-inset-bottom, 0px)); }
+
+html body #reaction-picker,
+html body #reaction-status,
+html body #special-date-reminder,
+html body #shared-music-panel {
+  border: 1px solid var(--line);
+  background: var(--surface);
+  box-shadow: var(--shadow-lift);
+}
+
+html body #shared-music-panel { border-radius: var(--r-md); }
+html body #special-date-reminder { bottom: calc(12px + env(safe-area-inset-bottom, 0px)); }
+html body #reaction-picker button { background: var(--surface-soft); }
+
+@media (max-width: 520px) {
+  html body #special-date-reminder { bottom: calc(68px + env(safe-area-inset-bottom, 0px)); }
+}
+
+/* Gallery lightbox and photo tiles keep their own overlay styling. */

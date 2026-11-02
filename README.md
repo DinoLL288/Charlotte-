@@ -8,8 +8,10 @@ A little site for Charlotte. Now split into a hub with multiple sections.
 - `index.html` - Hub page to navigate between sections
 - `app-shell.html` - Persistent site frame for animated page transitions and shared music
 - `site-shell-guard.js`, `site-frame.js`, `site-shell.js` - Route pages through the persistent app shell
-- `site-polish.css` - Shared visual styling and form controls
-- `love.html` - Original heart animation + photo memory
+- `theme.css` - The calm base design: colour, type and spacing tokens, plus shared components (see "Design and motion" below)
+- `site-polish.css` - Shared layer that brings every inner page onto the same header, surfaces, buttons and form controls
+- `motion.css`, `motion.js` - All animation for the site, in one place
+- `love.html` - The heart (draws itself once, tap for a little more) + photo memory
 - `messages.html`, `gallery.html`, `timeline.html` - Extra sections
 - `rules.html` - Shared rules & boundaries, saved to `rules/rules.json` via `/api/rules`
 - `avatar.js` - Shared top-right profile picture button that links to Settings
@@ -22,6 +24,22 @@ A little site for Charlotte. Now split into a hub with multiple sections.
 - `presence.js` - Shared online indicator, editable playlist, and on-page Spotify player
 - `bathroom.html` - Shared bathroom check-ins with each person's profile picture and activity history
 - `vault.html`, `vault.js` - Our little safe: shared logins encrypted in the browser and saved as ciphertext through `/api/vault`
+
+## Design and motion
+
+The site is deliberately low-stimulation, because busy screens are tiring. The ideas to keep when adding things:
+
+- **One focal point per screen.** One soft background, one accent colour, very little decoration. Cards are flat; a card inside a card becomes a quiet inset instead of a second card.
+- **Chunk, don't stack.** The hub groups its rooms into four small cards (Memories, Plans, Play, Looking after us). Optional tools (like calendar sync) sit in a folded section (`details.fold`) instead of above the main content.
+- **Readable by default.** Dark ink on light surfaces, 16px+ text, 44px tap targets, no white text on pale backgrounds.
+- **Floating buttons stay out of the way.** The online indicator shows briefly and then rests as a small dot (tap it to read it again). The reaction and music buttons are small and neutral, and slide away while scrolling.
+- **Nothing moves on its own.** Every animation runs once, when a page opens, when something new appears, or when you touch something. There are no looping animations anywhere (`document.getAnimations()` finds none).
+
+Everything is driven by tokens at the top of `theme.css` (colours, radii, shadows, type, easing), so the whole look can be re-tuned from one place. The accent follows the colour chosen in Settings.
+
+Motion lives in `motion.css` and `motion.js`: page arrival, newly added items, scroll reveals (`class="reveal"`), press feedback, dialogs, month changes on the calendar, and the pointer glow on hub rows (`class="glow"`). It switches off completely when the device has "reduce motion" on, or when **Reduce animations and movement** is ticked in Settings.
+
+The "together for" timer shows days, hours and minutes and updates once a minute so nothing ticks while reading. To bring the ticking seconds back, set `SHOW_SECONDS = true` at the top of `together.js`.
 
 ### Live question room and shared music
 

@@ -12,9 +12,9 @@
     #reaction-status{position:absolute;left:0;bottom:56px;width:max-content;max-width:260px;padding:7px 11px;border:1px solid #fff;border-radius:999px;color:#315d78;background:#fffefa;font-size:.76rem;box-shadow:0 5px 15px #143f5f20}
     #reaction-status:empty{display:none}
     #reaction-burst-layer{position:fixed;inset:0;z-index:99;overflow:hidden;pointer-events:none}
-    .reaction-burst{position:absolute;bottom:0;left:var(--x);font-size:clamp(2rem,6vw,3.6rem);filter:drop-shadow(0 3px 6px #143f5f40);animation:reaction-float 2.6s cubic-bezier(.15,.65,.25,1) forwards}
+    .reaction-burst{position:absolute;bottom:0;left:var(--x);font-size:clamp(1.8rem,5vw,2.8rem);filter:drop-shadow(0 3px 6px #143f5f40);animation:reaction-float 3.4s cubic-bezier(.22,1,.36,1) forwards}
     .reaction-burst small{position:absolute;left:50%;top:-18px;white-space:nowrap;color:#fff;font:700 10px var(--font-body,Arial,sans-serif);text-shadow:0 1px 5px #143f5f;text-align:center;transform:translateX(-50%)}
-    @keyframes reaction-float{0%{opacity:0;transform:translateY(0) scale(.55) rotate(-12deg)}12%{opacity:1}75%{opacity:1}100%{opacity:0;transform:translateY(-82vh) scale(1.5) rotate(18deg)}}
+    @keyframes reaction-float{0%{opacity:0;transform:translate(0,0) scale(.7)}14%{opacity:1}55%{opacity:1;transform:translate(14px,-34vh) scale(1)}100%{opacity:0;transform:translate(-8px,-60vh) scale(1.08)}}
     @keyframes reaction-picker-in{from{opacity:0;transform:translateY(8px) scale(.94)}to{opacity:1;transform:none}}
     @media(prefers-reduced-motion:reduce){.reaction-burst{animation-duration:1ms!important}}
     @media(max-width:520px){#couple-reactions{left:12px;bottom:12px}#reaction-picker{gap:2px;padding:5px}#reaction-picker button{width:32px;height:32px}}
@@ -50,7 +50,7 @@
     burst.textContent = data.emoji;
     const sender = document.createElement('small'); sender.textContent = data.user === user ? 'sent!' : `${data.user} sent this`;
     burst.appendChild(sender); layer.appendChild(burst); status.textContent = data.user === user ? `Sent ${data.emoji}` : `${data.user} sent ${data.emoji}`;
-    setTimeout(() => burst.remove(), 2700);
+    setTimeout(() => burst.remove(), 3500);
   }
   connect();
   window.addEventListener('pagehide', () => { clearTimeout(retry); socket?.close(); });

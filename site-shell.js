@@ -36,6 +36,7 @@
       notify.requestPermission().then(permission => frame.contentWindow.postMessage({ type: 'browser-reminder-permission', permission }, location.origin)).catch(() => frame.contentWindow.postMessage({ type: 'browser-reminder-permission', permission: 'denied' }, location.origin));
       return;
     }
+    if (event.data.type === 'calm-dock') document.documentElement.classList.toggle('dock-away', Boolean(event.data.away));
     if (event.data.type === 'charlotte-theme') {
       const preferences = event.data.preferences || {};
       if (['blue', 'midnight', 'lavender', 'sage', 'sunset'].includes(preferences.theme)) document.documentElement.dataset.coupleTheme = preferences.theme;

@@ -5,11 +5,13 @@
 
   const style = document.createElement('style');
   style.textContent = `
-    #shared-presence { position:fixed; top:70px; right:14px; z-index:30; max-width:210px; padding:7px 11px; border:1px solid #d5e3ec; border-radius:999px; background:rgba(255,255,255,.92); color:#486a83; box-shadow:0 6px 18px #143f5f22; font:600 11px/1.2 var(--font-body,Arial,sans-serif); }
-    #shared-presence::before { content:""; display:inline-block; width:7px; height:7px; margin-right:6px; border-radius:50%; background:#a7b6bf; }
-    #shared-presence.is-online::before { background:#61a447; box-shadow:0 0 0 3px #61a44722; }
+    #shared-presence { position:fixed; top:58px; right:19px; z-index:30; box-sizing:border-box; max-width:230px; min-height:26px; padding:5px 12px 5px 9px; overflow:hidden; white-space:nowrap; border:1px solid #dbe4ea; border-radius:999px; background:#fff; color:#52697b; box-shadow:0 1px 2px #1c385012; font:600 12px/1.2 var(--font-body,system-ui,sans-serif); cursor:pointer; transition:max-width .55s cubic-bezier(.22,1,.36,1), padding .55s cubic-bezier(.22,1,.36,1), color .3s ease; }
+    #shared-presence.is-compact { max-width:26px; padding-right:0; color:transparent; }
+    #shared-presence::before { content:""; display:inline-block; width:8px; height:8px; margin-right:7px; border-radius:50%; background:#a7b6bf; vertical-align:middle; }
+    #shared-presence.is-online::before { background:#3f9a68; box-shadow:0 0 0 3px #3f9a6824; }
+    @media(prefers-reduced-motion:reduce){ #shared-presence { transition:none; } }
     #shared-music { position:fixed; right:16px; bottom:16px; z-index:40; font-family:var(--font-body,Arial,sans-serif); }
-    #shared-music-toggle { width:50px; height:50px; border:1px solid rgba(255,255,255,.9); border-radius:50%; color:white; background:#143f5f; box-shadow:0 8px 24px #143f5f44; font-size:1.2rem; cursor:pointer; }
+    #shared-music-toggle { width:44px; height:44px; border:1px solid #dbe4ea; border-radius:50%; color:#52697b; background:#fff; box-shadow:0 1px 2px #1c385012, 0 10px 28px #1c385014; font-size:1.1rem; cursor:pointer; }
     #shared-music-panel { width:min(360px,calc(100vw - 32px)); margin-bottom:10px; padding:17px; border:1px solid #dce9f0; border-radius:18px; background:rgba(255,253,247,.99); box-shadow:0 18px 50px #143f5f33; }
     #shared-music-panel[hidden] { display:none; }
     #shared-music-panel h2 { margin:0 0 8px; color:#123a58; font:700 1.25rem var(--font-display,Georgia,serif); }
@@ -21,14 +23,25 @@
     #shared-music-player { width:100%; min-height:152px; margin-top:10px; overflow:hidden; border:0; border-radius:12px; background:#e8f0f5; }
     #shared-music-player iframe { display:block; width:100%; border:0; }
     #shared-music-status { min-height:1.2em; font-size:.76rem; }
-    @media(max-width:520px) { #shared-presence { top:68px; right:10px; max-width:175px; font-size:10px; } #shared-music { right:12px; bottom:12px; } }
+    @media(max-width:520px) { #shared-music { right:12px; bottom:12px; } }
   `;
   document.head.appendChild(style);
 
   const presence = document.createElement('div');
   presence.id = 'shared-presence';
   presence.textContent = 'Checking our live room…';
+  presence.setAttribute('role', 'status');
+  presence.tabIndex = 0;
+  let compactTimer = 0;
+  function showPresence() {
+    presence.classList.remove('is-compact');
+    clearTimeout(compactTimer);
+    compactTimer = setTimeout(() => presence.classList.add('is-compact'), 4000);
+  }
+  presence.addEventListener('click', showPresence);
+  presence.addEventListener('focus', showPresence);
   document.body.appendChild(presence);
+  showPresence();
 
   const widget = document.createElement('div');
   widget.id = 'shared-music';
@@ -63,6 +76,7 @@
     presence.classList.toggle('is-online', isOnline);
     presence.textContent = isOnline ? `${other} is online` : `${other} is away`;
     presence.title = isOnline ? `${other} has the app open` : `${other} does not have the app open`;
+    showPresence();
   }
 
   function normalizePlaylist(value) {
