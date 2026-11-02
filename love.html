@@ -3,7 +3,7 @@
 <head>
   <script src="site-shell-guard.js"></script>
   <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
   <title>Project Lover Boy</title>
   <script>
     if (!localStorage.getItem('charlotte-user')) {
@@ -11,301 +11,137 @@
     }
   </script>
   <style>
-    :root {
-      --gold: #ecd7a0;
-      --display: Georgia, "Times New Roman", serif;
-    }
+    /* A quiet room: one photo, one heart. */
+    body { color: #ffffff; background: #16324a; }
 
-    * { box-sizing: border-box; }
+    .backdrop { position: fixed; inset: 0; z-index: -1; overflow: hidden; background: #16324a; }
+    .backdrop-photo { position: absolute; inset: 0; background: url("holding-hands.jpg") center 35% / cover no-repeat; }
+    .backdrop-photo::after { content: ""; position: absolute; inset: 0; background: rgba(18, 40, 58, 0.72); }
 
-    body {
-      margin: 0;
-      min-height: 100vh;
-      color: #10344f;
-    }
+    .top-bar { position: fixed; top: 12px; left: 12px; z-index: 25; }
 
-    .hidden { display: none !important; }
+    main { width: min(560px, 100%); margin: 0 auto; }
 
     .screen {
-      position: relative;
-      width: 100%;
-      min-height: 100vh;
+      box-sizing: border-box;
+      display: grid;
+      align-content: center;
+      justify-items: center;
+      gap: 12px;
       min-height: 100svh;
-      padding: clamp(76px, 11vh, 96px) 18px clamp(30px, 6vh, 52px);
-      display: flex;
-      flex-direction: column;
-      align-items: center;
-      justify-content: center;
+      padding: 84px 22px calc(110px + env(safe-area-inset-bottom, 0px));
       text-align: center;
     }
+    .screen.hidden { display: none; }
 
-    /* ---------- Opening: our photo behind the heart ---------- */
+    .screen .eyebrow { color: #ecd7a0; font-family: var(--font-display); font-style: italic; font-weight: 400; font-size: 1rem; }
+    .screen h1 { margin: 0; color: #ffffff; font-size: clamp(2.4rem, 9vw, 3.6rem); line-height: 1.1; text-shadow: none; }
+    .screen .subtitle { margin: 0; color: rgba(255, 255, 255, 0.88) !important; font-size: 1.05rem; }
+    .memory-sub { margin: 0; color: rgba(255, 255, 255, 0.85); }
+    .word { display: inline-block; }
 
-    .opening {
-      color: #fff;
-      overflow: hidden;
-      isolation: isolate;
-    }
-
-    .opening::before {
-      content: "";
-      position: absolute;
-      inset: -2%;
-      z-index: -2;
-      background: url('holding-hands.jpg') center 32% / cover no-repeat;
-      animation: breathe 34s ease-in-out infinite alternate;
-    }
-
-    .opening::after {
-      content: "";
-      position: absolute;
-      inset: 0;
-      z-index: -1;
-      background:
-        radial-gradient(70% 55% at 50% 28%, rgba(5, 22, 37, 0.18) 0%, rgba(5, 22, 37, 0.78) 100%),
-        linear-gradient(180deg, rgba(5, 21, 35, 0.52) 0%, rgba(6, 24, 40, 0.6) 46%, rgba(5, 19, 32, 0.9) 100%);
-    }
-
-    @keyframes breathe {
-      from { transform: scale(1.02); }
-      to { transform: scale(1.09); }
-    }
-
-    .opening .eyebrow {
-      color: var(--gold);
-      text-shadow: 0 2px 12px rgba(3, 15, 26, 0.6);
-    }
-
-    h1 {
-      margin: 12px 0 6px;
-      font-family: var(--display);
-      font-weight: 400;
-      color: #fff;
-      font-size: clamp(2.3rem, 7.5vw, 4.4rem);
-      line-height: 1.05;
-      letter-spacing: -0.02em;
-      text-shadow: 0 4px 28px rgba(3, 15, 26, 0.55);
-    }
-
-    .subtitle {
-      margin: 0 0 10px;
-      color: #e6f3fc;
-      font-size: clamp(0.98rem, 2.6vw, 1.12rem);
-      text-shadow: 0 2px 12px rgba(3, 15, 26, 0.6);
-    }
-
-    .heart-area {
+    /* ---------- The heart ---------- */
+    .heart-button {
       position: relative;
-      width: min(88vw, 440px);
-      height: min(62vw, 38vh, 340px);
-      min-height: 210px;
-      margin: 4px auto 10px;
-    }
-
-    .love-word {
-      position: absolute;
-      transform: translate(-50%, -50%);
-      color: #ffffff;
-      font-family: var(--display);
-      font-weight: 700;
-      font-size: clamp(0.78rem, 2.6vw, 1.06rem);
-      white-space: nowrap;
-      text-shadow: 0 2px 12px rgba(2, 12, 21, 0.85);
-      animation: float 3.4s ease-in-out infinite;
-      user-select: none;
-    }
-
-    .love-word:nth-child(3n) { animation-delay: -1s; }
-    .love-word:nth-child(3n + 1) { animation-delay: -2s; }
-
-    @keyframes float {
-      0%, 100% { translate: 0 0; }
-      50% { translate: 0 -5px; }
-    }
-
-    .together {
-      color: #fff;
-      padding: 14px 6px;
-      border-radius: 20px;
-      background: rgba(9, 32, 51, 0.36);
-      border: 1px solid rgba(255, 255, 255, 0.18);
-      box-shadow: 0 20px 46px rgba(3, 15, 26, 0.32), inset 0 1px 0 rgba(255, 255, 255, 0.16);
-      -webkit-backdrop-filter: blur(14px) saturate(1.1);
-      backdrop-filter: blur(14px) saturate(1.1);
-    }
-
-    .together-since {
-      margin: 10px 0 0;
-      color: #d9ebf7;
-      font-size: 0.8rem;
-      letter-spacing: 0.05em;
-      text-shadow: 0 1px 10px rgba(3, 15, 26, 0.6);
-    }
-
-    /* ---------- Buttons ---------- */
-
-    .button {
-      border: 0;
-      border-radius: 999px;
-      padding: 13px 26px;
-      background: #ffffff;
-      color: #1c5275;
-      font-family: inherit;
-      font-size: 0.98rem;
-      font-weight: 700;
-      cursor: pointer;
-      box-shadow: 0 12px 28px rgba(4, 20, 33, 0.32);
-      transition: transform 0.2s ease, box-shadow 0.2s ease, background 0.2s ease;
-      text-decoration: none;
-      display: inline-flex;
-      align-items: center;
-      justify-content: center;
-    }
-
-    .button:hover {
-      transform: translateY(-2px);
-      box-shadow: 0 16px 34px rgba(4, 20, 33, 0.4);
-    }
-
-    .button:focus-visible {
-      outline: 3px solid var(--gold);
-      outline-offset: 4px;
-    }
-
-    .reveal-button { margin-top: 16px; }
-    .back-button { margin-top: 22px; }
-
-    .hint {
-      margin: 10px 0 0;
-      color: #e2f0fa;
-      font-size: 0.84rem;
-      letter-spacing: 0.08em;
-      text-shadow: 0 1px 8px rgba(3, 15, 26, 0.6);
-    }
-
-    /* ---------- One more thing: a reel from our gallery ---------- */
-
-    .memory { padding-top: 96px; }
-
-    .memory .eyebrow { color: #8a6d2b; }
-
-    .memory h1 {
-      margin-top: 10px;
-      color: #123a58;
-      font-size: clamp(2rem, 6vw, 3.2rem);
-      text-shadow: none;
-    }
-
-    .memory-sub {
-      margin: 0;
-      color: #4a7291;
-      font-size: 0.95rem;
-    }
-
-    .reel {
-      position: relative;
-      width: min(88vw, 720px);
-      margin-top: 20px;
-      aspect-ratio: 4 / 3;
-      max-height: 62vh;
-      border-radius: 26px;
-      overflow: hidden;
-      background: linear-gradient(145deg, #16405f, #2a78a8 62%, #7fc2e6);
-      border: 1px solid rgba(255, 255, 255, 0.9);
-      box-shadow: 0 26px 60px rgba(20, 63, 95, 0.3);
-    }
-
-    .reel.is-empty { display: none; }
-
-    /* A blurred copy of the same photo fills the frame, so nothing is ever cropped. */
-    .reel-backdrop {
-      position: absolute;
-      inset: -24px;
-      background-position: center;
-      background-size: cover;
-      filter: blur(18px) saturate(1.15) brightness(0.72);
-      transform: scale(1.08);
-    }
-
-    .reel img {
-      position: relative;
-      z-index: 1;
       display: block;
-      width: 100%;
-      height: 100%;
-      object-fit: contain;
-      background: transparent;
+      width: min(250px, 66vw);
+      margin: 14px auto 8px;
+      padding: 0;
+      border: 0;
+      color: inherit;
+      background: none;
+      cursor: pointer;
+      -webkit-tap-highlight-color: transparent;
     }
-
-    .reel img.reel-fade { animation: reelFade 0.55s ease; }
-
-    @keyframes reelFade {
-      from { opacity: 0; transform: scale(1.03); }
-      to { opacity: 1; transform: scale(1); }
-    }
-
-    .reel-count {
+    .heart-svg { display: block; width: 100%; height: auto; overflow: visible; }
+    .heart-line { fill: none; stroke: #ecd7a0; stroke-width: 2.4; stroke-linecap: round; stroke-linejoin: round; stroke-dasharray: 1; stroke-dashoffset: 0; }
+    .heart-text {
       position: absolute;
-      z-index: 2;
-      right: 14px;
-      bottom: 14px;
-      padding: 6px 12px;
-      border-radius: 999px;
-      background: rgba(7, 28, 45, 0.68);
-      border: 1px solid rgba(236, 215, 160, 0.35);
-      color: #f4e6c3;
-      font-size: 0.72rem;
-      font-weight: 700;
-      letter-spacing: 0.1em;
-      -webkit-backdrop-filter: blur(8px);
-      backdrop-filter: blur(8px);
-    }
-
-    .photo-caption {
-      margin: 18px 0 0;
-      color: #1c5275;
-      font-family: var(--display);
-      font-size: clamp(1.25rem, 4vw, 1.8rem);
+      inset: 0 0 12% 0;
+      display: grid;
+      place-items: center;
+      font-family: var(--font-display);
       font-style: italic;
-      min-height: 1.3em;
+      font-size: clamp(1.15rem, 4.6vw, 1.45rem);
+      color: #ffffff;
+      transition: opacity 0.35s ease;
+    }
+    .heart-text.is-swapping { opacity: 0; }
+    .tap-hint { margin: 0; min-height: 1.4em; color: rgba(255, 255, 255, 0.7); font-size: 0.9rem; transition: opacity 0.5s ease; }
+    .tap-hint.is-gone { opacity: 0; }
+
+    .spark { position: absolute; left: 50%; top: 42%; z-index: 2; pointer-events: none; line-height: 1; }
+
+    .together-since { margin: 0; color: rgba(255, 255, 255, 0.75); font-size: 0.9rem; }
+    .together-block { display: grid; gap: 14px; margin-top: 10px; color: #ffffff; }
+
+    .pill {
+      display: inline-flex; align-items: center; justify-content: center;
+      min-height: 46px; padding: 0.65rem 1.4rem;
+      border: 1px solid transparent; border-radius: 999px;
+      color: var(--ink); background: #ffffff;
+      font: 600 0.98rem/1.2 var(--font-body); cursor: pointer;
+    }
+    .pill:hover { background: #eef5f9; }
+    .pill.quiet { color: #ffffff; background: transparent; border-color: rgba(255, 255, 255, 0.45); }
+    .pill.quiet:hover { background: rgba(255, 255, 255, 0.12); }
+    .pill[hidden] { display: none; }
+    .reveal-button { margin-top: 12px; }
+
+    /* ---------- Photo reel ---------- */
+    .reel { position: relative; width: min(460px, 100%); aspect-ratio: 4 / 3; margin: 14px auto 4px; overflow: hidden; border-radius: var(--r-lg); background: #0f2538; box-shadow: 0 20px 50px rgba(0, 0, 0, 0.35); }
+    .reel.is-empty { display: none; }
+    .reel-backdrop { position: absolute; inset: -24px; background: center / cover no-repeat; filter: blur(22px) brightness(0.7); }
+    .reel img { position: relative; display: block; width: 100%; height: 100%; object-fit: contain; }
+    .reel-count { position: absolute; right: 12px; bottom: 10px; padding: 3px 11px; border-radius: 999px; color: #ffffff; background: rgba(0, 0, 0, 0.42); font-size: 0.8rem; }
+    .photo-caption { margin: 0; color: rgba(255, 255, 255, 0.88); }
+    .reel-empty { margin: 0; color: rgba(255, 255, 255, 0.85); }
+    .reel-actions { display: flex; flex-wrap: wrap; justify-content: center; gap: 10px; margin-top: 10px; }
+
+    /* ---------- Motion: each thing arrives once, then rests ---------- */
+    @keyframes draw { from { stroke-dashoffset: 1; } to { stroke-dashoffset: 0; } }
+    @keyframes fill-in { from { opacity: 0; } to { opacity: 1; } }
+    @keyframes beat { 0% { transform: scale(1); } 18% { transform: scale(1.07); } 34% { transform: scale(1); } 52% { transform: scale(1.045); } 72%, 100% { transform: scale(1); } }
+    @keyframes photo-settle { from { transform: scale(1.08); } to { transform: scale(1); } }
+    @keyframes rise {
+      0% { opacity: 0; transform: translate(-50%, 0) scale(0.4) rotate(0deg); }
+      18% { opacity: 1; }
+      100% { opacity: 0; transform: translate(calc(-50% + var(--dx)), var(--dy)) scale(1) rotate(var(--r)); }
+    }
+    @keyframes reelFade { from { opacity: 0; transform: scale(1.03); } to { opacity: 1; transform: none; } }
+    @keyframes leave { to { opacity: 0; transform: translateY(-8px); } }
+
+    .reel-fade { animation: reelFade 0.8s var(--ease-out); }
+    .is-leaving { animation: leave 0.26s ease-in forwards; }
+
+    @media (prefers-reduced-motion: no-preference) {
+      .backdrop-photo { animation: photo-settle 3s var(--ease-out) both; }
+      .screen .eyebrow { animation: focus-in 0.9s var(--ease-out) 0.1s backwards; }
+      .screen h1 .word { animation: focus-in 0.95s var(--ease-out) backwards; animation-delay: calc(var(--i) * 120ms + 220ms); }
+      .screen .subtitle, .memory-sub { animation: focus-in 0.9s var(--ease-out) 0.7s backwards; }
+      .heart-line { animation: draw 1.9s var(--ease-soft) 0.5s backwards; }
+      .heart-fill { animation: fill-in 1.2s ease-out 1.8s backwards; }
+      .heart-text { animation: fill-in 1s ease-out 2.4s backwards; }
+      .heart-svg { animation: beat 1.4s ease-out 2.6s; transform-origin: 50% 55%; }
+      .heart-svg.is-beating { animation: beat 1.1s ease-out; }
+      .tap-hint { animation: fill-in 1s ease-out 3.4s backwards; }
+      .together-block { animation: focus-in 0.9s var(--ease-out) 1.1s backwards; }
+      .reveal-button { animation: focus-in 0.9s var(--ease-out) 1.4s backwards; }
+      .spark { animation: rise var(--t, 1.7s) var(--ease-out) forwards; }
+      .is-entering { animation: settle-in 0.7s var(--ease-out); }
+      .pill { transition: transform 0.35s var(--ease-spring), background-color 0.2s ease; }
+      .pill:active { transform: scale(0.97); transition-duration: 0.08s; }
     }
 
-    .reel-empty {
-      margin: 18px 0 0;
-      max-width: 42ch;
-      color: #3f637e;
-      line-height: 1.6;
-    }
-
-    .reel-actions {
-      display: flex;
-      flex-wrap: wrap;
-      justify-content: center;
-      gap: 10px;
-      margin-top: 20px;
-    }
-
-    .reel-actions .button { margin-top: 0; }
-    .reel-actions .button[hidden] { display: none; }
-
-    .top-bar {
-      position: absolute;
-      top: 16px;
-      left: 16px;
-      z-index: 5;
-    }
-
-    @media (prefers-reduced-motion: reduce) {
-      *, *::before, *::after {
-        animation-duration: 0.01ms !important;
-        animation-iteration-count: 1 !important;
-        transition-duration: 0.01ms !important;
-      }
-    }
+    @media (prefers-reduced-motion: reduce) { .spark { display: none; } }
   </style>
   <link rel="stylesheet" href="theme.css">
+  <link rel="stylesheet" href="site-polish.css" data-site-polish="true"><link rel="stylesheet" href="site-theme.css" data-site-theme="true"><link rel="stylesheet" href="motion.css">
 </head>
+
 <body>
+  <div class="backdrop" aria-hidden="true"><div class="backdrop-photo"></div></div>
+
   <div class="top-bar">
     <a class="button" href="index.html">← Back to hub</a>
   </div>
@@ -313,13 +149,29 @@
   <main>
     <section class="screen opening" id="opening">
       <p class="eyebrow">Charlotte &amp; Luke</p>
-      <h1 id="heading">I love you</h1>
+      <h1 id="heading"><span class="word" style="--i:0">I</span> <span class="word" style="--i:1">love</span> <span class="word" style="--i:2">you</span></h1>
       <p class="subtitle">A little celebration of us.</p>
-      <div class="heart-area" id="heart" aria-label="Our love arranged in a heart"></div>
-      <div class="together" data-together role="timer" aria-label="Time we have been together"></div>
-      <p class="together-since">Since 26 October 2026 · 5:46 pm</p>
-      <button class="button reveal-button" id="revealButton" type="button">One more thing…</button>
-      <p class="hint">Made with care</p>
+
+      <button class="heart-button" id="heart" type="button" aria-label="Our love. Tap for a little more.">
+        <svg class="heart-svg" id="heartSvg" viewBox="0 0 200 180" aria-hidden="true">
+          <defs>
+            <linearGradient id="heartFill" x1="0" y1="0" x2="0" y2="1">
+              <stop offset="0" stop-color="#ffffff" stop-opacity="0.26"/>
+              <stop offset="1" stop-color="#ecd7a0" stop-opacity="0.14"/>
+            </linearGradient>
+          </defs>
+          <path class="heart-fill" fill="url(#heartFill)" d="M100 168C40 120 8 88 8 52 8 26 28 8 54 8c20 0 36 10 46 26 10-16 26-26 46-26 26 0 46 18 46 44 0 36-32 68-92 116z"/>
+          <path class="heart-line" pathLength="1" d="M100 168C40 120 8 88 8 52 8 26 28 8 54 8c20 0 36 10 46 26 10-16 26-26 46-26 26 0 46 18 46 44 0 36-32 68-92 116z"/>
+        </svg>
+        <span class="heart-text" id="heartText">Us, always</span>
+      </button>
+      <p class="tap-hint" id="tapHint">Tap the heart</p>
+
+      <div class="together-block">
+        <div class="together" data-together role="timer" aria-label="Time we have been together"></div>
+        <p class="together-since">Since 26 October 2026 · 5:46 pm</p>
+      </div>
+      <button class="pill reveal-button" id="revealButton" type="button">One more thing…</button>
     </section>
 
     <section class="screen memory hidden" id="memory">
@@ -334,34 +186,77 @@
       <p class="photo-caption" id="reelCaption">Finding a memory…</p>
       <p class="reel-empty" id="reelEmpty" hidden>No photos in the gallery yet. Add a few and they'll show up here.</p>
       <div class="reel-actions">
-        <button class="button" id="nextMemory" type="button">Another one →</button>
-        <button class="button back-button" id="backButton" type="button">Back to the heart</button>
+        <button class="pill" id="nextMemory" type="button">Another one →</button>
+        <button class="pill quiet" id="backButton" type="button">Back to the heart</button>
       </div>
     </section>
   </main>
 
   <script>
-    const heart = document.getElementById("heart");
+    const reduceMotion = () =>
+      window.matchMedia('(prefers-reduced-motion: reduce)').matches || document.documentElement.dataset.reducedMotion === 'true';
 
-    const heartPositions = [
-      [28, 16], [37, 11], [46, 13], [54, 13], [63, 11], [72, 16],
-      [22, 24], [31, 25], [40, 23], [49, 24], [58, 23], [67, 25], [78, 24],
-      [24, 34], [34, 34], [44, 34], [54, 34], [64, 34], [76, 34],
-      [29, 44], [39, 44], [49, 44], [59, 44], [69, 44],
-      [35, 54], [45, 54], [55, 54], [65, 54],
-      [41, 64], [51, 64], [61, 64],
-      [46, 74], [56, 74],
-      [51, 84]
-    ];
+    /* ---------- The heart: tap for a pulse, a few small hearts, and a new line ---------- */
+    const heartButton = document.getElementById("heart");
+    const heartSvg = document.getElementById("heartSvg");
+    const heartText = document.getElementById("heartText");
+    const tapHint = document.getElementById("tapHint");
+    const phrases = ["Us, always", "Our love 🤍", "I love you", "Us, always"];
+    let phraseIndex = 0;
 
-    heartPositions.forEach(([x, y], index) => {
-      const word = document.createElement("span");
-      word.className = "love-word";
-      word.textContent = index % 4 === 0 ? "Our love 🤍" : "Us, always";
-      word.style.left = x + "%";
-      word.style.top = y + "%";
-      heart.appendChild(word);
+    function sparks() {
+      if (reduceMotion()) return;
+      const live = heartButton.querySelectorAll(".spark").length;
+      const count = Math.min(7, 24 - live);
+      for (let i = 0; i < count; i++) {
+        const spark = document.createElement("span");
+        spark.className = "spark";
+        spark.textContent = "🤍";
+        spark.style.fontSize = 14 + Math.random() * 14 + "px";
+        spark.style.setProperty("--dx", (Math.random() * 150 - 75).toFixed(0) + "px");
+        spark.style.setProperty("--dy", (-90 - Math.random() * 110).toFixed(0) + "px");
+        spark.style.setProperty("--r", (Math.random() * 50 - 25).toFixed(0) + "deg");
+        spark.style.setProperty("--t", (1.4 + Math.random() * 0.7).toFixed(2) + "s");
+        spark.style.animationDelay = (i * 55) + "ms";
+        spark.addEventListener("animationend", () => spark.remove());
+        heartButton.appendChild(spark);
+      }
+    }
+
+    heartButton.addEventListener("click", () => {
+      heartSvg.classList.remove("is-beating");
+      void heartSvg.getBoundingClientRect();
+      heartSvg.classList.add("is-beating");
+      sparks();
+
+      phraseIndex = (phraseIndex + 1) % phrases.length;
+      heartText.classList.add("is-swapping");
+      setTimeout(() => {
+        heartText.textContent = phrases[phraseIndex];
+        heartText.classList.remove("is-swapping");
+      }, 260);
+
+      tapHint.classList.add("is-gone");
     });
+
+    /* ---------- Moving between the two screens ---------- */
+
+    function swapScreens(from, to, done) {
+      const enter = () => {
+        from.classList.add("hidden");
+        from.classList.remove("is-leaving");
+        to.classList.remove("hidden");
+        window.scrollTo(0, 0);
+        if (!reduceMotion()) {
+          to.classList.add("is-entering");
+          setTimeout(() => to.classList.remove("is-entering"), 800);
+        }
+        if (done) done();
+      };
+      if (reduceMotion()) { enter(); return; }
+      from.classList.add("is-leaving");
+      setTimeout(enter, 260);
+    }
 
     const opening = document.getElementById("opening");
     const memory = document.getElementById("memory");
@@ -408,9 +303,11 @@
       reelCount.textContent = (reelIndex + 1) + " / " + reelPhotos.length;
       reelCaption.textContent = "A little more us.";
 
-      reelPhoto.classList.remove("reel-fade");
-      void reelPhoto.offsetWidth;
-      reelPhoto.classList.add("reel-fade");
+      [reelPhoto, reelBackdrop].forEach(el => {
+        el.classList.remove("reel-fade");
+        void el.offsetWidth;
+        el.classList.add("reel-fade");
+      });
 
       // Preload the next one so "Another one" feels instant.
       if (reelPhotos.length > 1) {
@@ -476,24 +373,20 @@
     }
 
     document.getElementById("revealButton").addEventListener("click", () => {
-      opening.classList.add("hidden");
-      memory.classList.remove("hidden");
-      window.scrollTo({ top: 0, behavior: "smooth" });
-
-      // Every time the reel is opened it gets a fresh random order.
-      if (reelLoaded && reelPhotos.length) {
-        shuffleReel();
-        reelIndex = 0;
-        showReelPhoto();
-      } else {
-        loadReel();
-      }
+      swapScreens(opening, memory, () => {
+        // Every time the reel is opened it gets a fresh random order.
+        if (reelLoaded && reelPhotos.length) {
+          shuffleReel();
+          reelIndex = 0;
+          showReelPhoto();
+        } else {
+          loadReel();
+        }
+      });
     });
 
     document.getElementById("backButton").addEventListener("click", () => {
-      memory.classList.add("hidden");
-      opening.classList.remove("hidden");
-      window.scrollTo({ top: 0, behavior: "smooth" });
+      swapScreens(memory, opening);
     });
 
     nextMemory.addEventListener("click", () => {
