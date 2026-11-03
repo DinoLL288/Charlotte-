@@ -36,7 +36,7 @@
   <div class="top-bar"><a class="button secondary" href="index.html">← Back to hub</a></div>
   <div class="wrap">
     <h1>Love store</h1>
-    <p class="sub">Spend love tokens on little promises you can do from school or on your nightly call. When you buy one, your partner has to do it — and it lands on the calendar.</p>
+    <p class="sub">Spend love tokens on little promises you can do from school or on your nightly call. When you buy one, your partner has to do it — and it lands on the calendar. No excuses unless your main friend group needs you.</p>
     <div class="balance">Love tokens: <span id="balance">0</span></div>
 
     <div class="grid" id="items"></div>
@@ -69,16 +69,18 @@
       const user = localStorage.getItem('charlotte-user');
       const other = user === 'Charlotte' ? 'Luke' : 'Charlotte';
       const items = [
-        { id: 'morning', title: 'Good morning text', cost: 3, desc: 'A sweet good-morning message when you wake up.' },
-        { id: 'voice', title: 'Voice note', cost: 4, desc: 'A short voice note just for you.' },
-        { id: 'song', title: 'Song of the day', cost: 4, desc: 'They send you a song that reminds them of you.' },
-        { id: 'meme', title: 'Meme dump', cost: 5, desc: 'A bunch of memes or funny posts.' },
+        { id: 'morningkiss', title: 'Morning kiss', cost: 4, desc: 'A kiss when you wake up on call.' },
+        { id: 'goodnightkiss', title: 'Goodnight kiss', cost: 4, desc: 'A kiss before you fall asleep on call.' },
+        { id: 'wakeupcall', title: 'Wake-up call', cost: 5, desc: 'They call to wake you up.' },
+        { id: 'goodnightcall', title: 'Goodnight call', cost: 5, desc: 'They stay on the phone until you sleep.' },
+        { id: 'hug', title: 'Hug at school', cost: 6, desc: 'A real hug next time you see each other.' },
+        { id: 'holdhands', title: 'Hold hands', cost: 6, desc: 'Hold hands while walking at school.' },
+        { id: 'walk', title: 'Walk together', cost: 7, desc: 'Walk together between classes.' },
+        { id: 'lunch', title: 'Sit together at lunch', cost: 8, desc: 'Sit together for the whole lunch.' },
+        { id: 'fullday', title: 'Full day together', cost: 15, desc: 'Hang out together for the whole school day (no excuses unless your main friend group needs you).' },
         { id: 'compliment', title: 'Compliment of the day', cost: 5, desc: 'One genuine compliment, no take-backs.' },
-        { id: 'call', title: 'Extra call time', cost: 6, desc: 'An extra 10 minutes on your nightly call.' },
-        { id: 'study', title: 'Study together', cost: 8, desc: 'A shared study or homework session on call.' },
-        { id: 'photo', title: 'Photo of your day', cost: 6, desc: 'They send a photo from their day.' },
-        { id: 'game', title: 'Online game together', cost: 10, desc: 'Play an online game together.' },
-        { id: 'secret', title: 'Secret note', cost: 12, desc: 'A private note only you two know about.' }
+        { id: 'voice', title: 'Voice note', cost: 4, desc: 'A short voice note just for you.' },
+        { id: 'song', title: 'Song of the day', cost: 4, desc: 'They send a song that reminds them of you.' }
       ];
 
       const itemsBox = document.getElementById('items');
