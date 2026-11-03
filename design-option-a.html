@@ -1,0 +1,79 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8"><meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Design option A · Three doors</title>
+  <link rel="stylesheet" href="theme.css">
+  <style>
+    body{margin:0;min-height:100vh;font-family:var(--font-body);background:linear-gradient(160deg,#eaf7ff,#c3e6fb 42%,#8ecbeb 100%);color:#10344f}
+    .preview-banner{position:sticky;top:0;z-index:50;padding:10px 16px;text-align:center;background:#143f5f;color:#fff;font-size:.85rem;font-weight:700;letter-spacing:.04em}
+    .preview-banner a{color:#ecd7a0;margin-left:12px}
+    .hero{padding:72px 20px 36px;text-align:center;color:#fff;background:linear-gradient(160deg,rgba(13,44,68,.85),rgba(42,120,168,.85));background-size:cover}
+    .hero h1{margin:10px 0 6px;font-family:var(--font-display);font-size:clamp(2.2rem,6vw,3.6rem);font-weight:400}
+    .hero p{margin:0 auto;max-width:44ch;color:#eaf6ff;line-height:1.6}
+    .together{margin:22px auto 0;display:flex;justify-content:center;gap:0}
+    .together .unit{min-width:58px;padding:0 12px;text-align:center}
+    .together .unit+.unit{border-left:1px solid rgba(255,255,255,.25)}
+    .together .num{font-family:var(--font-display);font-size:1.6rem}
+    .together .label{font-size:.6rem;letter-spacing:.16em;text-transform:uppercase;opacity:.75}
+    .doors{width:min(980px,100%);margin:40px auto 60px;padding:0 18px;display:grid;grid-template-columns:repeat(3,1fr);gap:18px}
+    .door{position:relative;padding:26px 22px;border-radius:26px;background:rgba(255,255,255,.72);border:1px solid rgba(255,255,255,.9);box-shadow:0 18px 42px rgba(29,90,128,.13);backdrop-filter:blur(10px);overflow:hidden}
+    .door-icon{font-size:2rem;line-height:1;margin-bottom:10px}
+    .door h2{margin:0 0 4px;font-family:var(--font-display);font-size:1.5rem;color:#123a58}
+    .door p{margin:0 0 16px;color:#4a7291;font-size:.92rem;line-height:1.5}
+    .door-links{display:flex;flex-wrap:wrap;gap:8px}
+    .door-links a{padding:8px 14px;border-radius:999px;background:#fff;border:1px solid #dbe8ef;color:#123a58;text-decoration:none;font-size:.84rem;font-weight:700;transition:transform .15s,background .15s}
+    .door-links a:hover{background:#edf7fd;transform:translateY(-1px)}
+    .door:before{content:"";position:absolute;right:-24px;bottom:-30px;width:90px;height:90px;border-radius:50%;background:rgba(255,255,255,.45);border:1px solid #d7e6ec}
+    @media(max-width:760px){.doors{grid-template-columns:1fr;gap:14px}.door{padding:20px 18px}}
+    @media(max-width:480px){.door h2{font-size:1.3rem}}
+  </style>
+</head>
+<body>
+  <div class="preview-banner">Design option A · Three doors — pick one of three big rooms, then the few pages inside. <a href="design-options.html">Back to chooser</a></div>
+  <header class="hero">
+    <p class="eyebrow" style="color:#ecd7a0">Charlotte &amp; Luke</p>
+    <h1>Our little universe</h1>
+    <p>Every note, photo, plan and promise — kept in one quiet corner.</p>
+    <div class="together" data-together role="timer" aria-label="Time together"></div>
+  </header>
+  <main class="doors">
+    <section class="door">
+      <div class="door-icon">💛</div>
+      <h2>Us two</h2>
+      <p>The things that are just about us.</p>
+      <nav class="door-links">
+        <a href="love.html">Our love</a>
+        <a href="messages.html">Notes</a>
+        <a href="timeline.html">Timeline</a>
+        <a href="our-life.html">Things we make</a>
+      </nav>
+    </section>
+    <section class="door">
+      <div class="door-icon">📅</div>
+      <h2>Plans &amp; days</h2>
+      <p>What we're doing, when, and where.</p>
+      <nav class="door-links">
+        <a href="calendar.html">Calendar</a>
+        <a href="tiktok.html">TikTok plans</a>
+        <a href="question-night.html">Question night</a>
+        <a href="gallery.html">Photos &amp; videos</a>
+      </nav>
+    </section>
+    <section class="door">
+      <div class="door-icon">🌙</div>
+      <h2>Care &amp; quiet</h2>
+      <p>Rest, space, and the small check-ins.</p>
+      <nav class="door-links">
+        <a href="apart.html">Quiet days</a>
+        <a href="rules.html">Rules &amp; boundaries</a>
+        <a href="bathroom.html">Bathroom check-ins</a>
+        <a href="play.html">Play &amp; ask</a>
+      </nav>
+    </section>
+  </main>
+  <footer style="text-align:center;padding:24px;color:#fff;font-size:.85rem">Charlotte &amp; Luke · made with care · <a href="vault.html" target="_top" style="color:#ecd7a0">Our little safe</a></footer>
+  <script src="together.js"></script>
+</body>
+</html>
+"

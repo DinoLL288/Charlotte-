@@ -1,0 +1,61 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8"><meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Design option D · Calm list</title>
+  <link rel="stylesheet" href="theme.css">
+  <style>
+    body{margin:0;min-height:100vh;font-family:var(--font-body);background:linear-gradient(160deg,#eaf7ff,#c3e6fb 42%,#8ecbeb 100%);color:#10344f}
+    .preview-banner{position:sticky;top:0;z-index:50;padding:10px 16px;text-align:center;background:#143f5f;color:#fff;font-size:.85rem;font-weight:700}
+    .preview-banner a{color:#ecd7a0;margin-left:12px}
+    .hero{padding:64px 20px 24px;text-align:center;color:#fff;background:linear-gradient(160deg,rgba(13,44,68,.85),rgba(42,120,168,.85))}
+    .hero h1{margin:10px 0 6px;font-family:var(--font-display);font-size:clamp(2rem,6vw,3.2rem);font-weight:400}
+    .hero p{margin:0 auto;max-width:44ch;color:#eaf6ff;line-height:1.6}
+    .wrap{width:min(620px,calc(100% - 32px));margin:0 auto 60px}
+    .section{margin-top:28px}
+    .section-title{margin:0 0 10px;font-family:var(--font-display);font-size:1.05rem;color:#8a6d2b;letter-spacing:.08em;text-transform:uppercase}
+    .row{display:flex;align-items:center;gap:14px;padding:16px 18px;margin-bottom:8px;border-radius:16px;background:rgba(255,255,255,.72);border:1px solid rgba(255,255,255,.85);text-decoration:none;color:#123a58;transition:background .15s,transform .15s}
+    .row:hover{background:rgba(255,255,255,.92);transform:translateX(2px)}
+    .row .icon{flex:none;font-size:1.35rem;width:34px;text-align:center}
+    .row .body{flex:1;min-width:0}
+    .row .title{font-weight:700;font-size:1rem;line-height:1.2}
+    .row .sub{color:#5c7c93;font-size:.82rem;line-height:1.4;margin-top:2px}
+    .row .arrow{color:#8a6d2b;opacity:.5;font-size:1.1rem}
+    @media(max-width:480px){.row{padding:14px 14px}.row .title{font-size:.95rem}.row .sub{font-size:.78rem}}
+  </style>
+</head>
+<body>
+  <div class="preview-banner">Design option D · Calm list — one thing per row, lots of breathing room. <a href="design-options.html">Back to chooser</a></div>
+  <header class="hero">
+    <p class="eyebrow" style="color:#ecd7a0">Charlotte &amp; Luke</p>
+    <h1>Our little universe</h1>
+    <p>Every note, photo, plan and promise — kept in one quiet corner.</p>
+  </header>
+  <main class="wrap">
+    <div class="section">
+      <h2 class="section-title">Us</h2>
+      <a class="row" href="love.html"><span class="icon">🤍</span><span class="body"><span class="title">Our love</span><span class="sub">The heart &amp; our little memory</span></span><span class="arrow">→</span></a>
+      <a class="row" href="messages.html"><span class="icon">✉️</span><span class="body"><span class="title">Notes</span><span class="sub">Messages we leave for each other</span></span><span class="arrow">→</span></a>
+      <a class="row" href="timeline.html"><span class="icon">🌅</span><span class="body"><span class="title">Our timeline</span><span class="sub">The story so far, in pictures</span></span><span class="arrow">→</span></a>
+      <a class="row" href="our-life.html"><span class="icon">🧩</span><span class="body"><span class="title">Things we make together</span><span class="sub">Recipes, recommendations, awards and projects</span></span><span class="arrow">→</span></a>
+    </div>
+    <div class="section">
+      <h2 class="section-title">Plans</h2>
+      <a class="row" href="calendar.html"><span class="icon">📅</span><span class="body"><span class="title">Calendar</span><span class="sub">Dates, plans and countdowns</span></span><span class="arrow">→</span></a>
+      <a class="row" href="tiktok.html"><span class="icon">🎵</span><span class="body"><span class="title">TikTok plans</span><span class="sub">Videos we want to dance to</span></span><span class="arrow">→</span></a>
+      <a class="row" href="question-night.html"><span class="icon">💬</span><span class="body"><span class="title">Question night</span><span class="sub">A shared room that opens when we're both ready</span></span><span class="arrow">→</span></a>
+      <a class="row" href="gallery.html"><span class="icon">📷</span><span class="body"><span class="title">Photos &amp; videos</span><span class="sub">Our albums, photos and little movies</span></span><span class="arrow">→</span></a>
+    </div>
+    <div class="section">
+      <h2 class="section-title">Care &amp; quiet</h2>
+      <a class="row" href="apart.html"><span class="icon">🌙</span><span class="body"><span class="title">Quiet days</span><span class="sub">When one of us needs some space</span></span><span class="arrow">→</span></a>
+      <a class="row" href="rules.html"><span class="icon">🕊️</span><span class="body"><span class="title">Rules &amp; boundaries</span><span class="sub">What we agree on and what we need</span></span><span class="arrow">→</span></a>
+      <a class="row" href="bathroom.html"><span class="icon">🚻</span><span class="body"><span class="title">Bathroom check-ins</span><span class="sub">A little update when one of us steps away</span></span><span class="arrow">→</span></a>
+      <a class="row" href="play.html"><span class="icon">🎲</span><span class="body"><span class="title">Play &amp; ask</span><span class="sub">A question ritual and little games</span></span><span class="arrow">→</span></a>
+    </div>
+  </main>
+  <footer style="text-align:center;padding:24px;color:#fff;font-size:.85rem">Charlotte &amp; Luke · made with care · <a href="vault.html" target="_top" style="color:#ecd7a0">Our little safe</a></footer>
+  <script src="together.js"></script>
+</body>
+</html>
+"

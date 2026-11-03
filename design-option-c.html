@@ -1,0 +1,118 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8"><meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Design option C · Mood</title>
+  <link rel="stylesheet" href="theme.css">
+  <style>
+    body{margin:0;min-height:100vh;font-family:var(--font-body);background:linear-gradient(160deg,#eaf7ff,#c3e6fb 42%,#8ecbeb 100%);color:#10344f}
+    .preview-banner{position:sticky;top:0;z-index:50;padding:10px 16px;text-align:center;background:#143f5f;color:#fff;font-size:.85rem;font-weight:700}
+    .preview-banner a{color:#ecd7a0;margin-left:12px}
+    .hero{padding:64px 20px 24px;text-align:center;color:#fff;background:linear-gradient(160deg,rgba(13,44,68,.85),rgba(42,120,168,.85))}
+    .hero h1{margin:10px 0 6px;font-family:var(--font-display);font-size:clamp(2rem,6vw,3.2rem);font-weight:400}
+    .hero p{margin:0 auto;max-width:44ch;color:#eaf6ff;line-height:1.6}
+    .wrap{width:min(720px,calc(100% - 32px));margin:0 auto 60px}
+    .mood-card{padding:24px 22px;border-radius:24px;background:rgba(255,255,255,.78);border:1px solid rgba(255,255,255,.9);box-shadow:0 14px 34px rgba(29,90,128,.12);text-align:center}
+    .mood-card h2{margin:0 0 6px;font-family:var(--font-display);font-size:1.4rem;color:#123a58}
+    .mood-card p{margin:0 0 16px;color:#4a7291;font-size:.9rem}
+    .moods{display:grid;grid-template-columns:repeat(5,1fr);gap:8px}
+    .mood{padding:14px 6px;border-radius:16px;background:#fff;border:1px solid #dbe8ef;cursor:pointer;font-family:inherit;font-size:.78rem;font-weight:700;color:#123a58;transition:transform .15s,background .15s,border-color .15s}
+    .mood:hover{transform:translateY(-2px);background:#edf7fd;border-color:#c9a24a}
+    .mood .emoji{display:block;font-size:1.5rem;margin-bottom:4px}
+    .mood.is-active{background:#fff3d6;border-color:#c9a24a}
+    .suggestions{margin-top:18px;display:grid;gap:8px;text-align:left}
+    .suggestions[hidden]{display:none}
+    .sug{display:flex;align-items:center;gap:12px;padding:12px 14px;border-radius:14px;background:#f7fbfd;text-decoration:none;color:#123a58;font-weight:600;font-size:.9rem;transition:background .15s}
+    .sug:hover{background:#edf7fd}
+    .sug .icon{font-size:1.15rem}
+    .sug .sub{display:block;color:#7b91a0;font-size:.76rem;font-weight:500;margin-top:2px}
+    .allrooms{margin-top:14px;text-align:center}
+    .allrooms a{color:#8a6d2b;font-weight:700;font-size:.85rem;text-decoration:underline}
+    @media(max-width:520px){.moods{grid-template-columns:repeat(3,1fr)}}
+  </style>
+</head>
+<body>
+  <div class="preview-banner">Design option C · Mood — start from how you feel, see 2-3 matching rooms. <a href="design-options.html">Back to chooser</a></div>
+  <header class="hero">
+    <p class="eyebrow" style="color:#ecd7a0">Charlotte &amp; Luke</p>
+    <h1>Our little universe</h1>
+    <p>Every note, photo, plan and promise — kept in one quiet corner.</p>
+  </header>
+  <main class="wrap">
+    <section class="mood-card">
+      <h2>How are you feeling?</h2>
+      <p>Pick a mood and I'll show the rooms that fit.</p>
+      <div class="moods">
+        <button class="mood" data-mood="missing"><span class="emoji">💛</span>Missing you</button>
+        <button class="mood" data-mood="planning"><span class="emoji">📅</span>Planning</button>
+        <button class="mood" data-mood="playful"><span class="emoji">🎲</span>Playful</button>
+        <button class="mood" data-mood="quiet"><span class="emoji">🌙</span>Need space</button>
+        <button class="mood" data-mood="looking"><span class="emoji">📷</span>Looking back</button>
+      </div>
+      <div class="suggestions" id="suggestions" hidden></div>
+      <div class="allrooms"><a href="#all">or browse all rooms ↓</a></div>
+    </section>
+
+    <section class="mood-card" id="all" style="margin-top:16px">
+      <h2>All rooms</h2>
+      <p>Twelve doors, but no rush.</p>
+      <div class="suggestions" style="display:grid">
+        <a class="sug" href="love.html"><span class="icon">🤍</span><span>Our love<span class="sub">The heart &amp; our little memory</span></span></a>
+        <a class="sug" href="messages.html"><span class="icon">✉️</span><span>Notes<span class="sub">Messages we leave for each other</span></span></a>
+        <a class="sug" href="timeline.html"><span class="icon">🌅</span><span>Our timeline<span class="sub">The story so far, in pictures</span></span></a>
+        <a class="sug" href="gallery.html"><span class="icon">📷</span><span>Photos &amp; videos<span class="sub">Our albums, photos and little movies</span></span></a>
+        <a class="sug" href="calendar.html"><span class="icon">📅</span><span>Calendar<span class="sub">Dates, plans and countdowns</span></span></a>
+        <a class="sug" href="tiktok.html"><span class="icon">🎵</span><span>TikTok plans<span class="sub">Videos we want to dance to</span></span></a>
+        <a class="sug" href="play.html"><span class="icon">🎲</span><span>Play &amp; ask<span class="sub">A question ritual and little games</span></span></a>
+        <a class="sug" href="question-night.html"><span class="icon">💬</span><span>Question night<span class="sub">A shared room that opens when we're both ready</span></span></a>
+        <a class="sug" href="our-life.html"><span class="icon">🧩</span><span>Things we make together<span class="sub">Recipes, recommendations, awards and projects</span></span></a>
+        <a class="sug" href="apart.html"><span class="icon">🌙</span><span>Quiet days<span class="sub">When one of us needs some space</span></span></a>
+        <a class="sug" href="rules.html"><span class="icon">🕊️</span><span>Rules &amp; boundaries<span class="sub">What we agree on and what we need</span></span></a>
+        <a class="sug" href="bathroom.html"><span class="icon">🚻</span><span>Bathroom check-ins<span class="sub">A little update when one of us steps away</span></span></a>
+      </div>
+    </section>
+  </main>
+  <footer style="text-align:center;padding:24px;color:#fff;font-size:.85rem">Charlotte &amp; Luke · made with care · <a href="vault.html" target="_top" style="color:#ecd7a0">Our little safe</a></footer>
+  <script>
+    const data = {
+      missing: [
+        {icon:'✉️',title:'Notes',sub:'Leave a little message',href:'messages.html'},
+        {icon:'🤍',title:'Our love',sub:'The heart & our memory',href:'love.html'},
+        {icon:'🌅',title:'Our timeline',sub:'The story so far',href:'timeline.html'}
+      ],
+      planning: [
+        {icon:'📅',title:'Calendar',sub:'Dates, plans, countdowns',href:'calendar.html'},
+        {icon:'🎵',title:'TikTok plans',sub:'Videos to dance to',href:'tiktok.html'},
+        {icon:'💬',title:'Question night',sub:'A shared room for us',href:'question-night.html'}
+      ],
+      playful: [
+        {icon:'🎲',title:'Play & ask',sub:'Games and little questions',href:'play.html'},
+        {icon:'🎵',title:'TikTok plans',sub:'Videos to dance to',href:'tiktok.html'},
+        {icon:'🧩',title:'Things we make',sub:'Projects and recipes',href:'our-life.html'}
+      ],
+      quiet: [
+        {icon:'🌙',title:'Quiet days',sub:'When one of us needs space',href:'apart.html'},
+        {icon:'🚻',title:'Bathroom check-ins',sub:'A little status update',href:'bathroom.html'},
+        {icon:'🕊️',title:'Rules & boundaries',sub:'What we need from each other',href:'rules.html'}
+      ],
+      looking: [
+        {icon:'📷',title:'Photos & videos',sub:'Our albums and little movies',href:'gallery.html'},
+        {icon:'🌅',title:'Our timeline',sub:'The story so far',href:'timeline.html'},
+        {icon:'🤍',title:'Our love',sub:'The heart & our memory',href:'love.html'}
+      ]
+    };
+    const suggestions = document.getElementById('suggestions');
+    document.querySelectorAll('.mood').forEach(btn => {
+      btn.addEventListener('click', () => {
+        document.querySelectorAll('.mood').forEach(b => b.classList.remove('is-active'));
+        btn.classList.add('is-active');
+        const items = data[btn.dataset.mood] || [];
+        suggestions.innerHTML = items.map(i => `<a class="sug" href="${i.href}"><span class="icon">${i.icon}</span><span>${i.title}<span class="sub">${i.sub}</span></span></a>`).join('');
+        suggestions.hidden = false;
+        suggestions.scrollIntoView({behavior:'smooth',block:'nearest'});
+      });
+    });
+  </script>
+</body>
+</html>
+"

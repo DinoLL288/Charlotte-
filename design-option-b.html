@@ -1,0 +1,87 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8"><meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Design option B · Today</title>
+  <link rel="stylesheet" href="theme.css">
+  <style>
+    body{margin:0;min-height:100vh;font-family:var(--font-body);background:linear-gradient(160deg,#eaf7ff,#c3e6fb 42%,#8ecbeb 100%);color:#10344f}
+    .preview-banner{position:sticky;top:0;z-index:50;padding:10px 16px;text-align:center;background:#143f5f;color:#fff;font-size:.85rem;font-weight:700}
+    .preview-banner a{color:#ecd7a0;margin-left:12px}
+    .hero{padding:64px 20px 28px;text-align:center;color:#fff;background:linear-gradient(160deg,rgba(13,44,68,.85),rgba(42,120,168,.85))}
+    .hero h1{margin:10px 0 6px;font-family:var(--font-display);font-size:clamp(2rem,6vw,3.2rem);font-weight:400}
+    .hero p{margin:0 auto;max-width:44ch;color:#eaf6ff;line-height:1.6}
+    .together{margin:18px auto 0;display:flex;justify-content:center;gap:0}
+    .together .unit{min-width:52px;padding:0 10px;text-align:center}
+    .together .unit+.unit{border-left:1px solid rgba(255,255,255,.25)}
+    .together .num{font-family:var(--font-display);font-size:1.4rem}
+    .together .label{font-size:.55rem;letter-spacing:.14em;text-transform:uppercase;opacity:.75}
+    .wrap{width:min(640px,calc(100% - 32px));margin:0 auto 60px;display:grid;gap:16px}
+    .card{padding:20px 22px;border-radius:22px;background:rgba(255,255,255,.78);border:1px solid rgba(255,255,255,.9);box-shadow:0 14px 34px rgba(29,90,128,.12)}
+    .card h2{margin:0 0 4px;font-family:var(--font-display);font-size:1.25rem;color:#123a58}
+    .card p{margin:0;color:#4a7291;font-size:.9rem;line-height:1.5}
+    .now{display:grid;gap:6px}
+    .now-row{display:flex;align-items:center;gap:10px;padding:8px 0;border-bottom:1px solid #e4edf2}
+    .now-row:last-child{border-bottom:0}
+    .now-row .icon{font-size:1.1rem}
+    .now-row .text{flex:1;color:#123a58;font-weight:600;font-size:.92rem}
+    .now-row .hint{color:#7b91a0;font-size:.78rem}
+    .primary{display:grid;grid-template-columns:repeat(3,1fr);gap:10px}
+    .primary a{display:flex;flex-direction:column;align-items:center;gap:6px;padding:16px 8px;border-radius:18px;background:#fff;border:1px solid #dbe8ef;text-decoration:none;color:#123a58;font-weight:700;font-size:.85rem;transition:transform .15s}
+    .primary a:hover{transform:translateY(-2px);background:#edf7fd}
+    .primary .icon{font-size:1.6rem}
+    .more summary{cursor:pointer;font-weight:700;color:#123a58;padding:4px 0}
+    .more-list{display:grid;gap:6px;margin-top:8px}
+    .more-list a{display:flex;align-items:center;gap:10px;padding:10px 12px;border-radius:12px;background:#f7fbfd;text-decoration:none;color:#123a58;font-size:.88rem;font-weight:600}
+    .more-list a:hover{background:#edf7fd}
+    .more-list .icon{font-size:1.05rem}
+    @media(max-width:520px){.primary{grid-template-columns:1fr 1fr 1fr}.primary a{padding:12px 6px;font-size:.78rem}}
+  </style>
+</head>
+<body>
+  <div class="preview-banner">Design option B · Today — one dashboard: what's happening now, three big actions, the rest tucked away. <a href="design-options.html">Back to chooser</a></div>
+  <header class="hero">
+    <p class="eyebrow" style="color:#ecd7a0">Charlotte &amp; Luke</p>
+    <h1>Our little universe</h1>
+    <p>Every note, photo, plan and promise — kept in one quiet corner.</p>
+    <div class="together" data-together role="timer" aria-label="Time together"></div>
+  </header>
+  <main class="wrap">
+    <section class="card">
+      <h2>Right now</h2>
+      <p>A quick glance at today. (Illustrative placeholders — would pull real data.)</p>
+      <div class="now">
+        <div class="now-row"><span class="icon">📅</span><span class="text">No events today</span><span class="hint">Calendar</span></div>
+        <div class="now-row"><span class="icon">✉️</span><span class="text">2 new notes waiting</span><span class="hint">Notes</span></div>
+        <div class="now-row"><span class="icon">💬</span><span class="text">Question night not booked</span><span class="hint">Plan one</span></div>
+      </div>
+    </section>
+    <section class="card">
+      <h2>Jump in</h2>
+      <p>The three we reach for most.</p>
+      <div class="primary">
+        <a href="messages.html"><span class="icon">✉️</span>Notes</a>
+        <a href="gallery.html"><span class="icon">📷</span>Photos</a>
+        <a href="calendar.html"><span class="icon">📅</span>Calendar</a>
+      </div>
+    </section>
+    <details class="card more">
+      <summary>More rooms (9)</summary>
+      <div class="more-list">
+        <a href="love.html"><span class="icon">🤍</span>Our love</a>
+        <a href="timeline.html"><span class="icon">🌅</span>Our timeline</a>
+        <a href="tiktok.html"><span class="icon">🎵</span>TikTok plans</a>
+        <a href="play.html"><span class="icon">🎲</span>Play &amp; ask</a>
+        <a href="question-night.html"><span class="icon">💬</span>Question night</a>
+        <a href="our-life.html"><span class="icon">🧩</span>Things we make</a>
+        <a href="apart.html"><span class="icon">🌙</span>Quiet days</a>
+        <a href="rules.html"><span class="icon">🕊️</span>Rules &amp; boundaries</a>
+        <a href="bathroom.html"><span class="icon">🚻</span>Bathroom check-ins</a>
+      </div>
+    </details>
+  </main>
+  <footer style="text-align:center;padding:24px;color:#fff;font-size:.85rem">Charlotte &amp; Luke · made with care · <a href="vault.html" target="_top" style="color:#ecd7a0">Our little safe</a></footer>
+  <script src="together.js"></script>
+</body>
+</html>
+"

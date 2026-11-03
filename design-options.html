@@ -1,0 +1,57 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8"><meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Design options · chooser</title>
+  <link rel="stylesheet" href="theme.css">
+  <style>
+    body{margin:0;min-height:100vh;font-family:var(--font-body);background:linear-gradient(160deg,#eaf7ff,#c3e6fb 42%,#8ecbeb 100%);color:#10344f;padding:40px 20px 60px}
+    .wrap{width:min(900px,100%);margin:0 auto}
+    h1{font-family:var(--font-display);color:#123a58;font-size:clamp(2rem,5vw,2.8rem);margin:0 0 6px}
+    .sub{color:#4a7291;max-width:60ch;line-height:1.6;margin:0 0 28px}
+    .grid{display:grid;grid-template-columns:repeat(2,1fr);gap:16px}
+    .opt{padding:22px 20px;border-radius:22px;background:rgba(255,255,255,.78);border:1px solid rgba(255,255,255,.9);box-shadow:0 14px 34px rgba(29,90,128,.12);text-decoration:none;color:#123a58;display:block;transition:transform .18s,box-shadow .18s}
+    .opt:hover{transform:translateY(-4px);box-shadow:0 22px 46px rgba(29,90,128,.18)}
+    .opt .code{font-size:.72rem;font-weight:800;letter-spacing:.16em;text-transform:uppercase;color:#8a6d2b;margin-bottom:6px}
+    .opt h2{margin:0 0 6px;font-family:var(--font-display);font-size:1.35rem}
+    .opt p{margin:0;color:#4a7291;font-size:.9rem;line-height:1.55}
+    .opt ul{margin:8px 0 0;padding-left:18px;color:#4a7291;font-size:.85rem;line-height:1.6}
+    @media(max-width:640px){.grid{grid-template-columns:1fr}}
+    .note{margin-top:24px;padding:16px 18px;border-radius:16px;background:rgba(255,255,255,.6);color:#4a7291;font-size:.85rem;line-height:1.6}
+  </style>
+</head>
+<body>
+  <div class="wrap">
+    <h1>Four calmer ways in</h1>
+    <p class="sub">The hub currently shows all twelve rooms at once. These are four calmer alternatives — each shows fewer choices at a time. Open any to preview it, then tell me which one fits best (or mix ideas) and I'll make it the real home page.</p>
+    <div class="grid">
+      <a class="opt" href="design-option-a.html">
+        <div class="code">Option A</div>
+        <h2>Three doors</h2>
+        <p>Everything grouped into three big rooms — Us, Plans, Care &amp; quiet. Pick a room, then the few pages inside.</p>
+        <ul><li>Only 3 choices at first</li><li>Warm, grouped, low clutter</li></ul>
+      </a>
+      <a class="opt" href="design-option-b.html">
+        <div class="code">Option B</div>
+        <h2>Today dashboard</h2>
+        <p>What's happening now at the top, three big actions, everything else tucked into "More rooms".</p>
+        <ul><li>Progressive disclosure</li><li>Feels like a daily home</li></ul>
+      </a>
+      <a class="opt" href="design-option-c.html">
+        <div class="code">Option C</div>
+        <h2>Mood picker</h2>
+        <p>Start from how you feel — Missing you, Planning, Playful, Need space, Looking back — and see 2-3 matching rooms.</p>
+        <ul><li>Emotion-led, gentle</li><li>Full list still available below</li></ul>
+      </a>
+      <a class="opt" href="design-option-d.html">
+        <div class="code">Option D</div>
+        <h2>Calm list</h2>
+        <p>One room per row, lots of breathing room, grouped with small headings. No grid to scan.</p>
+        <ul><li>Linear, low stimulation</li><li>Easy to read top to bottom</li></ul>
+      </a>
+    </div>
+    <div class="note">These are previews only — the real <code>index.html</code> is untouched until you choose. The safe link stays in the footer on all of them.</div>
+  </div>
+</body>
+</html>
+"
