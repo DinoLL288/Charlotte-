@@ -457,7 +457,7 @@ export class QuestionNightRoom {
       theme: 'blue', accent: '#347fa3',
       reminderLeadDays: 1, reminderTime: '09:00', textSize: 'normal',
       reducedMotion: false, compactLayout: false, showReactions: true, showPresence: true,
-      homeLayout: 'calm',
+      homeLayout: 'calm', playfulExtras: true,
       ...(preferences[user] || {}), birthdayReminders: true
     };
   }
@@ -476,10 +476,11 @@ export class QuestionNightRoom {
         const reminderTime = String(body.preferences?.reminderTime || '');
         const textSize = ['normal', 'large'].includes(body.preferences?.textSize) ? body.preferences.textSize : '';
         const homeLayout = ['calm', 'doors'].includes(body.preferences?.homeLayout) ? body.preferences.homeLayout : 'calm';
+        const playfulExtras = body.preferences?.playfulExtras !== false;
         if (!theme || !accent || ![0, 1, 3, 7, 14].includes(reminderLeadDays) || !/^([01]\d|2[0-3]):[0-5]\d$/.test(reminderTime) || !textSize) return Response.json({ error: 'Choose a valid theme, accent, text size, and reminder time.' }, { status: 400 });
         const all = await this.ctx.storage.get('profilePreferences') || {};
         all[user] = {
-          theme, accent, birthdayReminders: true, reminderLeadDays, reminderTime, textSize, homeLayout,
+          theme, accent, birthdayReminders: true, reminderLeadDays, reminderTime, textSize, homeLayout, playfulExtras,
           reducedMotion: Boolean(body.preferences?.reducedMotion), compactLayout: Boolean(body.preferences?.compactLayout),
           showReactions: body.preferences?.showReactions !== false, showPresence: body.preferences?.showPresence !== false
         };
