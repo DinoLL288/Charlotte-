@@ -36,7 +36,7 @@
   <div class="top-bar"><a class="button secondary" href="index.html">← Back to hub</a></div>
   <div class="wrap">
     <h1>Love store</h1>
-    <p class="sub">Spend love tokens on little promises. When you buy one, your partner has to do it — and it lands on the calendar.</p>
+    <p class="sub">Spend love tokens on little promises you can do from school or on your nightly call. When you buy one, your partner has to do it — and it lands on the calendar.</p>
     <div class="balance">Love tokens: <span id="balance">0</span></div>
 
     <div class="grid" id="items"></div>
@@ -69,12 +69,16 @@
       const user = localStorage.getItem('charlotte-user');
       const other = user === 'Charlotte' ? 'Luke' : 'Charlotte';
       const items = [
-        { id: 'dinner', title: 'Cook dinner', cost: 10, desc: 'Your partner cooks a full dinner for you.' },
-        { id: 'breakfast', title: 'Breakfast in bed', cost: 12, desc: 'Breakfast delivered to bed.' },
-        { id: 'massage', title: '10-minute massage', cost: 15, desc: 'A relaxing 10-minute massage.' },
-        { id: 'movie', title: 'Movie night pick', cost: 5, desc: 'You choose the movie tonight.' },
-        { id: 'chore', title: 'One chore done', cost: 8, desc: 'Your partner does one chore for you.' },
-        { id: 'date', title: 'Surprise date', cost: 25, desc: 'Your partner plans a surprise date.' }
+        { id: 'morning', title: 'Good morning text', cost: 3, desc: 'A sweet good-morning message when you wake up.' },
+        { id: 'voice', title: 'Voice note', cost: 4, desc: 'A short voice note just for you.' },
+        { id: 'song', title: 'Song of the day', cost: 4, desc: 'They send you a song that reminds them of you.' },
+        { id: 'meme', title: 'Meme dump', cost: 5, desc: 'A bunch of memes or funny posts.' },
+        { id: 'compliment', title: 'Compliment of the day', cost: 5, desc: 'One genuine compliment, no take-backs.' },
+        { id: 'call', title: 'Extra call time', cost: 6, desc: 'An extra 10 minutes on your nightly call.' },
+        { id: 'study', title: 'Study together', cost: 8, desc: 'A shared study or homework session on call.' },
+        { id: 'photo', title: 'Photo of your day', cost: 6, desc: 'They send a photo from their day.' },
+        { id: 'game', title: 'Online game together', cost: 10, desc: 'Play an online game together.' },
+        { id: 'secret', title: 'Secret note', cost: 12, desc: 'A private note only you two know about.' }
       ];
 
       const itemsBox = document.getElementById('items');
