@@ -1,0 +1,17 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 128 128">
+  <g>
+    <circle cx="64" cy="64" r="16" fill="#6b7280"/>
+    <circle cx="64" cy="64" r="8" fill="#e5e7eb"/>
+    <!-- three lobes -->
+    <ellipse cx="64" cy="24" rx="14" ry="22" fill="#9ca3af"/>
+    <ellipse cx="64" cy="24" rx="8" ry="14" fill="#d1d5db"/>
+    <ellipse cx="28" cy="84" rx="14" ry="22" fill="#9ca3af" transform="rotate(-120 28 84)"/>
+    <ellipse cx="28" cy="84" rx="8" ry="14" fill="#d1d5db" transform="rotate(-120 28 84)"/>
+    <ellipse cx="100" cy="84" rx="14" ry="22" fill="#9ca3af" transform="rotate(120 100 84)"/>
+    <ellipse cx="100" cy="84" rx="8" ry="14" fill="#d1d5db" transform="rotate(120 100 84)"/>
+    <!-- bearings -->
+    <circle cx="64" cy="18" r="5" fill="#374151"/>
+    <circle cx="32" cy="88" r="5" fill="#374151" transform="rotate(-120 64 64)"/>
+    <circle cx="96" cy="88" r="5" fill="#374151" transform="rotate(120 64 64)"/>
+  </g>
+</svg>

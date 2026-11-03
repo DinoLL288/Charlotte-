@@ -227,7 +227,6 @@
     const sp = document.createElement('div');
     sp.id = 'fidgetSpinner';
     sp.className = 'fidget-spinner';
-    sp.textContent = '🌀';
     sp.setAttribute('aria-label', 'Movable fidget spinner');
     document.body.appendChild(sp);
 

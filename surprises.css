@@ -204,8 +204,8 @@
 /* ---------- Token badge ---------- */
 .token-badge {
   position: fixed;
-  left: 16px;
-  bottom: 16px;
+  right: 16px;
+  top: 72px;
   z-index: 65;
   padding: 8px 14px;
   border-radius: 999px;
@@ -222,7 +222,7 @@
 .fidget-spinner {
   position: fixed;
   right: 16px;
-  bottom: 60px;
+  top: 112px;
   z-index: 65;
   width: 62px;
   height: 62px;
