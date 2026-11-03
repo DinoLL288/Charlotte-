@@ -165,7 +165,7 @@ const homeLayout = document.getElementById('homeLayout');
       compactLayout.checked = Boolean(preferences.compactLayout);
       showReactions.checked = preferences.showReactions !== false;
       showPresence.checked = preferences.showPresence !== false;
-      homeLayout.value = preferences.homeLayout === 'doors' ? 'doors' : 'calm';
+      if (preferences && preferences.homeLayout) homeLayout.value = preferences.homeLayout === 'doors' ? 'doors' : 'calm';
       reminderLeadDays.value = String(preferences.reminderLeadDays ?? 1);
       reminderTime.value = preferences.reminderTime || '09:00';
       document.documentElement.dataset.coupleTheme = themeChoice.value;
