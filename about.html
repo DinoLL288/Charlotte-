@@ -1,0 +1,48 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8"><meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="robots" content="index, follow">
+  <title>Charlotte and Luke Video Uploader</title>
+  <link rel="stylesheet" href="theme.css">
+  <style>
+    body{margin:0;min-height:100vh;font-family:var(--font-body);background:linear-gradient(160deg,#eaf7ff,#c3e6fb 42%,#8ecbeb 100%);color:#10344f;line-height:1.7}
+    .page{width:min(760px,calc(100% - 32px));margin:48px auto 64px}
+    .back{display:inline-flex;align-items:center;gap:8px;padding:9px 15px;border:1px solid #d8e8ef;border-radius:999px;background:#fff;color:#315b75;text-decoration:none;font-weight:650;font-size:.9rem}
+    article{margin-top:22px;padding:clamp(24px,5vw,48px);border:1px solid #e3edf1;border-radius:30px;background:#fff;box-shadow:0 18px 50px #24496012}
+    h1{font-family:var(--font-display);color:#254c66;font-size:clamp(1.9rem,5vw,2.8rem);margin:0 0 8px;line-height:1.2}
+    h2{font-family:var(--font-display);color:#254c66;font-size:1.25rem;margin:26px 0 8px}
+    p{margin:0 0 14px;color:#3a5a72}
+    ul{margin:0 0 14px;padding-left:22px;color:#3a5a72}
+    li{margin-bottom:6px}
+    a{color:#326b8c}
+    .lead{font-size:1.05rem;color:#254c66}
+    footer{margin-top:30px;text-align:center;color:#648096;font-size:.85rem}
+  </style>
+</head>
+<body>
+  <main class="page">
+    <a class="back" href="index.html">← Back to our site</a>
+    <article>
+      <h1>Charlotte and Luke Video Uploader</h1>
+      <p class="lead">A small, private website that Charlotte and Luke use together. It keeps our notes, photos, plans, and memories in one quiet place, and lets us upload videos we make to YouTube as Unlisted so we can watch them together.</p>
+
+      <h2>What this app does</h2>
+      <p>It is a personal, shared space for two people. Features include notes we leave for each other, a photo and video gallery, a shared calendar, little games and question nights, and a private, browser-encrypted safe for logins we both need. Nothing here is for the public: the site is protected by a sign-in, and there is no advertising or data selling.</p>
+
+      <h2>How it uses Google data</h2>
+      <p>The only Google integration is optional and is used for the gallery:</p>
+      <ul>
+        <li><strong>Google Photos:</strong> when we choose to connect, the browser asks Google for permission to add photos to our shared Google Photos account and to read only the photos added through this website. The browser uploads and retrieves photos directly with Google. Google access tokens stay in the browser session and are not sent to or stored by our website. We store the Google media IDs and our album labels in Cloudflare so the website can find those app-created items again.</li>
+        <li><strong>YouTube:</strong> when we choose to upload a video, the browser asks Google for permission to upload to YouTube and read the uploaded video's details. The app uses that authorization to upload the video and confirm its YouTube details. We do not receive or store our Google password, and the temporary Google access token is not stored after the upload and verification request.</li>
+      </ul>
+      <p>Google Photos and YouTube data is used only to provide the visible gallery and video features, and its use follows the <a href="https://developers.google.com/terms/api-services-user-data-policy">Google API Services User Data Policy</a>, including the Limited Use requirements. Google may process photos and videos under its own terms and privacy policy.</p>
+
+      <h2>Privacy and terms</h2>
+      <p>Read our <a href="privacy.html">Privacy Policy</a> and <a href="terms.html">Terms of Service</a> for the full details of how information is handled.</p>
+    </article>
+    <footer>Charlotte &amp; Luke · made with care</footer>
+  </main>
+</body>
+</html>
+"
