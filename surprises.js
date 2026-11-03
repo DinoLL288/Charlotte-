@@ -307,6 +307,77 @@
     });
   }
 
+  function ensureStressBall() {
+    if (document.getElementById('stressBall')) return;
+    const ball = document.createElement('div');
+    ball.id = 'stressBall';
+    ball.className = 'stress-ball';
+    ball.setAttribute('aria-label', 'Stress ball');
+    document.body.appendChild(ball);
+
+    let dragging = false, moved = false, startX, startY, origX, origY;
+    ball.addEventListener('mousedown', function (e) {
+      dragging = true; moved = false;
+      startX = e.clientX; startY = e.clientY;
+      const r = ball.getBoundingClientRect();
+      origX = r.left; origY = r.top;
+      ball.style.right = 'auto'; ball.style.bottom = 'auto';
+      ball.style.left = origX + 'px'; ball.style.top = origY + 'px';
+      e.preventDefault();
+    });
+    window.addEventListener('mousemove', function (e) {
+      if (!dragging) return;
+      const dx = e.clientX - startX, dy = e.clientY - startY;
+      if (Math.abs(dx) > 3 || Math.abs(dy) > 3) moved = true;
+      ball.style.left = (origX + dx) + 'px';
+      ball.style.top = (origY + dy) + 'px';
+    });
+    window.addEventListener('mouseup', function () {
+      if (!dragging) return;
+      dragging = false;
+      if (!moved) {
+        ball.classList.remove('squish');
+        void ball.offsetWidth;
+        ball.classList.add('squish');
+        try {
+          const ctx = new (window.AudioContext || window.webkitAudioContext)();
+          const o = ctx.createOscillator(); const g = ctx.createGain();
+          o.type = 'sine'; o.frequency.value = 320; g.gain.value = 0.06;
+          o.connect(g); g.connect(ctx.destination); o.start();
+          g.gain.exponentialRampToValueAtTime(0.0001, ctx.currentTime + 0.15);
+          o.stop(ctx.currentTime + 0.15);
+        } catch (e) {}
+      }
+    });
+
+    ball.addEventListener('touchstart', function (e) {
+      const t = e.touches[0];
+      dragging = true; moved = false;
+      startX = t.clientX; startY = t.clientY;
+      const r = ball.getBoundingClientRect();
+      origX = r.left; origY = r.top;
+      ball.style.right = 'auto'; ball.style.bottom = 'auto';
+      ball.style.left = origX + 'px'; ball.style.top = origY + 'px';
+    }, { passive: true });
+    window.addEventListener('touchmove', function (e) {
+      if (!dragging) return;
+      const t = e.touches[0];
+      const dx = t.clientX - startX, dy = t.clientY - startY;
+      if (Math.abs(dx) > 3 || Math.abs(dy) > 3) moved = true;
+      ball.style.left = (origX + dx) + 'px';
+      ball.style.top = (origY + dy) + 'px';
+    }, { passive: true });
+    window.addEventListener('touchend', function () {
+      if (!dragging) return;
+      dragging = false;
+      if (!moved) {
+        ball.classList.remove('squish');
+        void ball.offsetWidth;
+        ball.classList.add('squish');
+      }
+    });
+  }
+
   /* ---------- Scatter ---------- */
   function scatter() {
     if (!enabled()) return;
@@ -320,6 +391,7 @@
     document.body.appendChild(layer);
     ensureTokenBadge();
     ensureFidgetSpinner();
+    ensureStressBall();
 
     const count = 8 + Math.floor(Math.random() * 5);     // 8–12, kept sparse so the page stays calm
     const rareCount = Math.random() < 0.5 ? 1 : 0;       // 0–1 rare finds
@@ -383,6 +455,8 @@
     if (old) old.remove();
     const sp = document.getElementById('fidgetSpinner');
     if (sp) sp.remove();
+    const ball = document.getElementById('stressBall');
+    if (ball) ball.remove();
     const badge = document.getElementById('tokenBadge');
     if (badge) badge.remove();
   }
