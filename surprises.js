@@ -265,6 +265,7 @@
         sp.classList.remove('spin');
         void sp.offsetWidth;
         sp.classList.add('spin');
+        setTimeout(function () { sp.classList.remove('spin'); }, 650);
       }
     });
 
@@ -301,6 +302,7 @@
         sp.classList.remove('spin');
         void sp.offsetWidth;
         sp.classList.add('spin');
+        setTimeout(function () { sp.classList.remove('spin'); }, 650);
       }
     });
   }
