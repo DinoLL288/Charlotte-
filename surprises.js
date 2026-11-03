@@ -349,6 +349,8 @@
       if (!isRare) item.style.opacity = rand(0.28, 0.46).toFixed(2);
 
       item.addEventListener('click', function () {
+        if (item.dataset.found === 'true') return;
+        item.dataset.found = 'true';
         item.classList.remove(...ALL_REACTIONS);
         void item.offsetWidth;
         item.classList.add(reaction);
@@ -364,17 +366,9 @@
         } else {
           sparks(layer, item, 5);
           floaters(layer, item, pool.float, 2);
-          // small chance a regular item pops away with a little confetti
-          if (reaction === 'pop' && Math.random() < 0.5) {
-            confetti(8);
-            setTimeout(function () { item.classList.add('vanish'); }, 350);
-            setTimeout(function () { item.remove(); }, 900);
-          } else {
-            item.addEventListener('animationend', function done() {
-              item.classList.remove(reaction);
-              item.removeEventListener('animationend', done);
-            });
-          }
+          if (reaction === 'pop') confetti(8);
+          setTimeout(function () { item.classList.add('vanish'); }, 400);
+          setTimeout(function () { item.remove(); }, 950);
         }
       });
 
