@@ -252,7 +252,7 @@
   width: 52px;
   height: 52px;
   border-radius: 50%;
-  background: radial-gradient(circle at 30% 30%, #f9a8d4, #ec4899);
+  background: radial-gradient(circle at 30% 30%, #bae6fd, #38bdf8);
   box-shadow: 0 8px 20px rgba(0,0,0,.18), inset -4px -6px 10px rgba(0,0,0,.15);
   cursor: grab;
   user-select: none;
