@@ -92,7 +92,7 @@
     document.head.appendChild(theme);
   }
 
-  ['special-dates.js', 'site-theme.js', 'site-reminders.js', 'reactions.js', 'motion.js', 'playful.js'].forEach(src => {
+  ['special-dates.js', 'site-theme.js', 'site-reminders.js', 'reactions.js', 'motion.js', 'surprises.js'].forEach(src => {
     if (document.querySelector(`script[data-site-helper="${src}"]`)) return;
     const helper = document.createElement('script');
     helper.src = src;
