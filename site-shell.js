@@ -21,12 +21,32 @@
     else frame.src = next;
   }
 
-  frame.addEventListener('load', () => {
-    requestAnimationFrame(() => {
-      document.body.classList.remove('is-navigating');
-      frame.classList.add('is-visible');
-    });
+  function installBouncyBalls() {
+  try {
+    const pageDocument = frame.contentDocument;
+    if (!pageDocument || !pageDocument.documentElement) return;
+
+    if (pageDocument.getElementById('ui-bouncy-balls-script')) return;
+
+    const script = pageDocument.createElement('script');
+    script.id = 'ui-bouncy-balls-script';
+    script.src = '/ui-bouncy-balls.js';
+    script.async = true;
+
+    (pageDocument.head || pageDocument.documentElement).appendChild(script);
+  } catch (error) {
+    console.warn('Could not install fidget balls:', error);
+  }
+}
+
+frame.addEventListener('load', () => {
+  installBouncyBalls();
+
+  requestAnimationFrame(() => {
+    document.body.classList.remove('is-navigating');
+    frame.classList.add('is-visible');
   });
+});
 
   window.addEventListener('message', event => {
     if (event.origin !== location.origin || event.source !== frame.contentWindow || !event.data) return;
