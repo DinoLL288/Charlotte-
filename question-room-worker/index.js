@@ -95,6 +95,10 @@ export class QuestionNightRoom {
       return Response.json(await this.getPreferences(user), { headers: { 'cache-control': 'no-store' } });
     }
 
+    if (request.method === 'GET' && url.searchParams.get('view') === 'playful-state') {
+      return Response.json(await this.getPlayfulState(), { headers: { 'cache-control': 'no-store' } });
+    }
+
     if (request.method === 'GET' && url.searchParams.get('view') === 'questions') {
       const requestedSession = url.searchParams.get('sessionDate') || '';
       if (!(await this.getState(requestedSession)).open) return Response.json({ error: 'We both need to be online and ready before our questions open' }, { status: 423 });
@@ -462,6 +466,14 @@ export class QuestionNightRoom {
     };
   }
 
+  async getPlayfulState() {
+    const state = await this.ctx.storage.get('playfulState') || {};
+    return {
+      tokens: { Charlotte: 0, Luke: 0, ...(state.tokens || {}) },
+      finds: Array.isArray(state.finds) ? state.finds : []
+    };
+  }
+
   async mutateQuestions(request) {
     try {
       const body = await request.json();
@@ -488,6 +500,41 @@ export class QuestionNightRoom {
         await this.broadcastRefresh();
         return Response.json({ ok: true, preferences: all[user] });
       }
+      if (body.action === 'playful-find') {
+        const user = body.user;
+        if (!['Charlotte', 'Luke'].includes(user)) return Response.json({ error: 'Choose a valid account' }, { status: 400 });
+        const state = await this.getPlayfulState();
+        const rare = Boolean(body.rare);
+        const amount = rare ? 3 : 1;
+        state.tokens[user] = (state.tokens[user] || 0) + amount;
+        state.finds.push({ user, emoji: String(body.emoji || ''), rare, at: new Date().toISOString() });
+        if (state.finds.length > 500) state.finds = state.finds.slice(-500);
+        await this.ctx.storage.put('playfulState', state);
+        await this.broadcastRefresh();
+        return Response.json({ ok: true, state });
+      }
+      if (body.action === 'playful-spend') {
+        const user = body.user;
+        const amount = Number(body.amount);
+        if (!['Charlotte', 'Luke'].includes(user) || ![1, 2, 3, 5, 10].includes(amount)) return Response.json({ error: 'Choose a valid spend' }, { status: 400 });
+        const state = await this.getPlayfulState();
+        if ((state.tokens[user] || 0) < amount) return Response.json({ error: 'Not enough tokens' }, { status: 400 });
+        state.tokens[user] -= amount;
+        await this.ctx.storage.put('playfulState', state);
+        await this.broadcastRefresh();
+        return Response.json({ ok: true, state });
+      }
+      if (body.action === 'playful-award') {
+        const user = body.user;
+        const amount = Number(body.amount);
+        if (!['Charlotte', 'Luke'].includes(user) || !Number.isFinite(amount) || amount < 1 || amount > 50) return Response.json({ error: 'Choose a valid award' }, { status: 400 });
+        const state = await this.getPlayfulState();
+        state.tokens[user] = (state.tokens[user] || 0) + Math.floor(amount);
+        await this.ctx.storage.put('playfulState', state);
+        await this.broadcastRefresh();
+        return Response.json({ ok: true, state });
+      }
+
       const data = await this.getQuestionData();
       if (body.action === 'bathroom') {
         const user = body.user;

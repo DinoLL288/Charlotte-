@@ -187,6 +187,125 @@
     setTimeout(function () { t.remove(); }, 1000);
   }
 
+  function updateTokenBadge(state) {
+    const el = document.getElementById('tokenCount');
+    if (el && state && state.tokens) {
+      const u = user || 'Luke';
+      el.textContent = state.tokens[u] || 0;
+    }
+  }
+
+  function ensureTokenBadge() {
+    if (document.getElementById('tokenBadge')) return;
+    const badge = document.createElement('a');
+    badge.id = 'tokenBadge';
+    badge.className = 'token-badge';
+    badge.href = 'discoveries.html';
+    badge.innerHTML = 'Tokens: <span id="tokenCount">0</span>';
+    document.body.appendChild(badge);
+    if (user) {
+      fetch('/api/question-room?view=playful-state', { cache: 'no-store' })
+        .then(function (r) { return r.json(); })
+        .then(updateTokenBadge)
+        .catch(function () {});
+    }
+  }
+
+  function recordFind(emoji, rare) {
+    if (!user) return;
+    fetch('/api/question-room', {
+      method: 'POST',
+      headers: { 'content-type': 'application/json' },
+      body: JSON.stringify({ action: 'playful-find', user: user, emoji: emoji, rare: !!rare })
+    }).then(function (r) { return r.json(); })
+      .then(function (res) { if (res && res.state) updateTokenBadge(res.state); })
+      .catch(function () {});
+  }
+
+  function ensureFidgetSpinner() {
+    if (document.getElementById('fidgetSpinner')) return;
+    const sp = document.createElement('div');
+    sp.id = 'fidgetSpinner';
+    sp.className = 'fidget-spinner';
+    sp.textContent = '🌀';
+    sp.setAttribute('aria-label', 'Movable fidget spinner');
+    document.body.appendChild(sp);
+
+    let dragging = false;
+    let moved = false;
+    let startX = 0, startY = 0, origX = 0, origY = 0;
+
+    sp.addEventListener('mousedown', function (e) {
+      dragging = true;
+      moved = false;
+      startX = e.clientX;
+      startY = e.clientY;
+      const rect = sp.getBoundingClientRect();
+      origX = rect.left;
+      origY = rect.top;
+      sp.style.right = 'auto';
+      sp.style.bottom = 'auto';
+      sp.style.left = origX + 'px';
+      sp.style.top = origY + 'px';
+      e.preventDefault();
+    });
+
+    window.addEventListener('mousemove', function (e) {
+      if (!dragging) return;
+      const dx = e.clientX - startX;
+      const dy = e.clientY - startY;
+      if (Math.abs(dx) > 3 || Math.abs(dy) > 3) moved = true;
+      sp.style.left = (origX + dx) + 'px';
+      sp.style.top = (origY + dy) + 'px';
+    });
+
+    window.addEventListener('mouseup', function () {
+      if (!dragging) return;
+      dragging = false;
+      if (!moved) {
+        sp.classList.remove('spin');
+        void sp.offsetWidth;
+        sp.classList.add('spin');
+      }
+    });
+
+    // touch support
+    sp.addEventListener('touchstart', function (e) {
+      const t = e.touches[0];
+      dragging = true;
+      moved = false;
+      startX = t.clientX;
+      startY = t.clientY;
+      const rect = sp.getBoundingClientRect();
+      origX = rect.left;
+      origY = rect.top;
+      sp.style.right = 'auto';
+      sp.style.bottom = 'auto';
+      sp.style.left = origX + 'px';
+      sp.style.top = origY + 'px';
+    }, { passive: true });
+
+    window.addEventListener('touchmove', function (e) {
+      if (!dragging) return;
+      const t = e.touches[0];
+      const dx = t.clientX - startX;
+      const dy = t.clientY - startY;
+      if (Math.abs(dx) > 3 || Math.abs(dy) > 3) moved = true;
+      sp.style.left = (origX + dx) + 'px';
+      sp.style.top = (origY + dy) + 'px';
+    }, { passive: true });
+
+    window.addEventListener('touchend', function () {
+      if (!dragging) return;
+      dragging = false;
+      if (!moved) {
+        sp.classList.remove('spin');
+        void sp.offsetWidth;
+        sp.classList.add('spin');
+      }
+    });
+  }
+
   /* ---------- Scatter ---------- */
   function scatter() {
     if (!enabled()) return;
@@ -198,9 +317,11 @@
     layer.id = 'surpriseLayer';
     layer.className = 'surprise-layer';
     document.body.appendChild(layer);
+    ensureTokenBadge();
+    ensureFidgetSpinner();
 
-    const count = 22 + Math.floor(Math.random() * 11);   // 22–32, kept modest so the page stays calm
-    const rareCount = 1 + Math.floor(Math.random() * 2); // 1–2 rare finds
+    const count = 8 + Math.floor(Math.random() * 5);     // 8–12, kept sparse so the page stays calm
+    const rareCount = Math.random() < 0.5 ? 1 : 0;       // 0–1 rare finds
 
     for (let i = 0; i < count; i++) {
       const isRare = i < rareCount;
@@ -225,7 +346,7 @@
       item.style.left = rand(4, 96) + '%';
       item.style.top = rand(6, 94) + '%';
       item.style.setProperty('--d', -rand(0, 7) + 's');   // desync the idle drift
-      if (!isRare) item.style.opacity = rand(0.55, 0.85).toFixed(2);
+      if (!isRare) item.style.opacity = rand(0.28, 0.46).toFixed(2);
 
       item.addEventListener('click', function () {
         item.classList.remove(...ALL_REACTIONS);
@@ -233,6 +354,7 @@
         item.classList.add(reaction);
         tip(item, message, isRare ? 'gold long' : pool.tipClass);
         ripple(layer, item);
+        recordFind(emoji, isRare);
 
         if (isRare) {
           sparks(layer, item, 10);
@@ -264,6 +386,10 @@
   function removeLayer() {
     const old = document.getElementById('surpriseLayer');
     if (old) old.remove();
+    const sp = document.getElementById('fidgetSpinner');
+    if (sp) sp.remove();
+    const badge = document.getElementById('tokenBadge');
+    if (badge) badge.remove();
   }
   function sync() { if (enabled()) scatter(); else removeLayer(); }
 

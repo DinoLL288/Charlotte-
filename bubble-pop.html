@@ -1,0 +1,223 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <script src="site-shell-guard.js"></script>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+  <title>Bubble popping</title>
+  <script>if (!localStorage.getItem('charlotte-user')) window.location.href = 'login.html';</script>
+  <link rel="stylesheet" href="theme.css">
+  <style>
+    body { margin: 0; min-height: 100vh; font-family: var(--font-body); background: linear-gradient(160deg,#eaf7ff,#c3e6fb 42%,#8ecbeb 100%); color: #10344f; overflow: hidden; }
+    .top-bar { position: fixed; top: 12px; left: 12px; z-index: 5; }
+    .button { padding: 8px 14px; border-radius: 999px; background: #123a58; color: #fff; text-decoration: none; font-weight: 700; font-size: .85rem; border: 0; cursor: pointer; }
+    .button.secondary { background: rgba(255,255,255,.85); color: #123a58; }
+    .hud { position: fixed; top: 12px; left: 50%; transform: translateX(-50%); z-index: 5; display: flex; gap: 12px; flex-wrap: wrap; justify-content: center; }
+    .hud .pill { padding: 8px 14px; border-radius: 999px; background: rgba(255,255,255,.9); color: #123a58; font-weight: 700; font-size: .9rem; box-shadow: 0 6px 16px rgba(0,0,0,.12); }
+    .playfield { position: fixed; inset: 0; }
+    .bubble {
+      position: absolute; border-radius: 50%; cursor: pointer; user-select: none;
+      background: radial-gradient(circle at 30% 30%, rgba(255,255,255,.95), rgba(142,203,235,.85));
+      box-shadow: 0 8px 20px rgba(29,90,128,.25), inset -6px -8px 14px rgba(0,0,0,.08);
+      display: grid; place-items: center; font-size: 1.4rem;
+      transition: transform .08s ease;
+    }
+    .bubble:active { transform: scale(.9); }
+    .pop { animation: pop .25s ease forwards; }
+    @keyframes pop { 0%{transform:scale(1);opacity:1} 100%{transform:scale(1.6);opacity:0} }
+    .powerup { position: fixed; bottom: 18px; right: 18px; z-index: 5; display: flex; gap: 10px; flex-direction: column; align-items: flex-end; }
+    .message { position: fixed; bottom: 90px; left: 50%; transform: translateX(-50%); z-index: 5; padding: 10px 16px; border-radius: 999px; background: rgba(18,58,88,.9); color: #fff; font-weight: 700; opacity: 0; transition: opacity .2s; }
+    .message.show { opacity: 1; }
+    .overlay { position: fixed; inset: 0; z-index: 6; background: rgba(18,58,88,.55); display: none; place-items: center; }
+    .overlay.show { display: grid; }
+    .card { background: #fff; padding: 28px; border-radius: 20px; text-align: center; max-width: 360px; }
+    .card h2 { margin: 0 0 8px; color: #123a58; font-family: var(--font-display); }
+    .card p { color: #4a7291; }
+  </style>
+</head>
+<body>
+  <div class="top-bar"><a class="button secondary" href="index.html">← Back to hub</a></div>
+  <div class="hud">
+    <div class="pill">Score: <span id="score">0</span></div>
+    <div class="pill">Time: <span id="time">60</span>s</div>
+    <div class="pill">Tokens: <span id="tokens">0</span></div>
+    <div class="pill">Combo: <span id="combo">0</span></div>
+  </div>
+  <div class="playfield" id="playfield"></div>
+  <div class="powerup">
+    <button class="button" id="frenzyBtn" type="button">Spend 5 tokens: Frenzy (2x, 10s)</button>
+  </div>
+  <div class="message" id="message"></div>
+  <div class="overlay" id="overlay">
+    <div class="card">
+      <h2>Time's up!</h2>
+      <p>Final score: <strong id="finalScore">0</strong></p>
+      <p>Tokens earned: <strong id="earned">0</strong></p>
+      <button class="button" id="playAgain" type="button">Play again</button>
+      <a class="button secondary" href="discoveries.html">Discoveries</a>
+    </div>
+  </div>
+  <script src="avatar.js"></script>
+  <script>
+    (function () {
+      const user = localStorage.getItem('charlotte-user');
+      const field = document.getElementById('playfield');
+      const scoreEl = document.getElementById('score');
+      const timeEl = document.getElementById('time');
+      const tokensEl = document.getElementById('tokens');
+      const comboEl = document.getElementById('combo');
+      const messageEl = document.getElementById('message');
+      const overlay = document.getElementById('overlay');
+      const finalScore = document.getElementById('finalScore');
+      const earnedEl = document.getElementById('earned');
+      const frenzyBtn = document.getElementById('frenzyBtn');
+      const playAgain = document.getElementById('playAgain');
+
+      let score = 0;
+      let combo = 0;
+      let timeLeft = 60;
+      let frenzy = 0; // seconds remaining
+      let running = true;
+      let tokenBalance = 0;
+
+      // Web Audio
+      const ctx = new (window.AudioContext || window.webkitAudioContext)();
+      function tone(freq, dur, type) {
+        try {
+          const o = ctx.createOscillator();
+          const g = ctx.createGain();
+          o.type = type || 'sine';
+          o.frequency.value = freq;
+          g.gain.value = 0.08;
+          o.connect(g); g.connect(ctx.destination);
+          o.start();
+          g.gain.exponentialRampToValueAtTime(0.0001, ctx.currentTime + dur);
+          o.stop(ctx.currentTime + dur);
+        } catch (e) {}
+      }
+      function popSound(comboLevel) {
+        tone(400 + comboLevel * 30, 0.12, 'triangle');
+      }
+      function powerSound() { tone(660, 0.18, 'square'); setTimeout(function(){tone(880,0.18,'square');},120); }
+      function endSound() { tone(330,0.3,'sine'); setTimeout(function(){tone(220,0.4,'sine');},200); }
+
+      function showMessage(text) {
+        messageEl.textContent = text;
+        messageEl.classList.add('show');
+        clearTimeout(messageEl._t);
+        messageEl._t = setTimeout(function(){ messageEl.classList.remove('show'); }, 1200);
+      }
+
+      function fetchTokens() {
+        if (!user) return;
+        fetch('/api/question-room?view=playful-state', { cache: 'no-store' })
+          .then(function (r) { return r.json(); })
+          .then(function (s) { tokenBalance = (s.tokens && s.tokens[user]) || 0; tokensEl.textContent = tokenBalance; })
+          .catch(function () {});
+      }
+      fetchTokens();
+
+      function spawnBubble() {
+        if (!running) return;
+        const b = document.createElement('div');
+        b.className = 'bubble';
+        const size = 44 + Math.random() * 46;
+        b.style.width = size + 'px';
+        b.style.height = size + 'px';
+        b.style.left = (Math.random() * (window.innerWidth - size)) + 'px';
+        b.style.top = (window.innerHeight + 20) + 'px';
+        const emoji = ['🫧','💙','🩵','✨','🩷'][Math.floor(Math.random()*5)];
+        b.textContent = emoji;
+        const speed = 1.2 + Math.random() * 2.2;
+        field.appendChild(b);
+
+        let y = window.innerHeight + 20;
+        const drift = (Math.random() - 0.5) * 0.6;
+        let x = parseFloat(b.style.left);
+        const floatUp = setInterval(function () {
+          if (!document.body.contains(b)) { clearInterval(floatUp); return; }
+          y -= speed;
+          x += drift;
+          b.style.top = y + 'px';
+          b.style.left = x + 'px';
+          if (y < -80) { clearInterval(floatUp); b.remove(); }
+        }, 16);
+
+        b.addEventListener('click', function () {
+          if (!running) return;
+          clearInterval(floatUp);
+          b.classList.add('pop');
+          const gain = (frenzy > 0 ? 2 : 1) * (1 + Math.floor(combo / 5));
+          score += gain;
+          combo += 1;
+          scoreEl.textContent = score;
+          comboEl.textContent = combo;
+          popSound(combo);
+          setTimeout(function () { b.remove(); }, 260);
+        });
+      }
+
+      const spawnInterval = setInterval(function () {
+        if (!running) return;
+        spawnBubble();
+        if (Math.random() < 0.35) spawnBubble();
+      }, 900);
+
+      const timerInterval = setInterval(function () {
+        if (!running) return;
+        timeLeft -= 1;
+        if (frenzy > 0) frenzy -= 1;
+        timeEl.textContent = timeLeft;
+        if (timeLeft <= 0) {
+          running = false;
+          clearInterval(spawnInterval);
+          clearInterval(timerInterval);
+          endSound();
+          finalScore.textContent = score;
+          // award tokens: 1 per 10 points
+          const earned = Math.floor(score / 10);
+          earnedEl.textContent = earned;
+          if (user && earned > 0) {
+            fetch('/api/question-room', {
+              method: 'POST', headers: { 'content-type': 'application/json' },
+              body: JSON.stringify({ action: 'playful-award', user: user, amount: earned })
+            }).then(function (r) { return r.json(); })
+              .then(function (res) { if (res && res.state) { tokenBalance = res.state.tokens[user]; tokensEl.textContent = tokenBalance; } })
+              .catch(function () {});
+          }
+          overlay.classList.add('show');
+        }
+      }, 1000);
+
+      frenzyBtn.addEventListener('click', function () {
+        if (tokenBalance < 5) { showMessage('Need 5 tokens'); return; }
+        if (!user) { showMessage('Sign in first'); return; }
+        fetch('/api/question-room', {
+          method: 'POST', headers: { 'content-type': 'application/json' },
+          body: JSON.stringify({ action: 'playful-spend', user: user, amount: 5 })
+        }).then(function (r) { return r.json(); })
+          .then(function (res) {
+            if (res && res.ok) {
+              tokenBalance = res.state.tokens[user];
+              tokensEl.textContent = tokenBalance;
+              frenzy = 10;
+              powerSound();
+              showMessage('Frenzy! 2x points for 10s');
+            } else {
+              showMessage(res.error || 'Could not spend');
+            }
+          }).catch(function () { showMessage('Could not spend'); });
+      });
+
+      playAgain.addEventListener('click', function () {
+        location.reload();
+      });
+
+      // miss click resets combo
+      field.addEventListener('click', function (e) {
+        if (e.target === field) { combo = 0; comboEl.textContent = combo; }
+      });
+    })();
+  </script>
+</body>
+</html>
