@@ -7,6 +7,7 @@
   <title>Bubble popping</title>
   <script>if (!localStorage.getItem('charlotte-user')) window.location.href = 'login.html';</script>
   <link rel="stylesheet" href="theme.css">
+  <link rel="icon" href="favicon.svg" type="image/svg+xml">
   <style>
     body { margin: 0; min-height: 100vh; font-family: var(--font-body); background: linear-gradient(160deg,#eaf7ff,#c3e6fb 42%,#8ecbeb 100%); color: #10344f; overflow: hidden; }
     .top-bar { position: fixed; top: 12px; left: 12px; z-index: 5; }
@@ -21,6 +22,7 @@
       box-shadow: 0 8px 20px rgba(29,90,128,.25), inset -6px -8px 14px rgba(0,0,0,.08);
       display: grid; place-items: center; font-size: 1.4rem;
       transition: transform .08s ease;
+      will-change: transform, top, left;
     }
     .bubble:active { transform: scale(.9); }
     .pop { animation: pop .25s ease forwards; }
@@ -33,6 +35,9 @@
     .card { background: #fff; padding: 28px; border-radius: 20px; text-align: center; max-width: 360px; }
     .card h2 { margin: 0 0 8px; color: #123a58; font-family: var(--font-display); }
     .card p { color: #4a7291; }
+    @media (min-width: 900px) {
+      .bubble { font-size: 1.7rem; }
+    }
   </style>
 </head>
 <body>
@@ -42,19 +47,23 @@
     <div class="pill">Time: <span id="time">60</span>s</div>
     <div class="pill">Tokens: <span id="tokens">0</span></div>
     <div class="pill">Combo: <span id="combo">0</span></div>
+    <div class="pill">Popped: <span id="popped">0</span></div>
   </div>
   <div class="playfield" id="playfield"></div>
   <div class="powerup">
-    <button class="button" id="frenzyBtn" type="button">Spend 5 tokens: Frenzy (2x, 10s)</button>
+    <button class="button" id="frenzyBtn" type="button">5 tokens: Frenzy (2x, 10s)</button>
+    <button class="button" id="timeBtn" type="button">3 tokens: +10s</button>
   </div>
   <div class="message" id="message"></div>
   <div class="overlay" id="overlay">
     <div class="card">
       <h2>Time's up!</h2>
       <p>Final score: <strong id="finalScore">0</strong></p>
-      <p>Tokens earned: <strong id="earned">0</strong></p>
+      <p>Bubbles popped: <strong id="finalPopped">0</strong></p>
+      <p>Love tokens earned: <strong id="earned">0</strong></p>
       <button class="button" id="playAgain" type="button">Play again</button>
       <a class="button secondary" href="discoveries.html">Discoveries</a>
+      <a class="button secondary" href="love-store.html">Love store</a>
     </div>
   </div>
   <script src="avatar.js"></script>
@@ -66,21 +75,24 @@
       const timeEl = document.getElementById('time');
       const tokensEl = document.getElementById('tokens');
       const comboEl = document.getElementById('combo');
+      const poppedEl = document.getElementById('popped');
       const messageEl = document.getElementById('message');
       const overlay = document.getElementById('overlay');
       const finalScore = document.getElementById('finalScore');
+      const finalPopped = document.getElementById('finalPopped');
       const earnedEl = document.getElementById('earned');
       const frenzyBtn = document.getElementById('frenzyBtn');
+      const timeBtn = document.getElementById('timeBtn');
       const playAgain = document.getElementById('playAgain');
 
       let score = 0;
       let combo = 0;
       let timeLeft = 60;
-      let frenzy = 0; // seconds remaining
+      let frenzy = 0;
       let running = true;
       let tokenBalance = 0;
+      let poppedCount = 0;
 
-      // Web Audio
       const ctx = new (window.AudioContext || window.webkitAudioContext)();
       function tone(freq, dur, type) {
         try {
@@ -95,9 +107,7 @@
           o.stop(ctx.currentTime + dur);
         } catch (e) {}
       }
-      function popSound(comboLevel) {
-        tone(400 + comboLevel * 30, 0.12, 'triangle');
-      }
+      function popSound(comboLevel) { tone(400 + comboLevel * 30, 0.12, 'triangle'); }
       function powerSound() { tone(660, 0.18, 'square'); setTimeout(function(){tone(880,0.18,'square');},120); }
       function endSound() { tone(330,0.3,'sine'); setTimeout(function(){tone(220,0.4,'sine');},200); }
 
@@ -117,51 +127,62 @@
       }
       fetchTokens();
 
+      const bubbles = [];
       function spawnBubble() {
         if (!running) return;
         const b = document.createElement('div');
         b.className = 'bubble';
-        const size = 44 + Math.random() * 46;
+        const size = (window.innerWidth > 900 ? 56 : 44) + Math.random() * (window.innerWidth > 900 ? 56 : 40);
         b.style.width = size + 'px';
         b.style.height = size + 'px';
         b.style.left = (Math.random() * (window.innerWidth - size)) + 'px';
         b.style.top = (window.innerHeight + 20) + 'px';
         const emoji = ['🫧','💙','🩵','✨','🩷'][Math.floor(Math.random()*5)];
         b.textContent = emoji;
-        const speed = 1.2 + Math.random() * 2.2;
+        const speed = (window.innerWidth > 900 ? 2.4 : 1.6) + Math.random() * (window.innerWidth > 900 ? 2.6 : 2.0);
         field.appendChild(b);
-
-        let y = window.innerHeight + 20;
-        const drift = (Math.random() - 0.5) * 0.6;
-        let x = parseFloat(b.style.left);
-        const floatUp = setInterval(function () {
-          if (!document.body.contains(b)) { clearInterval(floatUp); return; }
-          y -= speed;
-          x += drift;
-          b.style.top = y + 'px';
-          b.style.left = x + 'px';
-          if (y < -80) { clearInterval(floatUp); b.remove(); }
-        }, 16);
+        const bubble = { el: b, y: window.innerHeight + 20, x: parseFloat(b.style.left), speed: speed, drift: (Math.random()-0.5)*0.8 };
+        bubbles.push(bubble);
 
         b.addEventListener('click', function () {
           if (!running) return;
-          clearInterval(floatUp);
+          bubble.dead = true;
           b.classList.add('pop');
           const gain = (frenzy > 0 ? 2 : 1) * (1 + Math.floor(combo / 5));
           score += gain;
           combo += 1;
+          poppedCount += 1;
           scoreEl.textContent = score;
           comboEl.textContent = combo;
+          poppedEl.textContent = poppedCount;
           popSound(combo);
           setTimeout(function () { b.remove(); }, 260);
         });
       }
 
+      let last = performance.now();
+      function frame(now) {
+        if (!running) return;
+        const dt = Math.min(40, now - last);
+        last = now;
+        for (let i = bubbles.length - 1; i >= 0; i--) {
+          const bb = bubbles[i];
+          if (bb.dead) continue;
+          bb.y -= bb.speed * (dt / 16);
+          bb.x += bb.drift * (dt / 16);
+          bb.el.style.top = bb.y + 'px';
+          bb.el.style.left = bb.x + 'px';
+          if (bb.y < -80) { bb.dead = true; bb.el.remove(); combo = 0; comboEl.textContent = combo; }
+        }
+        requestAnimationFrame(frame);
+      }
+      requestAnimationFrame(frame);
+
       const spawnInterval = setInterval(function () {
         if (!running) return;
         spawnBubble();
-        if (Math.random() < 0.35) spawnBubble();
-      }, 900);
+        if (window.innerWidth > 900 && Math.random() < 0.5) spawnBubble();
+      }, window.innerWidth > 900 ? 650 : 900);
 
       const timerInterval = setInterval(function () {
         if (!running) return;
@@ -174,8 +195,8 @@
           clearInterval(timerInterval);
           endSound();
           finalScore.textContent = score;
-          // award tokens: 1 per 10 points
-          const earned = Math.floor(score / 10);
+          finalPopped.textContent = poppedCount;
+          const earned = poppedCount; // one love token per bubble popped
           earnedEl.textContent = earned;
           if (user && earned > 0) {
             fetch('/api/question-room', {
@@ -209,11 +230,31 @@
           }).catch(function () { showMessage('Could not spend'); });
       });
 
+      timeBtn.addEventListener('click', function () {
+        if (tokenBalance < 3) { showMessage('Need 3 tokens'); return; }
+        if (!user) { showMessage('Sign in first'); return; }
+        fetch('/api/question-room', {
+          method: 'POST', headers: { 'content-type': 'application/json' },
+          body: JSON.stringify({ action: 'playful-spend', user: user, amount: 3 })
+        }).then(function (r) { return r.json(); })
+          .then(function (res) {
+            if (res && res.ok) {
+              tokenBalance = res.state.tokens[user];
+              tokensEl.textContent = tokenBalance;
+              timeLeft += 10;
+              timeEl.textContent = timeLeft;
+              powerSound();
+              showMessage('+10 seconds!');
+            } else {
+              showMessage(res.error || 'Could not spend');
+            }
+          }).catch(function () { showMessage('Could not spend'); });
+      });
+
       playAgain.addEventListener('click', function () {
         location.reload();
       });
 
-      // miss click resets combo
       field.addEventListener('click', function (e) {
         if (e.target === field) { combo = 0; comboEl.textContent = combo; }
       });

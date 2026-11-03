@@ -1,0 +1,170 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <script src="site-shell-guard.js"></script>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+  <title>Love store</title>
+  <script>if (!localStorage.getItem('charlotte-user')) window.location.href = 'login.html';</script>
+  <link rel="stylesheet" href="theme.css">
+  <link rel="icon" href="favicon.svg" type="image/svg+xml">
+  <style>
+    body { margin: 0; min-height: 100vh; font-family: var(--font-body); background: linear-gradient(160deg,#eaf7ff,#c3e6fb 42%,#8ecbeb 100%); color: #10344f; padding: 24px 16px 60px; }
+    .wrap { width: min(960px, 100%); margin: 0 auto; }
+    h1 { font-family: var(--font-display); color: #123a58; font-size: clamp(2rem,5vw,2.8rem); margin: 0 0 6px; }
+    .sub { color: #4a7291; max-width: 70ch; line-height: 1.6; margin: 0 0 20px; }
+    .top-bar { margin-bottom: 16px; }
+    .button { padding: 10px 16px; border-radius: 999px; background: #123a58; color: #fff; text-decoration: none; font-weight: 700; font-size: .9rem; border: 0; cursor: pointer; }
+    .button.secondary { background: #edf4f8; color: #123a58; }
+    .grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(240px, 1fr)); gap: 12px; margin-bottom: 24px; }
+    .card { padding: 16px; border-radius: 18px; background: rgba(255,255,255,.85); border: 1px solid rgba(255,255,255,.9); }
+    .card h3 { margin: 0 0 4px; color: #123a58; font-family: var(--font-display); }
+    .card .cost { color: #8a6d2b; font-weight: 800; margin: 6px 0; }
+    .card p { color: #4a7291; font-size: .9rem; line-height: 1.5; margin: 0 0 10px; }
+    .form { padding: 18px; border-radius: 18px; background: rgba(255,255,255,.85); border: 1px solid rgba(255,255,255,.9); margin-bottom: 24px; }
+    .form label { display: grid; gap: 6px; margin-bottom: 12px; color: #486a83; font-weight: 700; font-size: .9rem; }
+    .form input, .form select, .form textarea { padding: 10px 12px; border-radius: 12px; border: 1px solid #c8dceb; font: inherit; }
+    .tasks { display: grid; gap: 10px; }
+    .task { padding: 14px; border-radius: 16px; background: rgba(255,255,255,.8); border: 1px solid rgba(255,255,255,.9); }
+    .task strong { color: #123a58; }
+    .task .meta { color: #4a7291; font-size: .85rem; margin-top: 4px; }
+    .status { margin: 10px 0; color: #73591f; font-weight: 700; min-height: 1.4em; }
+    .balance { font-size: 1.4rem; font-weight: 800; color: #8a6d2b; margin-bottom: 16px; }
+  </style>
+</head>
+<body>
+  <div class="top-bar"><a class="button secondary" href="index.html">← Back to hub</a></div>
+  <div class="wrap">
+    <h1>Love store</h1>
+    <p class="sub">Spend love tokens on little promises. When you buy one, your partner has to do it — and it lands on the calendar.</p>
+    <div class="balance">Love tokens: <span id="balance">0</span></div>
+
+    <div class="grid" id="items"></div>
+
+    <div class="form">
+      <h3 style="margin:0 0 12px;color:#123a58;font-family:var(--font-display);">Buy a promise</h3>
+      <label>Item
+        <select id="itemSelect"></select>
+      </label>
+      <label>Date
+        <input type="date" id="dueDate">
+      </label>
+      <label>Time
+        <input type="time" id="dueTime" value="18:00">
+      </label>
+      <label>Note (optional)
+        <textarea id="note" rows="2" placeholder="Any details..."></textarea>
+      </label>
+      <button class="button" id="buyBtn" type="button">Buy with love tokens</button>
+      <p class="status" id="status"></p>
+    </div>
+
+    <h2 style="font-family:var(--font-display);color:#123a58;">Pending promises</h2>
+    <div class="tasks" id="tasks"></div>
+    <p class="empty" id="empty" style="color:#4a7291;text-align:center;">No promises yet.</p>
+  </div>
+  <script src="avatar.js"></script>
+  <script>
+    (function () {
+      const user = localStorage.getItem('charlotte-user');
+      const other = user === 'Charlotte' ? 'Luke' : 'Charlotte';
+      const items = [
+        { id: 'dinner', title: 'Cook dinner', cost: 10, desc: 'Your partner cooks a full dinner for you.' },
+        { id: 'breakfast', title: 'Breakfast in bed', cost: 12, desc: 'Breakfast delivered to bed.' },
+        { id: 'massage', title: '10-minute massage', cost: 15, desc: 'A relaxing 10-minute massage.' },
+        { id: 'movie', title: 'Movie night pick', cost: 5, desc: 'You choose the movie tonight.' },
+        { id: 'chore', title: 'One chore done', cost: 8, desc: 'Your partner does one chore for you.' },
+        { id: 'date', title: 'Surprise date', cost: 25, desc: 'Your partner plans a surprise date.' }
+      ];
+
+      const itemsBox = document.getElementById('items');
+      const select = document.getElementById('itemSelect');
+      items.forEach(function (it) {
+        const c = document.createElement('div');
+        c.className = 'card';
+        c.innerHTML = '<h3>' + it.title + '</h3><div class="cost">' + it.cost + ' tokens</div><p>' + it.desc + '</p>';
+        itemsBox.appendChild(c);
+        const o = document.createElement('option');
+        o.value = it.id;
+        o.textContent = it.title + ' (' + it.cost + ')';
+        select.appendChild(o);
+      });
+
+      const balanceEl = document.getElementById('balance');
+      const statusEl = document.getElementById('status');
+      const tasksBox = document.getElementById('tasks');
+      const emptyEl = document.getElementById('empty');
+
+      function getSelectedItem() { return items.find(function (i) { return i.id === select.value; }); }
+
+      function fetchTokens() {
+        if (!user) return;
+        fetch('/api/question-room?view=playful-state', { cache: 'no-store' })
+          .then(function (r) { return r.json(); })
+          .then(function (s) { balanceEl.textContent = (s.tokens && s.tokens[user]) || 0; })
+          .catch(function () {});
+      }
+      fetchTokens();
+
+      function renderTasks() {
+        fetch('/api/question-room?view=love-tasks', { cache: 'no-store' })
+          .then(function (r) { return r.json(); })
+          .then(function (s) {
+            const tasks = (s.tasks || []).slice().reverse();
+            tasksBox.innerHTML = '';
+            if (!tasks.length) { emptyEl.hidden = false; return; }
+            emptyEl.hidden = true;
+            tasks.forEach(function (t) {
+              const d = document.createElement('div');
+              d.className = 'task';
+              const who = t.assignee === user ? 'You owe this' : 'They owe this';
+              const done = t.status === 'done' ? ' (done)' : '';
+              d.innerHTML = '<strong>' + t.item + '</strong> — ' + who + done +
+                '<div class="meta">From ' + t.buyer + ' · due ' + t.dueDate + (t.dueTime ? ' ' + t.dueTime : '') + (t.note ? ' · ' + t.note : '') + '</div>';
+              if (t.assignee === user && t.status !== 'done') {
+                const btn = document.createElement('button');
+                btn.className = 'button secondary';
+                btn.textContent = 'Mark done';
+                btn.style.marginTop = '8px';
+                btn.addEventListener('click', function () {
+                  fetch('/api/question-room', {
+                    method: 'POST', headers: { 'content-type': 'application/json' },
+                    body: JSON.stringify({ action: 'love-complete', user: user, id: t.id })
+                  }).then(function () { renderTasks(); }).catch(function () {});
+                });
+                d.appendChild(btn);
+              }
+              tasksBox.appendChild(d);
+            });
+          }).catch(function () {});
+      }
+      renderTasks();
+
+      document.getElementById('buyBtn').addEventListener('click', function () {
+        const it = getSelectedItem();
+        if (!it) return;
+        const date = document.getElementById('dueDate').value;
+        const time = document.getElementById('dueTime').value;
+        const note = document.getElementById('note').value.trim();
+        if (!date) { statusEl.textContent = 'Choose a date.'; return; }
+        statusEl.textContent = 'Buying...';
+        fetch('/api/question-room', {
+          method: 'POST', headers: { 'content-type': 'application/json' },
+          body: JSON.stringify({ action: 'love-buy', user: user, item: it.title, cost: it.cost, dueDate: date, dueTime: time, note: note })
+        }).then(function (r) { return r.json(); })
+          .then(function (res) {
+            if (!res || !res.ok) { statusEl.textContent = (res && res.error) || 'Could not buy.'; return; }
+            balanceEl.textContent = res.state.tokens[user];
+            // auto-add to calendar
+            fetch('/api/calendar', {
+              method: 'POST', headers: { 'content-type': 'application/json' },
+              body: JSON.stringify({ action: 'add', date: date, event: { title: 'Love promise: ' + it.title + ' (for ' + other + ')', startTime: time, author: user } })
+            }).catch(function () {});
+            statusEl.textContent = 'Bought! ' + it.title + ' added to calendar.';
+            renderTasks();
+          }).catch(function (e) { statusEl.textContent = 'Could not buy.'; });
+      });
+    })();
+  </script>
+</body>
+</html>
