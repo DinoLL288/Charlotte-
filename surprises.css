@@ -204,9 +204,9 @@
 /* ---------- Token badge ---------- */
 .token-badge {
   position: fixed;
-  right: 16px;
+  left: 16px;
   bottom: 16px;
-  z-index: 60;
+  z-index: 65;
   padding: 8px 14px;
   border-radius: 999px;
   background: rgba(18,58,88,.9);
@@ -223,18 +223,20 @@
   position: fixed;
   right: 16px;
   bottom: 60px;
-  z-index: 60;
-  width: 46px;
-  height: 46px;
+  z-index: 65;
+  width: 62px;
+  height: 62px;
   display: grid;
   place-items: center;
-  font-size: 1.9rem;
+  font-size: 2.6rem;
   border-radius: 50%;
-  background: rgba(255,255,255,.9);
-  box-shadow: 0 8px 20px rgba(0,0,0,.18);
+  background: radial-gradient(circle at 30% 30%, #fff, #cfe9f7);
+  box-shadow: 0 10px 24px rgba(0,0,0,.22), inset 0 2px 6px rgba(255,255,255,.8);
   cursor: grab;
   user-select: none;
-  transition: transform .4s cubic-bezier(.22,1,.36,1);
+  transition: transform .55s cubic-bezier(.18,.89,.32,1.28);
 }
+.fidget-spinner:active { cursor: grabbing; transform: scale(.92); }
+.fidget-spinner.spin { transform: rotate(1440deg) scale(1.05); }
 .fidget-spinner:active { cursor: grabbing; }
 .fidget-spinner.spin { transform: rotate(720deg); }

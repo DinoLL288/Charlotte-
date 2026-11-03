@@ -84,6 +84,14 @@
     document.head.appendChild(polish);
   }
 
+  if (!document.querySelector('link[rel~="icon"]')) {
+    const fav = document.createElement('link');
+    fav.rel = 'icon';
+    fav.href = 'favicon.svg';
+    fav.type = 'image/svg+xml';
+    document.head.appendChild(fav);
+  }
+
   if (!document.querySelector('link[data-site-theme]')) {
     const theme = document.createElement('link');
     theme.rel = 'stylesheet';
