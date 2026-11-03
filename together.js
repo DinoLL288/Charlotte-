@@ -7,7 +7,7 @@
   opens. To bring the ticking seconds back, set SHOW_SECONDS to true.
 */
 (function () {
-  var SHOW_SECONDS = false;
+  var SHOW_SECONDS = true;
   var START = new Date(2026, 9, 26, 17, 46, 0); // month is 0-based: 9 = October
   var targets = document.querySelectorAll('[data-together]');
   if (!targets.length) return;
