@@ -83,6 +83,7 @@
     <section class="settings-group"><h2>Appearance</h2>
       <label class="settings-row" for="themeChoice">Site theme<select id="themeChoice"><option value="blue">Quiet blue (softer)</option><option value="midnight">Blue dusk</option><option value="lavender">Lavender cloud</option><option value="sage">Soft sage</option><option value="sunset">Warm sunset</option></select></label>
       <label class="settings-row" for="accentChoice">Custom accent color<input id="accentChoice" type="color" value="#347fa3"></label>
+  <label class="settings-row" for="homeLayout">Home page layout<select id="homeLayout"><option value="calm">Calm list (default)</option><option value="doors">Three doors (Option A)</option></select></label>
     </section>
     <section class="settings-group"><h2>Comfort and accessibility</h2>
       <label class="settings-row" for="textSize">Text size<select id="textSize"><option value="normal">Comfortable</option><option value="large">Larger text</option></select></label>
@@ -137,6 +138,7 @@
     const compactLayout = document.getElementById('compactLayout');
     const showReactions = document.getElementById('showReactions');
     const showPresence = document.getElementById('showPresence');
+const homeLayout = document.getElementById('homeLayout');
     const reminderLeadDays = document.getElementById('reminderLeadDays');
     const reminderTime = document.getElementById('reminderTime');
     const preferencesStatus = document.getElementById('preferencesStatus');
@@ -155,6 +157,7 @@
       compactLayout.checked = Boolean(preferences.compactLayout);
       showReactions.checked = preferences.showReactions !== false;
       showPresence.checked = preferences.showPresence !== false;
+      homeLayout.value = preferences.homeLayout === 'doors' ? 'doors' : 'calm';
       reminderLeadDays.value = String(preferences.reminderLeadDays ?? 1);
       reminderTime.value = preferences.reminderTime || '09:00';
       document.documentElement.dataset.coupleTheme = themeChoice.value;
@@ -164,7 +167,7 @@
       document.documentElement.dataset.compactLayout = String(compactLayout.checked);
       document.documentElement.dataset.showReactions = String(showReactions.checked);
       document.documentElement.dataset.showPresence = String(showPresence.checked);
-      const saved = { ...preferences, theme: themeChoice.value, accent: accentChoice.value, textSize: textSize.value, reducedMotion: reducedMotion.checked, compactLayout: compactLayout.checked, showReactions: showReactions.checked, showPresence: showPresence.checked, reminderLeadDays: Number(reminderLeadDays.value), reminderTime: reminderTime.value, birthdayReminders: true };
+      const saved = { ...preferences, theme: themeChoice.value, accent: accentChoice.value, textSize: textSize.value, reducedMotion: reducedMotion.checked, compactLayout: compactLayout.checked, showReactions: showReactions.checked, showPresence: showPresence.checked, homeLayout: homeLayout.value, reminderLeadDays: Number(reminderLeadDays.value), reminderTime: reminderTime.value, birthdayReminders: true };
       localStorage.setItem(preferenceKey, JSON.stringify(saved));
       window.dispatchEvent(new CustomEvent('charlotte-preferences', { detail: preferences }));
       if (window.parent !== window) window.parent.postMessage({ type: 'charlotte-theme', preferences: saved }, location.origin);
@@ -173,7 +176,7 @@
     try { applyPreferences(JSON.parse(localStorage.getItem(preferenceKey) || 'null')); } catch (e) {}
     fetch('/api/question-room?view=preferences&user=' + encodeURIComponent(user), { cache: 'no-store' }).then(res => res.json()).then(applyPreferences).catch(() => {});
     document.getElementById('savePreferences').addEventListener('click', async () => {
-      const preferences = { theme: themeChoice.value, accent: accentChoice.value, textSize: textSize.value, reducedMotion: reducedMotion.checked, compactLayout: compactLayout.checked, showReactions: showReactions.checked, showPresence: showPresence.checked, reminderLeadDays: Number(reminderLeadDays.value), reminderTime: reminderTime.value };
+      const preferences = { theme: themeChoice.value, accent: accentChoice.value, textSize: textSize.value, reducedMotion: reducedMotion.checked, compactLayout: compactLayout.checked, showReactions: showReactions.checked, showPresence: showPresence.checked, homeLayout: homeLayout.value, reminderLeadDays: Number(reminderLeadDays.value), reminderTime: reminderTime.value };
       const button = document.getElementById('savePreferences'); button.disabled = true; preferencesStatus.textContent = 'Saving our settings…';
       try {
         const response = await fetch('/api/question-room', { method: 'POST', headers: { 'content-type': 'application/json' }, body: JSON.stringify({ action: 'preferences', user, preferences }) });

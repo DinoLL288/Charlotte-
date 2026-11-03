@@ -186,18 +186,59 @@
       .hub-hero .together { animation: focus-in 0.9s var(--ease-out) 1.05s backwards; }
       .together-since { animation: focus-in 0.9s var(--ease-out) 1.2s backwards; }
     }
+  /* ---------- Calm list home (default) ---------- */
+  .calm-home { width: min(620px, calc(100% - 32px)); margin: 0 auto 60px; }
+  .calm-section { margin-top: 28px; }
+  .calm-section-title { margin: 0 0 10px; font-family: var(--font-display); font-size: 1.05rem; color: #8a6d2b; letter-spacing: .08em; text-transform: uppercase; }
+  .calm-row { display: flex; align-items: center; gap: 14px; padding: 16px 18px; margin-bottom: 8px; border-radius: 16px; background: rgba(255,255,255,.72); border: 1px solid rgba(255,255,255,.85); text-decoration: none; color: #123a58; transition: background .15s, transform .15s; }
+  .calm-row:hover { background: rgba(255,255,255,.92); transform: translateX(2px); }
+  .calm-icon { flex: none; font-size: 1.35rem; width: 34px; text-align: center; }
+  .calm-body { flex: 1; min-width: 0; }
+  .calm-title { font-weight: 700; font-size: 1rem; line-height: 1.2; display: block; }
+  .calm-sub { color: #5c7c93; font-size: .82rem; line-height: 1.4; display: block; margin-top: 2px; }
+  .calm-arrow { color: #8a6d2b; opacity: .5; font-size: 1.1rem; }
+  @media (max-width: 480px) { .calm-row { padding: 14px 14px; } .calm-title { font-size: .95rem; } .calm-sub { font-size: .78rem; } }
+
+  /* ---------- Three doors home (Option A) ---------- */
+  .hero-doors { padding: 72px 20px 36px; text-align: center; color: #fff; background: linear-gradient(160deg, rgba(13,44,68,.85), rgba(42,120,168,.85)); }
+  .hero-doors-inner { width: min(560px, 100%); margin: 0 auto; }
+  .hero-doors h1 { margin: 10px 0 14px; font-size: clamp(2.2rem, 6vw, 3.6rem); font-weight: 400; }
+  .hero-doors p { margin: 0 auto 18px; max-width: 44ch; color: #eaf6ff; line-height: 1.6; }
+  .doors-home { width: min(980px, 100%); margin: 40px auto 60px; padding: 0 18px; display: grid; grid-template-columns: repeat(3, 1fr); gap: 18px; }
+  .door { position: relative; padding: 26px 22px; border-radius: 26px; background: rgba(255,255,255,.72); border: 1px solid rgba(255,255,255,.9); box-shadow: 0 18px 42px rgba(29,90,128,.13); backdrop-filter: blur(10px); overflow: hidden; }
+  .door-icon { font-size: 2rem; line-height: 1; margin-bottom: 10px; }
+  .door h2 { margin: 0 0 4px; font-family: var(--font-display); font-size: 1.5rem; color: #123a58; }
+  .door p { margin: 0 0 16px; color: #4a7291; font-size: .92rem; line-height: 1.5; }
+  .door-links { display: flex; flex-wrap: wrap; gap: 8px; }
+  .door-links a { padding: 8px 14px; border-radius: 999px; background: #fff; border: 1px solid #dbe8ef; color: #123a58; text-decoration: none; font-size: .84rem; font-weight: 700; }
+  .door-links a:hover { background: #edf7fd; transform: translateY(-1px); }
+  .door:before { content: ""; position: absolute; right: -24px; bottom: -30px; width: 90px; height: 90px; border-radius: 50%; background: rgba(255,255,255,.45); border: 1px solid #d7e6ec; }
+  @media (max-width: 760px) { .doors-home { grid-template-columns: 1fr; gap: 14px; } .door { padding: 20px 18px; } }
+  @media (max-width: 480px) { .door h2 { font-size: 1.3rem; } }
+
+  [hidden] { display: none !important; }
   </style>
   <link rel="stylesheet" href="motion.css">
   <script src="motion.js" defer></script>
 </head>
 
 <body>
-  <header class="hub-hero">
+  <header id="hero-calm" class="hub-hero">
     <div class="hub-hero-photo" aria-hidden="true"></div>
     <div class="hub-hero-inner">
       <p class="eyebrow">Charlotte &amp; Luke</p>
       <h1><span class="word" style="--i:0">Our</span> <span class="word" style="--i:1">little</span> <span class="word" style="--i:2">universe</span></h1>
       <p class="hub-hero-sub">Every note, photo, plan and promise — kept in one quiet corner of the internet.</p>
+      <div class="together" data-together role="timer" aria-label="Time we have been together"></div>
+      <p class="together-since">Together since 26 October 2026 · 5:46 pm</p>
+    </div>
+  </header>
+
+  <header id="hero-doors" class="hero-doors" hidden>
+    <div class="hero-doors-inner">
+      <p class="eyebrow" style="color:#ecd7a0">Charlotte &amp; Luke</p>
+      <h1>Our little universe</h1>
+      <p>Every note, photo, plan and promise — kept in one quiet corner.</p>
       <div class="together" data-together role="timer" aria-label="Time we have been together"></div>
       <p class="together-since">Together since 26 October 2026 · 5:46 pm</p>
     </div>
@@ -212,49 +253,70 @@
     <span class="quiet-arrow" aria-hidden="true">→</span>
   </a>
 
-  <main class="explore" id="explore">
-    <div class="explore-head">
-      <h2>Pick a mood, wander in</h2>
-      <p>Every room has a little piece of us.</p>
+  <main id="main-calm" class="calm-home">
+    <div class="calm-wrap">
+      <div class="calm-section">
+        <h2 class="calm-section-title">Us</h2>
+        <a class="calm-row" href="love.html"><span class="calm-icon">🤍</span><span class="calm-body"><span class="calm-title">Our love</span><span class="calm-sub">The heart &amp; our little memory</span></span><span class="calm-arrow">→</span></a>
+        <a class="calm-row" href="messages.html"><span class="calm-icon">✉️</span><span class="calm-body"><span class="calm-title">Notes</span><span class="calm-sub">Messages we leave for each other</span></span><span class="calm-arrow">→</span></a>
+        <a class="calm-row" href="timeline.html"><span class="calm-icon">🌅</span><span class="calm-body"><span class="calm-title">Our timeline</span><span class="calm-sub">The story so far, in pictures</span></span><span class="calm-arrow">→</span></a>
+        <a class="calm-row" href="our-life.html"><span class="calm-icon">🧩</span><span class="calm-body"><span class="calm-title">Things we make together</span><span class="calm-sub">Recipes, recommendations, awards and projects</span></span><span class="calm-arrow">→</span></a>
+      </div>
+      <div class="calm-section">
+        <h2 class="calm-section-title">Plans</h2>
+        <a class="calm-row" href="calendar.html"><span class="calm-icon">📅</span><span class="calm-body"><span class="calm-title">Calendar</span><span class="calm-sub">Dates, plans and countdowns</span></span><span class="calm-arrow">→</span></a>
+        <a class="calm-row" href="tiktok.html"><span class="calm-icon">🎵</span><span class="calm-body"><span class="calm-title">TikTok plans</span><span class="calm-sub">Videos we want to dance to</span></span><span class="calm-arrow">→</span></a>
+        <a class="calm-row" href="question-night.html"><span class="calm-icon">💬</span><span class="calm-body"><span class="calm-title">Question night</span><span class="calm-sub">A shared room that opens when we’re both ready</span></span><span class="calm-arrow">→</span></a>
+        <a class="calm-row" href="gallery.html"><span class="calm-icon">📷</span><span class="calm-body"><span class="calm-title">Photos &amp; videos</span><span class="calm-sub">Our albums, photos and little movies</span></span><span class="calm-arrow">→</span></a>
+      </div>
+      <div class="calm-section">
+        <h2 class="calm-section-title">Play</h2>
+        <a class="calm-row" href="play.html"><span class="calm-icon">🎲</span><span class="calm-body"><span class="calm-title">Play &amp; ask</span><span class="calm-sub">A question ritual and little games</span></span><span class="calm-arrow">→</span></a>
+      </div>
+      <div class="calm-section">
+        <h2 class="calm-section-title">Care &amp; quiet</h2>
+        <a class="calm-row" href="apart.html"><span class="calm-icon">🌙</span><span class="calm-body"><span class="calm-title">Quiet days</span><span class="calm-sub">When one of us needs some space</span></span><span class="calm-arrow">→</span></a>
+        <a class="calm-row" href="rules.html"><span class="calm-icon">🕊️</span><span class="calm-body"><span class="calm-title">Rules &amp; boundaries</span><span class="calm-sub">What we agree on and what we need</span></span><span class="calm-arrow">→</span></a>
+        <a class="calm-row" href="bathroom.html"><span class="calm-icon">🚻</span><span class="calm-body"><span class="calm-title">Bathroom check-ins</span><span class="calm-sub">A little update when one of us steps away</span></span><span class="calm-arrow">→</span></a>
+        <a class="calm-row" href="play.html"><span class="calm-icon">🎲</span><span class="calm-body"><span class="calm-title">Play &amp; ask</span><span class="calm-sub">A question ritual and little games</span></span><span class="calm-arrow">→</span></a>
+      </div>
     </div>
+  </main>
 
-    <div class="groups">
-      <section class="reveal" aria-labelledby="g-memories">
-        <h3 class="group-title" id="g-memories">Memories</h3>
-        <div class="group-card">
-          <a class="hub-row glow" href="love.html"><span class="row-icon" aria-hidden="true">🤍</span><span class="row-text"><span class="row-title">Our love</span><span class="row-sub">The heart &amp; our little memory</span></span><span class="row-chev" aria-hidden="true">›</span></a>
-          <a class="hub-row glow" href="timeline.html"><span class="row-icon" aria-hidden="true">🌅</span><span class="row-text"><span class="row-title">Our timeline</span><span class="row-sub">The story so far, in pictures</span></span><span class="row-chev" aria-hidden="true">›</span></a>
-          <a class="hub-row glow" href="gallery.html"><span class="row-icon" aria-hidden="true">📷</span><span class="row-text"><span class="row-title">Photos &amp; videos</span><span class="row-sub">Our albums, photos and little movies</span></span><span class="row-chev" aria-hidden="true">›</span></a>
-          <a class="hub-row glow" href="messages.html"><span class="row-icon" aria-hidden="true">✉️</span><span class="row-text"><span class="row-title">Notes</span><span class="row-sub">Messages we leave for each other</span></span><span class="row-chev" aria-hidden="true">›</span></a>
-        </div>
+  <main id="main-doors" class="doors-home" hidden>
+      <section class="door">
+        <div class="door-icon">💛</div>
+        <h2>Us two</h2>
+        <p>The things that are just about us.</p>
+        <nav class="door-links">
+          <a href="love.html">Our love</a>
+          <a href="messages.html">Notes</a>
+          <a href="timeline.html">Timeline</a>
+          <a href="our-life.html">Things we make</a>
+        </nav>
       </section>
-
-      <section class="reveal" style="--d:80ms" aria-labelledby="g-plans">
-        <h3 class="group-title" id="g-plans">Plans</h3>
-        <div class="group-card">
-          <a class="hub-row glow" href="calendar.html"><span class="row-icon" aria-hidden="true">📅</span><span class="row-text"><span class="row-title">Calendar</span><span class="row-sub">Dates, plans and countdowns</span></span><span class="row-chev" aria-hidden="true">›</span></a>
-          <a class="hub-row glow" href="tiktok.html"><span class="row-icon" aria-hidden="true">🎵</span><span class="row-text"><span class="row-title">TikTok plans</span><span class="row-sub">Videos we want to dance to</span></span><span class="row-chev" aria-hidden="true">›</span></a>
-          <a class="hub-row glow" href="our-life.html"><span class="row-icon" aria-hidden="true">🧩</span><span class="row-text"><span class="row-title">Things we make together</span><span class="row-sub">Recipes, recommendations, awards and projects</span></span><span class="row-chev" aria-hidden="true">›</span></a>
-        </div>
+      <section class="door">
+        <div class="door-icon">📅</div>
+        <h2>Plans &amp; days</h2>
+        <p>What we're doing, when, and where.</p>
+        <nav class="door-links">
+          <a href="calendar.html">Calendar</a>
+          <a href="tiktok.html">TikTok plans</a>
+          <a href="question-night.html">Question night</a>
+          <a href="gallery.html">Photos &amp; videos</a>
+        </nav>
       </section>
-
-      <section class="reveal" aria-labelledby="g-play">
-        <h3 class="group-title" id="g-play">Play</h3>
-        <div class="group-card">
-          <a class="hub-row glow" href="play.html"><span class="row-icon" aria-hidden="true">🎲</span><span class="row-text"><span class="row-title">Play &amp; ask</span><span class="row-sub">A question ritual and little games</span></span><span class="row-chev" aria-hidden="true">›</span></a>
-          <a class="hub-row glow" href="question-night.html"><span class="row-icon" aria-hidden="true">💬</span><span class="row-text"><span class="row-title">Question night</span><span class="row-sub">A shared room that opens when we’re both ready</span></span><span class="row-chev" aria-hidden="true">›</span></a>
-        </div>
+      <section class="door">
+        <div class="door-icon">🌙</div>
+        <h2>Care &amp; quiet</h2>
+        <p>Rest, space, and the small check-ins.</p>
+        <nav class="door-links">
+          <a href="apart.html">Quiet days</a>
+          <a href="rules.html">Rules &amp; boundaries</a>
+          <a href="bathroom.html">Bathroom check-ins</a>
+          <a href="play.html">Play &amp; ask</a>
+        </nav>
       </section>
-
-      <section class="reveal" style="--d:80ms" aria-labelledby="g-care">
-        <h3 class="group-title" id="g-care">Looking after us</h3>
-        <div class="group-card">
-          <a class="hub-row glow" href="rules.html"><span class="row-icon" aria-hidden="true">🕊️</span><span class="row-text"><span class="row-title">Rules &amp; boundaries</span><span class="row-sub">What we agree on and what we need</span></span><span class="row-chev" aria-hidden="true">›</span></a>
-          <a class="hub-row glow" href="apart.html"><span class="row-icon" aria-hidden="true">🌙</span><span class="row-text"><span class="row-title">Quiet days</span><span class="row-sub">When one of us needs some space</span></span><span class="row-chev" aria-hidden="true">›</span></a>
-          <a class="hub-row glow" href="bathroom.html"><span class="row-icon" aria-hidden="true">🚻</span><span class="row-text"><span class="row-title">Bathroom check-ins</span><span class="row-sub">A little update when one of us steps away</span></span><span class="row-chev" aria-hidden="true">›</span></a>
-        </div>
-      </section>
-    </div>
   </main>
 
   <footer>
@@ -327,5 +389,36 @@
   </script>
   <script src="together.js"></script>
   <script src="avatar.js"></script>
+  <script>
+    (function () {
+      const user = localStorage.getItem('charlotte-user');
+      const key = user ? 'charlotte-preferences-' + user : null;
+      function layoutFromPrefs(prefs) { return (prefs && prefs.homeLayout === 'doors') ? 'doors' : 'calm'; }
+      function apply(layout) {
+        const doors = layout === 'doors';
+        const calmHero = document.getElementById('hero-calm');
+        const calmMain = document.getElementById('main-calm');
+        const doorsHero = document.getElementById('hero-doors');
+        const doorsMain = document.getElementById('main-doors');
+        if (calmHero) calmHero.hidden = doors;
+        if (calmMain) calmMain.hidden = doors;
+        if (doorsHero) doorsHero.hidden = !doors;
+        if (doorsMain) doorsMain.hidden = !doors;
+      }
+      try { apply(layoutFromPrefs(JSON.parse(key ? localStorage.getItem(key) : 'null'))); } catch (e) { apply('calm'); }
+      if (user) {
+        fetch('/api/question-room?view=preferences&user=' + encodeURIComponent(user), { cache: 'no-store' })
+          .then(function (res) { return res.json(); })
+          .then(function (prefs) { apply(layoutFromPrefs(prefs)); })
+          .catch(function () {});
+      }
+      window.addEventListener('charlotte-preferences', function (event) { apply(layoutFromPrefs(event.detail)); });
+      window.addEventListener('storage', function (event) {
+        if (key && event.key === key) {
+          try { apply(layoutFromPrefs(JSON.parse(event.newValue))); } catch (e) {}
+        }
+      });
+    })();
+  </script>
 </body>
 </html>

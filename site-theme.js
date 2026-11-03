@@ -13,6 +13,7 @@
     root.dataset.compactLayout = String(Boolean(preferences.compactLayout));
     root.dataset.showReactions = String(preferences.showReactions !== false);
     root.dataset.showPresence = String(preferences.showPresence !== false);
+    root.dataset.homeLayout = preferences.homeLayout === 'doors' ? 'doors' : 'calm';
     try { localStorage.setItem(key, JSON.stringify(preferences)); } catch {}
     if (window.parent !== window) window.parent.postMessage({ type: 'charlotte-theme', preferences }, location.origin);
   }

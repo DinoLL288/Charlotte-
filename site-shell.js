@@ -46,6 +46,7 @@
       document.documentElement.dataset.compactLayout = String(Boolean(preferences.compactLayout));
       document.documentElement.dataset.showReactions = String(preferences.showReactions !== false);
       document.documentElement.dataset.showPresence = String(preferences.showPresence !== false);
+document.documentElement.dataset.homeLayout = preferences.homeLayout === 'doors' ? 'doors' : 'calm';
     }
     if (event.data.type === 'site-page-start') {
       const next = safePath(event.data.path);
