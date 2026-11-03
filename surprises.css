@@ -1,4 +1,12 @@
-.surprise-layer { position: fixed; inset: 0; pointer-events: none; z-index: 45; overflow: hidden; }
+/* ---------- Tunables ---------- */
+.surprise-layer {
+  --s-ease: cubic-bezier(.34, 1.56, .64, 1); /* soft overshoot */
+  --s-dur: .6s;
+  --s-tip-bg: rgba(18,58,88,.9);
+  position: fixed; inset: 0; pointer-events: none; z-index: 45; overflow: hidden;
+}
+
+/* ---------- Items ---------- */
 .surprise-item {
   position: absolute;
   pointer-events: auto;
@@ -7,49 +15,188 @@
   cursor: pointer;
   font-size: 1.1rem;
   line-height: 1;
-  padding: 4px;
+  padding: 8px;                      /* larger tap target */
+  margin: -4px;
   opacity: .72;
   filter: drop-shadow(0 2px 4px rgba(0,0,0,.18));
-  transition: transform .18s ease, opacity .18s ease;
+  transition: scale .2s var(--s-ease), opacity .2s ease, filter .2s ease;
   user-select: none;
+  -webkit-tap-highlight-color: transparent;
+  animation: surprise-idle 7s ease-in-out infinite;
+  animation-delay: var(--d, 0s);     /* set style="--d:-3s" per item to desynchronise */
 }
-.surprise-item:hover { opacity: 1; transform: scale(1.25); }
-.surprise-item.wiggle { animation: surprise-wiggle .6s ease; }
-.surprise-item.spin { animation: surprise-spin .6s ease; }
-.surprise-item.bounce { animation: surprise-bounce .6s ease; }
-.surprise-item.grow { animation: surprise-grow .6s ease; }
-.surprise-item.shake { animation: surprise-shake .6s ease; }
+.surprise-item:hover,
+.surprise-item:focus-visible {
+  opacity: 1;
+  scale: 1.25;                       /* uses `scale`, so it never fights keyframe transforms */
+  filter: drop-shadow(0 3px 8px rgba(0,0,0,.25));
+}
+.surprise-item:focus-visible { outline: 2px solid rgba(255,255,255,.9); outline-offset: 2px; border-radius: 8px; }
+.surprise-item:active { scale: .9; }
+
+/* sizes + tints */
+.surprise-item.sm { font-size: .85rem; }
+.surprise-item.lg { font-size: 1.5rem; }
+.surprise-item.xl { font-size: 2rem; }
+.surprise-item.glow { filter: drop-shadow(0 0 6px rgba(255,220,140,.9)); }
+.surprise-item.soft { opacity: .5; }
+
+/* once triggered, a reaction plays and the item can be removed with .collected */
+.surprise-item.wiggle  { animation: surprise-wiggle  var(--s-dur) ease; }
+.surprise-item.spin    { animation: surprise-spin    var(--s-dur) ease; }
+.surprise-item.bounce  { animation: surprise-bounce  var(--s-dur) ease; }
+.surprise-item.grow    { animation: surprise-grow    var(--s-dur) ease; }
+.surprise-item.shake   { animation: surprise-shake   var(--s-dur) ease; }
 .surprise-item.rainbow { animation: surprise-rainbow .8s ease; }
+/* new */
+.surprise-item.pop       { animation: surprise-pop       .5s var(--s-ease); }
+.surprise-item.flip      { animation: surprise-flip      .7s ease; }
+.surprise-item.jelly     { animation: surprise-jelly     .8s ease; }
+.surprise-item.heartbeat { animation: surprise-heartbeat .9s ease; }
+.surprise-item.swing     { animation: surprise-swing     .9s ease; transform-origin: 50% 0; }
+.surprise-item.flutter   { animation: surprise-flutter   1s ease; }
+.surprise-item.hop       { animation: surprise-hop       .8s ease; }
+.surprise-item.vanish    { animation: surprise-vanish    .5s ease forwards; pointer-events: none; }
+.surprise-item.collected { animation: surprise-collect   .6s ease forwards; pointer-events: none; }
+
+/* ---------- Tooltip ---------- */
 .surprise-tip {
   position: absolute;
   pointer-events: none;
-  padding: 4px 8px;
+  padding: 4px 10px;
   border-radius: 999px;
-  background: rgba(18,58,88,.9);
+  background: var(--s-tip-bg);
   color: #fff;
   font-size: .75rem;
   font-weight: 700;
   white-space: nowrap;
+  box-shadow: 0 4px 12px rgba(0,0,0,.18);
   transform: translate(-50%, -140%);
   animation: surprise-tip .9s ease forwards;
 }
+.surprise-tip.warm  { --s-tip-bg: rgba(160,70,90,.92); }
+.surprise-tip.fresh { --s-tip-bg: rgba(40,110,90,.92); }
+.surprise-tip.gold  { --s-tip-bg: rgba(150,110,20,.92); }
+.surprise-tip.long  { animation-duration: 1.6s; }
+
+/* ---------- Click effects ---------- */
+/* soft ring expanding from the click point */
+.surprise-ripple {
+  position: absolute; pointer-events: none;
+  width: 8px; height: 8px; margin: -4px 0 0 -4px;
+  border-radius: 50%;
+  border: 2px solid rgba(255,255,255,.85);
+  box-shadow: 0 0 8px rgba(255,255,255,.4);
+  animation: surprise-ripple .7s ease-out forwards;
+}
+/* tiny sparks; set --dx / --dy per piece in JS */
+.surprise-spark {
+  position: absolute; pointer-events: none;
+  width: 6px; height: 6px; border-radius: 50%;
+  background: var(--c, #ffd166);
+  animation: surprise-spark .7s ease-out forwards;
+}
+/* floating emoji that drifts upward (hearts, stars...) */
+.surprise-float {
+  position: absolute; pointer-events: none;
+  font-size: 1rem; line-height: 1;
+  animation: surprise-float 1.4s ease-out forwards;
+}
+
+/* ---------- Keyframes ---------- */
+@keyframes surprise-idle {
+  0%,100% { transform: translateY(0) rotate(0); }
+  50%     { transform: translateY(-4px) rotate(2deg); }
+}
 @keyframes surprise-wiggle { 0%,100%{transform:rotate(0)} 25%{transform:rotate(-12deg)} 75%{transform:rotate(12deg)} }
-@keyframes surprise-spin { to { transform: rotate(360deg) scale(1.1); } }
+@keyframes surprise-spin   { to { transform: rotate(360deg) scale(1.1); } }
 @keyframes surprise-bounce { 0%,100%{transform:translateY(0)} 50%{transform:translateY(-14px) scale(1.15)} }
-@keyframes surprise-grow { 0%{transform:scale(1)} 50%{transform:scale(1.8)} 100%{transform:scale(1)} }
-@keyframes surprise-shake { 0%,100%{transform:translateX(0)} 25%{transform:translateX(-6px)} 75%{transform:translateX(6px)} }
-@keyframes surprise-rainbow { 0%{filter:hue-rotate(0deg)} 100%{filter:hue-rotate(360deg)} }
-@keyframes surprise-tip { 0%{opacity:0; transform:translate(-50%,-120%)} 20%{opacity:1} 100%{opacity:0; transform:translate(-50%,-180%)} }
+@keyframes surprise-grow   { 0%{transform:scale(1)} 50%{transform:scale(1.8)} 100%{transform:scale(1)} }
+@keyframes surprise-shake  { 0%,100%{transform:translateX(0)} 25%{transform:translateX(-6px)} 75%{transform:translateX(6px)} }
+@keyframes surprise-rainbow{ 0%{filter:hue-rotate(0deg)} 100%{filter:hue-rotate(360deg)} }
+
+@keyframes surprise-pop {
+  0% { transform: scale(.6); } 60% { transform: scale(1.35); } 100% { transform: scale(1); }
+}
+@keyframes surprise-flip {
+  0% { transform: perspective(300px) rotateY(0); }
+  100% { transform: perspective(300px) rotateY(360deg); }
+}
+@keyframes surprise-jelly {
+  0%,100% { transform: scale(1,1); }
+  25% { transform: scale(1.25,.8); }
+  50% { transform: scale(.85,1.2); }
+  75% { transform: scale(1.1,.92); }
+}
+@keyframes surprise-heartbeat {
+  0%,100% { transform: scale(1); }
+  15% { transform: scale(1.3); }
+  30% { transform: scale(1); }
+  45% { transform: scale(1.2); }
+  60% { transform: scale(1); }
+}
+@keyframes surprise-swing {
+  0%,100% { transform: rotate(0); }
+  20% { transform: rotate(15deg); }
+  40% { transform: rotate(-10deg); }
+  60% { transform: rotate(6deg); }
+  80% { transform: rotate(-3deg); }
+}
+@keyframes surprise-flutter {
+  0%   { transform: translate(0,0) rotate(0); }
+  20%  { transform: translate(6px,-8px) rotate(10deg); }
+  40%  { transform: translate(-5px,-14px) rotate(-8deg); }
+  60%  { transform: translate(5px,-8px) rotate(6deg); }
+  100% { transform: translate(0,0) rotate(0); }
+}
+@keyframes surprise-hop {
+  0%,100% { transform: translateY(0) scale(1,1); }
+  20% { transform: translateY(0) scale(1.15,.85); }
+  50% { transform: translateY(-18px) scale(.95,1.1); }
+  80% { transform: translateY(0) scale(1.1,.9); }
+}
+@keyframes surprise-vanish  { to { opacity: 0; transform: scale(.4); } }
+@keyframes surprise-collect { to { opacity: 0; transform: translateY(-30px) scale(1.4); } }
+
+@keyframes surprise-tip {
+  0%   { opacity: 0; transform: translate(-50%,-120%); }
+  20%  { opacity: 1; }
+  100% { opacity: 0; transform: translate(-50%,-180%); }
+}
+@keyframes surprise-ripple { to { transform: scale(9); opacity: 0; } }
+@keyframes surprise-spark  {
+  0% { transform: translate(0,0) scale(1); opacity: 1; }
+  100% { transform: translate(var(--dx,0px), var(--dy,-30px)) scale(0); opacity: 0; }
+}
+@keyframes surprise-float {
+  0%   { transform: translate(0,0) scale(.6); opacity: 0; }
+  15%  { opacity: 1; }
+  100% { transform: translate(var(--dx,0px), -70px) scale(1.2); opacity: 0; }
+}
+
+/* ---------- Confetti ---------- */
 .confetti-piece {
   position: fixed; top: -10px; width: 8px; height: 14px; pointer-events: none; z-index: 70;
-  animation: confetti-fall 1.4s ease-out forwards;
+  background: var(--c, #ff6b8b);
+  animation: confetti-fall var(--t, 1.4s) ease-out forwards;
+  animation-delay: var(--delay, 0s);
 }
+.confetti-piece.round  { width: 9px; height: 9px; border-radius: 50%; }
+.confetti-piece.ribbon { width: 4px; height: 20px; border-radius: 2px; }
+.confetti-piece.tri    { width: 0; height: 0; background: none;
+  border-left: 5px solid transparent; border-right: 5px solid transparent;
+  border-bottom: 10px solid var(--c, #ffd166); }
 @keyframes confetti-fall {
-  0% { transform: translate(0,0) rotate(0deg); opacity: 1; }
-  100% { transform: translate(var(--dx, 0px), 100vh) rotate(720deg); opacity: 0; }
+  0%   { transform: translate(0,0) rotate(0deg); opacity: 1; }
+  50%  { transform: translate(calc(var(--dx,0px) * .5 + var(--sway,0px)), 55vh) rotate(360deg); opacity: 1; }
+  100% { transform: translate(var(--dx,0px), 100vh) rotate(720deg); opacity: 0; }
 }
+
+/* ---------- Calm modes ---------- */
+.surprise-layer.calm .surprise-item { animation: none; }
+
 @media (prefers-reduced-motion: reduce) {
-  .surprise-item { transition: none; }
-  .surprise-item.wiggle,.surprise-item.spin,.surprise-item.bounce,.surprise-item.grow,.surprise-item.shake,.surprise-item.rainbow { animation: none; }
+  .surprise-item { transition: none; animation: none !important; }
+  .surprise-ripple, .surprise-spark, .surprise-float { display: none; }
   .confetti-piece { display: none; }
 }
