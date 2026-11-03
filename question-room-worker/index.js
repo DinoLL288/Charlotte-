@@ -545,33 +545,99 @@ export class QuestionNightRoom {
       }
 
       if (body.action === 'love-buy') {
-        const user = body.user;
-        if (!['Charlotte', 'Luke'].includes(user)) return Response.json({ error: 'Choose a valid account' }, { status: 400 });
-        const item = String(body.item || '').trim();
-        const cost = Number(body.cost);
-        if (!item || !Number.isFinite(cost) || cost < 1 || cost > 1000) return Response.json({ error: 'Choose a valid item' }, { status: 400 });
-        const dueDate = String(body.dueDate || '');
-        if (!/^\\d{4}-\\d{2}-\\d{2}$/.test(dueDate)) return Response.json({ error: 'Choose a valid date' }, { status: 400 });
-        const state = await this.getPlayfulState();
-        if ((state.tokens[user] || 0) < cost) return Response.json({ error: 'Not enough tokens' }, { status: 400 });
-        state.tokens[user] -= cost;
-        await this.ctx.storage.put('playfulState', state);
+  const user = body.user;
 
-        const assignee = user === 'Charlotte' ? 'Luke' : 'Charlotte';
-        const tasksState = await this.getLoveTasks();
-        const task = {
-          id: crypto.randomUUID ? crypto.randomUUID() : String(Date.now()),
-          item, buyer: user, assignee,
-          dueDate, dueTime: String(body.dueTime || '').trim(),
-          note: String(body.note || '').trim(),
-          status: 'pending',
-          createdAt: new Date().toISOString()
-        };
-        tasksState.tasks.push(task);
-        await this.ctx.storage.put('loveTasks', tasksState);
-        await this.broadcastRefresh();
-        return Response.json({ ok: true, task, state });
-      }
+  if (!['Charlotte', 'Luke'].includes(user)) {
+    return Response.json(
+      { error: 'Choose a valid account' },
+      { status: 400 }
+    );
+  }
+
+  const item = String(body.item || '').trim();
+  const cost = Number(body.cost);
+
+  if (!item || !Number.isFinite(cost) || cost < 1 || cost > 1000) {
+    return Response.json(
+      { error: 'Choose a valid item' },
+      { status: 400 }
+    );
+  }
+
+  // Validate date properly.
+  const dueDate = String(body.dueDate || '').trim();
+
+  const match = /^(\d{4})-(\d{2})-(\d{2})$/.exec(dueDate);
+
+  if (!match) {
+    return Response.json(
+      { error: 'Choose a valid date', received: dueDate },
+      { status: 400 }
+    );
+  }
+
+  const year = Number(match[1]);
+  const month = Number(match[2]);
+  const day = Number(match[3]);
+
+  const parsedDate = new Date(Date.UTC(year, month - 1, day));
+
+  if (
+    parsedDate.getUTCFullYear() !== year ||
+    parsedDate.getUTCMonth() !== month - 1 ||
+    parsedDate.getUTCDate() !== day
+  ) {
+    return Response.json(
+      { error: 'Choose a valid calendar date', received: dueDate },
+      { status: 400 }
+    );
+  }
+
+  // Check token balance.
+  const state = await this.getPlayfulState();
+
+  if ((state.tokens[user] || 0) < cost) {
+    return Response.json(
+      { error: 'Not enough tokens' },
+      { status: 400 }
+    );
+  }
+
+  // Deduct tokens.
+  state.tokens[user] -= cost;
+  await this.ctx.storage.put('playfulState', state);
+
+  // Create promise.
+  const assignee = user === 'Charlotte' ? 'Luke' : 'Charlotte';
+
+  const tasksState = await this.getLoveTasks();
+
+  const task = {
+    id: crypto.randomUUID
+      ? crypto.randomUUID()
+      : String(Date.now()),
+
+    item,
+    buyer: user,
+    assignee,
+    dueDate,
+    dueTime: String(body.dueTime || '').trim(),
+    note: String(body.note || '').trim(),
+    status: 'pending',
+    createdAt: new Date().toISOString()
+  };
+
+  tasksState.tasks.push(task);
+
+  await this.ctx.storage.put('loveTasks', tasksState);
+  await this.broadcastRefresh();
+
+  return Response.json({
+    ok: true,
+    task,
+    state
+  });
+}
       if (body.action === 'love-complete') {
         const user = body.user;
         const id = String(body.id || '');
