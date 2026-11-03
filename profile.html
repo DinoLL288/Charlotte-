@@ -80,10 +80,18 @@
     <img id="avatar" class="avatar" src="https://ui-avatars.com/api/?name=User&background=e8f6ff&color=2873a6&size=256" alt="Profile picture">
     <input type="file" id="avatarInput" accept="image/*">
     <button class="button" id="saveAvatar">Save profile picture</button>
+    <section class="settings-group"><h2>Home page</h2>
+      <p class="settings-help">Choose which calmer home page we open to. The calm list is the default; the three-doors layout groups everything into Us, Plans, and Care &amp; quiet.</p>
+      <label class="settings-row" for="homeLayout">Home page layout<select id="homeLayout"><option value="calm">Calm list (default)</option><option value="doors">Three doors (Option A)</option></select></label>
+      <div class="shared-account-actions">
+        <a class="button" href="design-option-a.html" target="_blank" rel="noopener">Preview Three doors</a>
+        <a class="button" href="index.html" target="_blank" rel="noopener">Preview Calm list</a>
+      </div>
+      <p class="settings-help">Save our settings after changing this so it follows us between devices.</p>
+    </section>
     <section class="settings-group"><h2>Appearance</h2>
       <label class="settings-row" for="themeChoice">Site theme<select id="themeChoice"><option value="blue">Quiet blue (softer)</option><option value="midnight">Blue dusk</option><option value="lavender">Lavender cloud</option><option value="sage">Soft sage</option><option value="sunset">Warm sunset</option></select></label>
       <label class="settings-row" for="accentChoice">Custom accent color<input id="accentChoice" type="color" value="#347fa3"></label>
-  <label class="settings-row" for="homeLayout">Home page layout<select id="homeLayout"><option value="calm">Calm list (default)</option><option value="doors">Three doors (Option A)</option></select></label>
     </section>
     <section class="settings-group"><h2>Comfort and accessibility</h2>
       <label class="settings-row" for="textSize">Text size<select id="textSize"><option value="normal">Comfortable</option><option value="large">Larger text</option></select></label>
