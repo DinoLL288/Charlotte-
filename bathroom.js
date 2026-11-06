@@ -150,17 +150,56 @@
     const button = event.target.closest('[data-action]');
     if (!button || button.disabled) return;
     button.disabled = true;
+    const active = button.dataset.action === 'start';
+    const at = new Date().toISOString();
+    const previousStatus = JSON.parse(JSON.stringify(data.status[user] || { active: false }));
+    const previousEvents = data.events.slice();
+    const previousStats = JSON.parse(JSON.stringify(data.stats || {}));
+    const stateChanged = Boolean(previousStatus.active) !== active;
+    // Optimistic update for the common case (start/return toggle) so it feels instant.
+    if (stateChanged) {
+      data.status[user] = active ? { active: true, startedAt: at } : { active: false, startedAt: null, returnedAt: at };
+      data.events = [{ id: 'pending', user, action: active ? 'start' : 'return', at }, ...data.events];
+      render();
+      statusEl.textContent = active ? 'Our bathroom check-in is saved.' : 'We’re back together. Return recorded.';
+    }
     try {
-      const active = button.dataset.action === 'start';
       const response = await fetch('/api/question-room', {
         method: 'POST', headers: { 'content-type': 'application/json' },
         body: JSON.stringify({ action: 'bathroom', user, active })
       });
       const json = await response.json();
       if (!response.ok) throw new Error(json.error || 'Could not save our check-in');
-      if (json.bathroom) { data.status = json.bathroom.status || {}; data.events = json.bathroom.events || []; data.stats = json.bathroom.stats || data.stats; render(); }
-      statusEl.textContent = active ? 'Our bathroom check-in is saved.' : 'We’re back together. Return recorded.';
-    } catch (error) { statusEl.textContent = error.message; button.disabled = false; }
+      // Reconcile with server: update status, stats, and append any new events.
+      if (json.bathroom) { data.status = json.bathroom.status || data.status; data.stats = json.bathroom.stats || data.stats; }
+      if (json.event) {
+        const ev = json.event;
+        if (!data.events.some(e => e.id === ev.id)) {
+          // Remove optimistic pending event if present
+          data.events = data.events.filter(e => e.id !== 'pending');
+          data.events = [ev, ...data.events];
+        }
+      }
+      if (Array.isArray(json.events)) {
+        for (const ev of json.events) {
+          if (!data.events.some(e => e.id === ev.id)) data.events = [ev, ...data.events];
+        }
+        data.events = data.events.filter(e => e.id !== 'pending');
+      }
+      // Clean up any remaining pending events
+      data.events = data.events.filter(e => e.id !== 'pending');
+      render();
+      if (!stateChanged) statusEl.textContent = active ? 'Our bathroom check-in is saved.' : 'We’re back together. Return recorded.';
+    } catch (error) {
+      if (stateChanged) {
+        data.status[user] = previousStatus;
+        data.events = previousEvents;
+        data.stats = previousStats;
+        render();
+      }
+      statusEl.textContent = error.message;
+      button.disabled = false;
+    }
   });
 
   const laterForm = document.getElementById('bathroomLaterForm');
@@ -187,7 +226,14 @@
         body: JSON.stringify({ action: 'bathroom-history-session', user, startAt: leftAt.toISOString(), returnAt: returnedAt?.toISOString() || '' })
       });
       const json = await response.json(); if (!response.ok) throw new Error(json.error || 'Could not save our check-in.');
-      data.status = json.bathroom.status || {}; data.events = json.bathroom.events || []; data.stats = json.bathroom.stats || data.stats; render();
+      if (json.bathroom) { data.status = json.bathroom.status || data.status; data.stats = json.bathroom.stats || data.stats; }
+      if (Array.isArray(json.events)) {
+        for (const ev of json.events) {
+          if (ev && ev.id && !data.events.some(x => x.id === ev.id)) data.events = [ev, ...data.events];
+        }
+      }
+      data.events = data.events.filter(e => e.id !== 'pending');
+      render();
       laterStatus.textContent = json.duplicate ? 'A check-in at that time is already in our history, so nothing was duplicated.' : returnedAt ? 'Both times were added to our break history.' : 'Leaving time added. We can record the return later.';
     } catch (error) { laterStatus.textContent = error.message; }
     finally { button.disabled = false; }
@@ -201,7 +247,14 @@
     socket.onmessage = event => {
       let message; try { message = JSON.parse(event.data); } catch { return; }
       if (message.type === 'bathroom') {
-        data.status = message.bathroom.status || {}; data.events = message.bathroom.events || []; data.stats = message.bathroom.stats || data.stats; render();
+        if (message.status) data.status = message.status;
+        if (message.stats) data.stats = message.stats;
+        const newEvents = Array.isArray(message.event) ? message.event : (message.event ? [message.event] : []);
+        for (const ev of newEvents) {
+          if (ev && ev.id && !data.events.some(x => x.id === ev.id)) data.events = [ev, ...data.events];
+        }
+        data.events = data.events.filter(e => e.id !== 'pending');
+        render();
       }
     };
     socket.onopen = () => { clearTimeout(reconnectTimer); statusEl.textContent = 'Our check-ins are live.'; pingTimer = setInterval(() => { if (socket.readyState === WebSocket.OPEN) socket.send(JSON.stringify({ type: 'ping' })); }, 25000); };

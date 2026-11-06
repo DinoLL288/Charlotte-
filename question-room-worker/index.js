@@ -664,12 +664,14 @@ export class QuestionNightRoom {
         const shouldRecordReturn = !active && !previous.active && openHistory;
         if (Boolean(previous.active) !== active || shouldRecordReturn) {
           const at = new Date().toISOString();
+          const newEvent = { id: crypto.randomUUID(), user, action: active ? 'start' : 'return', at };
           bathroom.status[user] = active ? { active: true, startedAt: at } : { active: false, startedAt: null, returnedAt: at };
-          this.recordBathroomEvent(bathroom, { id: crypto.randomUUID(), user, action: active ? 'start' : 'return', at });
+          this.recordBathroomEvent(bathroom, newEvent);
           await this.ctx.storage.put('bathroomData', bathroom);
-          await this.broadcastBathroom(bathroom);
+          await this.broadcastBathroom(bathroom, newEvent);
+          return Response.json({ ok: true, bathroom: { status: bathroom.status, stats: bathroom.stats }, event: newEvent });
         }
-        return Response.json({ ok: true, bathroom });
+        return Response.json({ ok: true, bathroom: { status: bathroom.status, stats: bathroom.stats } });
       } else if (body.action === 'bathroom-history-session') {
         const user = body.user;
         const startAt = new Date(body.startAt || '');
@@ -680,12 +682,19 @@ export class QuestionNightRoom {
         }
         const bathroom = await this.getBathroomData();
         const duplicateAt = (action, time) => bathroom.events.some(event => event.user === user && event.action === action && Math.floor(Date.parse(event.at) / 60_000) === Math.floor(time.getTime() / 60_000));
-        if (duplicateAt('start', startAt) || (returnAt && duplicateAt('return', returnAt))) return Response.json({ ok: true, duplicate: true, bathroom });
-        this.recordBathroomEvent(bathroom, { id: crypto.randomUUID(), user, action: 'start', at: startAt.toISOString(), addedLater: true });
-        if (returnAt) this.recordBathroomEvent(bathroom, { id: crypto.randomUUID(), user, action: 'return', at: returnAt.toISOString(), addedLater: true });
+        if (duplicateAt('start', startAt) || (returnAt && duplicateAt('return', returnAt))) return Response.json({ ok: true, duplicate: true, bathroom: { status: bathroom.status, stats: bathroom.stats } });
+        const newEvents = [];
+        const startEvent = { id: crypto.randomUUID(), user, action: 'start', at: startAt.toISOString(), addedLater: true };
+        this.recordBathroomEvent(bathroom, startEvent);
+        newEvents.push(startEvent);
+        if (returnAt) {
+          const returnEvent = { id: crypto.randomUUID(), user, action: 'return', at: returnAt.toISOString(), addedLater: true };
+          this.recordBathroomEvent(bathroom, returnEvent);
+          newEvents.push(returnEvent);
+        }
         await this.ctx.storage.put('bathroomData', bathroom);
-        await this.broadcastBathroom(bathroom);
-        return Response.json({ ok: true, bathroom });
+        await this.broadcastBathroom(bathroom, newEvents.length === 1 ? newEvents[0] : newEvents);
+        return Response.json({ ok: true, bathroom: { status: bathroom.status, stats: bathroom.stats }, events: newEvents });
       } else if (body.action === 'bathroom-history') {
         const user = body.user;
         const action = body.eventAction === 'return' ? 'return' : body.eventAction === 'start' ? 'start' : '';
@@ -696,11 +705,12 @@ export class QuestionNightRoom {
         const bathroom = await this.getBathroomData();
         const atIso = at.toISOString();
         const duplicate = bathroom.events.some(event => event.user === user && event.action === action && Math.floor(Date.parse(event.at) / 60_000) === Math.floor(at.getTime() / 60_000));
-        if (duplicate) return Response.json({ ok: true, duplicate: true, bathroom });
-        this.recordBathroomEvent(bathroom, { id: crypto.randomUUID(), user, action, at: atIso, addedLater: true });
+        if (duplicate) return Response.json({ ok: true, duplicate: true, bathroom: { status: bathroom.status, stats: bathroom.stats } });
+        const newEvent = { id: crypto.randomUUID(), user, action, at: atIso, addedLater: true };
+        this.recordBathroomEvent(bathroom, newEvent);
         await this.ctx.storage.put('bathroomData', bathroom);
-        await this.broadcastBathroom(bathroom);
-        return Response.json({ ok: true, bathroom });
+        await this.broadcastBathroom(bathroom, newEvent);
+        return Response.json({ ok: true, bathroom: { status: bathroom.status, stats: bathroom.stats }, event: newEvent });
       } else if (body.action === 'configure') {
         const day = Number(body.day);
         if (!Number.isInteger(day) || day < 0 || day > 6 || !/^([01]\d|2[0-3]):[0-5]\d$/.test(String(body.openTime || ''))) return Response.json({ error: 'Choose a valid opening day and time' }, { status: 400 });
@@ -968,8 +978,8 @@ export class QuestionNightRoom {
     }
   }
 
-  async broadcastBathroom(bathroom) {
-    const message = JSON.stringify({ type: 'bathroom', bathroom });
+  async broadcastBathroom(bathroom, event = null) {
+    const message = JSON.stringify({ type: 'bathroom', status: bathroom.status, stats: bathroom.stats, event });
     for (const socket of this.ctx.getWebSockets()) {
       try { socket.send(message); } catch { /* closed socket */ }
     }
