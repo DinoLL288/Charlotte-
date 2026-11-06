@@ -170,23 +170,28 @@
       });
       const json = await response.json();
       if (!response.ok) throw new Error(json.error || 'Could not save our check-in');
-      // Reconcile with server: update status, stats, and append any new events.
-      if (json.bathroom) { data.status = json.bathroom.status || data.status; data.stats = json.bathroom.stats || data.stats; }
+      // Reconcile with server (supports both old full-bathroom and new lightweight responses).
+      if (json.bathroom) {
+        data.status = json.bathroom.status || data.status;
+        data.stats = json.bathroom.stats || data.stats;
+        if (Array.isArray(json.bathroom.events)) {
+          for (const ev of json.bathroom.events) {
+            if (ev && ev.id && !data.events.some(x => x.id === ev.id)) data.events = [ev, ...data.events];
+          }
+        }
+      }
       if (json.event) {
         const ev = json.event;
-        if (!data.events.some(e => e.id === ev.id)) {
-          // Remove optimistic pending event if present
+        if (ev && ev.id && !data.events.some(e => e.id === ev.id)) {
           data.events = data.events.filter(e => e.id !== 'pending');
           data.events = [ev, ...data.events];
         }
       }
       if (Array.isArray(json.events)) {
         for (const ev of json.events) {
-          if (!data.events.some(e => e.id === ev.id)) data.events = [ev, ...data.events];
+          if (ev && ev.id && !data.events.some(x => x.id === ev.id)) data.events = [ev, ...data.events];
         }
-        data.events = data.events.filter(e => e.id !== 'pending');
       }
-      // Clean up any remaining pending events
       data.events = data.events.filter(e => e.id !== 'pending');
       render();
       if (!stateChanged) statusEl.textContent = active ? 'Our bathroom check-in is saved.' : 'We’re back together. Return recorded.';
