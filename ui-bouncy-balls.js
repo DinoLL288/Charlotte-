@@ -96,11 +96,15 @@
   let width = innerWidth;
   let height = innerHeight;
   let dpr = Math.min(devicePixelRatio || 1, 2);
+  let scrollY = window.scrollY || 0;
+  let pageHeight = Math.max(document.documentElement.scrollHeight, document.body ? document.body.scrollHeight : 0, height);
 
   function resize() {
     width = innerWidth;
     height = innerHeight;
     dpr = Math.min(devicePixelRatio || 1, 2);
+    scrollY = window.scrollY || 0;
+    pageHeight = Math.max(document.documentElement.scrollHeight, document.body ? document.body.scrollHeight : 0, height);
     canvas.width = width * dpr;
     canvas.height = height * dpr;
     ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
@@ -285,6 +289,8 @@
   }
 
   function refreshObstacles() {
+    const sy = window.scrollY || 0;
+    pageHeight = Math.max(document.documentElement.scrollHeight, document.body ? document.body.scrollHeight : 0, height);
     const next = [];
     const selectors = [
       "button", "a[href]", "input", "select", "textarea", "summary",
@@ -297,13 +303,16 @@
       if (style.display === "none" || style.visibility === "hidden" ||
           Number(style.opacity) === 0 || style.pointerEvents === "none") return;
       const rect = el.getBoundingClientRect();
+      // Convert to document coordinates
+      const top = rect.top + sy;
+      const bottom = rect.bottom + sy;
       if (rect.width < 4 || rect.height < 4 || rect.right <= 0 ||
-          rect.left >= width || rect.bottom <= 0 || rect.top >= height) return;
+          rect.left >= width || bottom <= 0 || top >= pageHeight) return;
       next.push({
         left: Math.max(0, rect.left),
         right: Math.min(width, rect.right),
-        top: Math.max(0, rect.top),
-        bottom: Math.min(height, rect.bottom)
+        top: Math.max(0, top),
+        bottom: Math.min(pageHeight, bottom)
       });
     });
     const seen = new Set();
@@ -411,7 +420,7 @@
     state.collected++;
     state.tokens++;
     if (state.pile.length < BASE.maxPile) {
-      state.pile.push({ x: ball.x, y: height - ball.radius, r: ball.radius, hue: ball.hue });
+      state.pile.push({ x: ball.x, y: pageHeight - ball.radius, r: ball.radius, hue: ball.hue });
     }
     saveState();
   }
@@ -461,16 +470,15 @@
       }
     }
 
-    // Resting / collection
-    if (ball.y >= height - ball.radius - 2) {
-      ball.y = height - ball.radius;
+    // Ground (bottom of page)
+    if (ball.y >= pageHeight - ball.radius - 2) {
+      ball.y = pageHeight - ball.radius;
       if (Math.abs(ball.vy) < 0.5) {
         ball.vy = 0;
         ball.vx *= BASE.groundDamp;
         ball.resting = true;
         ball.restFrames++;
         if (ball.restFrames > 8) {
-          // Collect
           collectBall(ball);
           ball._collected = true;
         }
@@ -492,16 +500,18 @@
 
   function drawBall(ball) {
     const r = ball.radius;
+    const vx = ball.x;
+    const vy = ball.y - scrollY;
     const gradient = ctx.createRadialGradient(
-      ball.x - r * 0.35, ball.y - r * 0.4, 0,
-      ball.x, ball.y, r
+      vx - r * 0.35, vy - r * 0.4, 0,
+      vx, vy, r
     );
     gradient.addColorStop(0, `hsl(${ball.hue}, 95%, 92%)`);
     gradient.addColorStop(0.5, `hsl(${ball.hue}, 85%, 62%)`);
     gradient.addColorStop(1, `hsl(${ball.hue}, 80%, 40%)`);
 
     ctx.save();
-    ctx.translate(ball.x, ball.y);
+    ctx.translate(vx, vy);
     ctx.scale(1, ball.squash);
     ctx.beginPath();
     ctx.arc(0, 0, r, 0, Math.PI * 2);
@@ -520,12 +530,16 @@
   function drawPile() {
     for (const b of state.pile) {
       const r = b.r;
-      const gradient = ctx.createRadialGradient(b.x - r * 0.35, b.y - r * 0.4, 0, b.x, b.y, r);
+      const px = b.x;
+      const py = b.y - scrollY;
+      // skip if off-screen
+      if (py + r < 0 || py - r > height) continue;
+      const gradient = ctx.createRadialGradient(px - r * 0.35, py - r * 0.4, 0, px, py, r);
       gradient.addColorStop(0, `hsl(${b.hue}, 95%, 92%)`);
       gradient.addColorStop(0.5, `hsl(${b.hue}, 85%, 62%)`);
       gradient.addColorStop(1, `hsl(${b.hue}, 80%, 40%)`);
       ctx.beginPath();
-      ctx.arc(b.x, b.y, r, 0, Math.PI * 2);
+      ctx.arc(px, py, r, 0, Math.PI * 2);
       ctx.fillStyle = gradient;
       ctx.shadowColor = `hsl(${b.hue}, 90%, 60%)`;
       ctx.shadowBlur = 4;
@@ -537,6 +551,9 @@
   function loop(time) {
     animation = null;
     if (!enabled || document.hidden) return;
+
+    scrollY = window.scrollY || 0;
+    pageHeight = Math.max(document.documentElement.scrollHeight, document.body ? document.body.scrollHeight : 0, height);
 
     const dt = lastTime ? Math.min(time - lastTime, 32) : 16.667;
     lastTime = time;
@@ -568,9 +585,9 @@
       }
     }
 
-    // Remove collected balls
+    // Remove collected balls and any that escaped
     for (let i = balls.length - 1; i >= 0; i--) {
-      if (balls[i]._collected) balls.splice(i, 1);
+      if (balls[i]._collected || balls[i].y > pageHeight + 100) balls.splice(i, 1);
     }
 
     // Draw pile then balls
@@ -629,6 +646,7 @@
 
   window.addEventListener("resize", resize);
   window.addEventListener("scroll", () => {
+    scrollY = window.scrollY || 0;
     const now = performance.now();
     if (now - obstacleRefreshTimer < 150) return;
     obstacleRefreshTimer = now;
