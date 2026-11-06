@@ -513,14 +513,18 @@
 
     async function loadProfilePic(name) {
       if (!name || name === 'Unknown' || Object.prototype.hasOwnProperty.call(profilePics, name)) return;
-      const cached = localStorage.getItem('charlotte-avatar-' + name);
+      const cacheKey = 'charlotte-avatar-' + name;
+      const cached = localStorage.getItem(cacheKey);
       if (cached) profilePics[name] = cached;
+      const lastFetch = Number(localStorage.getItem(cacheKey + '-time') || 0);
+      if (Date.now() - lastFetch < 5 * 60 * 1000) return;
       try {
         const res = await fetch('/api/profile?user=' + encodeURIComponent(name));
         const json = await res.json();
         if (json.url) {
           profilePics[name] = json.url;
-          localStorage.setItem('charlotte-avatar-' + name, json.url);
+          localStorage.setItem(cacheKey, json.url);
+          localStorage.setItem(cacheKey + '-time', String(Date.now()));
         }
       } catch (e) {
         // keep whatever we have
