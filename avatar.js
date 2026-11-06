@@ -66,15 +66,19 @@
     mount();
   }
 
-  fetch('/api/profile?user=' + encodeURIComponent(user))
-    .then(res => res.json())
-    .then(json => {
-      const src = json.url || fallback;
-      localStorage.setItem(cacheKey, src);
-      const img = document.querySelector('#profilePfp img');
-      if (img) img.src = src;
-    })
-    .catch(() => {});
+  const lastFetch = Number(localStorage.getItem(cacheKey + '-time') || 0);
+  if (Date.now() - lastFetch >= 5 * 60 * 1000) {
+    fetch('/api/profile?user=' + encodeURIComponent(user))
+      .then(res => res.json())
+      .then(json => {
+        const src = json.url || fallback;
+        localStorage.setItem(cacheKey, src);
+        localStorage.setItem(cacheKey + '-time', String(Date.now()));
+        const img = document.querySelector('#profilePfp img');
+        if (img) img.src = src;
+      })
+      .catch(() => {});
+  }
 
   if (!document.querySelector('link[data-site-polish]')) {
     const polish = document.createElement('link');
