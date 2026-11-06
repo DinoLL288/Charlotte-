@@ -1,4 +1,3 @@
-
 (() => {
   "use strict";
 
@@ -10,9 +9,15 @@
     ballCount: 35,
     minSize: 4,
     maxSize: 8,
-    gravity: 0.24,
-    bounce: 0.78,
-    spawnRate: 180
+    gravity: 0.22,
+    bounce: 0.74,        // coefficient of restitution for obstacles
+    wallBounce: 0.72,    // coefficient of restitution for screen edges
+    airDamp: 0.992,      // per-frame air resistance
+    groundDamp: 0.86,    // extra damping when resting on a surface
+    spawnRate: 180,
+    substeps: 4,         // physics substeps per frame (stability)
+    maxSpeed: 18,        // clamp to prevent tunneling
+    friction: 0.88       // tangential friction on contact
   };
 
   let enabled = false;
@@ -21,6 +26,7 @@
   let animation = null;
   let lastTime = 0;
   let spawnTimer = 0;
+  let obstacleRefreshTimer = 0;
 
   const canvas = document.createElement("canvas");
   Object.assign(canvas.style, {
@@ -70,7 +76,8 @@
     color: "white",
     font: "600 13px system-ui",
     cursor: "pointer",
-    boxShadow: "0 5px 18px rgba(0,0,0,.2)"
+    boxShadow: "0 5px 18px rgba(0,0,0,.2)",
+    transition: "background .15s ease"
   });
 
   document.documentElement.appendChild(toggle);
@@ -80,26 +87,38 @@
   }
 
   function createBall() {
-    const radius = random(
-      SETTINGS.minSize,
-      SETTINGS.maxSize
-    );
-
+    const radius = random(SETTINGS.minSize, SETTINGS.maxSize);
+    // Try to spawn away from obstacles
+    let x = random(radius, width - radius);
+    let y = random(-120, -radius);
+    for (let attempt = 0; attempt < 8; attempt++) {
+      let hit = false;
+      for (const rect of obstacles) {
+        if (x + radius > rect.left && x - radius < rect.right &&
+            y + radius > rect.top && y - radius < rect.bottom) {
+          hit = true;
+          break;
+        }
+      }
+      if (!hit) break;
+      x = random(radius, width - radius);
+      y = random(-120, -radius);
+    }
     return {
-      x: random(radius, width - radius),
-      y: random(-100, -radius),
-      vx: random(-1.5, 1.5),
-      vy: random(0, 2),
+      x,
+      y,
+      vx: random(-1.2, 1.2),
+      vy: random(0, 1.5),
       radius,
       hue: random(0, 360),
-      squash: 1
+      squash: 1,
+      resting: false
     };
   }
 
   // Find interactive elements currently visible on screen
   function refreshObstacles() {
-    obstacles = [];
-
+    const next = [];
     const selectors = [
       "button",
       "a[href]",
@@ -123,80 +142,136 @@
       if (
         style.display === "none" ||
         style.visibility === "hidden" ||
-        Number(style.opacity) === 0
+        Number(style.opacity) === 0 ||
+        style.pointerEvents === "none"
       ) return;
 
       const rect = el.getBoundingClientRect();
 
       if (
-        rect.width < 2 ||
-        rect.height < 2 ||
+        rect.width < 4 ||
+        rect.height < 4 ||
         rect.right <= 0 ||
         rect.left >= width ||
         rect.bottom <= 0 ||
         rect.top >= height
       ) return;
 
-      obstacles.push({
+      // Merge tiny overlaps by pushing a clamped rect
+      next.push({
         left: Math.max(0, rect.left),
         right: Math.min(width, rect.right),
         top: Math.max(0, rect.top),
         bottom: Math.min(height, rect.bottom)
       });
     });
+
+    // De-duplicate identical rects
+    const seen = new Set();
+    obstacles = next.filter(r => {
+      const key = `${r.left}|${r.top}|${r.right}|${r.bottom}`;
+      if (seen.has(key)) return false;
+      seen.add(key);
+      return true;
+    });
   }
 
-  // Ball-to-rectangle collision
-  function collide(ball, rect) {
-    const closestX = Math.max(
-      rect.left,
-      Math.min(ball.x, rect.right)
-    );
-
-    const closestY = Math.max(
-      rect.top,
-      Math.min(ball.y, rect.bottom)
-    );
+  // Resolve a single ball-vs-rectangle collision with impulse + friction
+  function collideRect(ball, rect) {
+    const closestX = Math.max(rect.left, Math.min(ball.x, rect.right));
+    const closestY = Math.max(rect.top, Math.min(ball.y, rect.bottom));
 
     const dx = ball.x - closestX;
     const dy = ball.y - closestY;
+    const distSq = dx * dx + dy * dy;
 
-    const distance = Math.sqrt(dx * dx + dy * dy);
-
-    if (distance >= ball.radius) return;
-
-    let nx, ny;
-
-    if (distance > 0.001) {
-      nx = dx / distance;
-      ny = dy / distance;
-    } else {
-      const distances = [
-        { d: Math.abs(ball.x - rect.left), x: -1, y: 0 },
-        { d: Math.abs(rect.right - ball.x), x: 1, y: 0 },
-        { d: Math.abs(ball.y - rect.top), x: 0, y: -1 },
-        { d: Math.abs(rect.bottom - ball.y), x: 0, y: 1 }
-      ];
-
-      distances.sort((a, b) => a.d - b.d);
-
-      nx = distances[0].x;
-      ny = distances[0].y;
+    if (distSq >= ball.radius * ball.radius) return false;
+    if (distSq === 0) {
+      // Ball center inside rect — push out via nearest edge
+      const toLeft = ball.x - rect.left;
+      const toRight = rect.right - ball.x;
+      const toTop = ball.y - rect.top;
+      const toBottom = rect.bottom - ball.y;
+      const min = Math.min(toLeft, toRight, toTop, toBottom);
+      let nx = 0, ny = 0;
+      if (min === toLeft) nx = -1;
+      else if (min === toRight) nx = 1;
+      else if (min === toTop) ny = -1;
+      else ny = 1;
+      const overlap = ball.radius + min;
+      ball.x += nx * overlap;
+      ball.y += ny * overlap;
+      const vel = ball.vx * nx + ball.vy * ny;
+      if (vel < 0) {
+        const j = -(1 + SETTINGS.bounce) * vel;
+        ball.vx += j * nx;
+        ball.vy += j * ny;
+        // tangential friction
+        const tx = -ny, ty = nx;
+        const vt = ball.vx * tx + ball.vy * ty;
+        ball.vx -= (1 - SETTINGS.friction) * vt * tx;
+        ball.vy -= (1 - SETTINGS.friction) * vt * ty;
+        ball.squash = 0.72;
+      }
+      return true;
     }
 
-    const overlap = ball.radius - distance;
+    const dist = Math.sqrt(distSq);
+    const nx = dx / dist;
+    const ny = dy / dist;
+    const overlap = ball.radius - dist;
 
     ball.x += nx * overlap;
     ball.y += ny * overlap;
 
-    const velocity = ball.vx * nx + ball.vy * ny;
-
-    if (velocity < 0) {
-      ball.vx -= (1 + SETTINGS.bounce) * velocity * nx;
-      ball.vy -= (1 + SETTINGS.bounce) * velocity * ny;
-
-      ball.squash = 0.7;
+    const vel = ball.vx * nx + ball.vy * ny;
+    if (vel < 0) {
+      const j = -(1 + SETTINGS.bounce) * vel;
+      ball.vx += j * nx;
+      ball.vy += j * ny;
+      const tx = -ny, ty = nx;
+      const vt = ball.vx * tx + ball.vy * ty;
+      ball.vx -= (1 - SETTINGS.friction) * vt * tx;
+      ball.vy -= (1 - SETTINGS.friction) * vt * ty;
+      ball.squash = 0.72;
     }
+    return true;
+  }
+
+  // Ball-ball collision (equal mass, elastic-ish)
+  function collideBalls(a, b) {
+    const dx = b.x - a.x;
+    const dy = b.y - a.y;
+    const distSq = dx * dx + dy * dy;
+    const minDist = a.radius + b.radius;
+    if (distSq >= minDist * minDist || distSq === 0) return false;
+
+    const dist = Math.sqrt(distSq);
+    const nx = dx / dist;
+    const ny = dy / dist;
+    const overlap = minDist - dist;
+
+    // Separate
+    a.x -= nx * overlap * 0.5;
+    a.y -= ny * overlap * 0.5;
+    b.x += nx * overlap * 0.5;
+    b.y += ny * overlap * 0.5;
+
+    // Relative velocity along normal
+    const dvx = b.vx - a.vx;
+    const dvy = b.vy - a.vy;
+    const vel = dvx * nx + dvy * ny;
+    if (vel < 0) {
+      const e = 0.85;
+      const j = -(1 + e) * vel * 0.5;
+      a.vx -= j * nx;
+      a.vy -= j * ny;
+      b.vx += j * nx;
+      b.vy += j * ny;
+      a.squash = 0.85;
+      b.squash = 0.85;
+    }
+    return true;
   }
 
   function update(ball, dt) {
@@ -204,43 +279,75 @@
 
     ball.vy += SETTINGS.gravity * step;
 
+    // Air resistance
+    ball.vx *= Math.pow(SETTINGS.airDamp, step);
+    ball.vy *= Math.pow(SETTINGS.airDamp, step);
+
     ball.x += ball.vx * step;
     ball.y += ball.vy * step;
 
-    ball.squash += (1 - ball.squash) * 0.2;
+    // Squash recovery (exponential ease)
+    ball.squash += (1 - ball.squash) * (1 - Math.pow(0.7, step));
+
+    // Clamp speed
+    const speed = Math.hypot(ball.vx, ball.vy);
+    if (speed > SETTINGS.maxSpeed) {
+      const s = SETTINGS.maxSpeed / speed;
+      ball.vx *= s;
+      ball.vy *= s;
+    }
 
     // Left and right screen edges
     if (ball.x < ball.radius) {
       ball.x = ball.radius;
-      ball.vx = Math.abs(ball.vx) * 0.8;
+      ball.vx = Math.abs(ball.vx) * SETTINGS.wallBounce;
+      ball.squash = 0.78;
     }
-
     if (ball.x > width - ball.radius) {
       ball.x = width - ball.radius;
-      ball.vx = -Math.abs(ball.vx) * 0.8;
+      ball.vx = -Math.abs(ball.vx) * SETTINGS.wallBounce;
+      ball.squash = 0.78;
     }
 
-    // Top and bottom edges
+    // Top edge
     if (ball.y < ball.radius) {
       ball.y = ball.radius;
-      ball.vy = Math.abs(ball.vy) * 0.8;
+      ball.vy = Math.abs(ball.vy) * SETTINGS.wallBounce;
+      ball.squash = 0.78;
     }
 
-    // Bounce off visible UI elements
-    for (const rect of obstacles) {
-      if (
-        ball.x + ball.radius < rect.left ||
-        ball.x - ball.radius > rect.right ||
-        ball.y + ball.radius < rect.top ||
-        ball.y - ball.radius > rect.bottom
-      ) continue;
-
-      collide(ball, rect);
+    // Bounce off visible UI elements (multiple passes for stability)
+    for (let pass = 0; pass < 3; pass++) {
+      for (const rect of obstacles) {
+        if (
+          ball.x + ball.radius < rect.left ||
+          ball.x - ball.radius > rect.right ||
+          ball.y + ball.radius < rect.top ||
+          ball.y - ball.radius > rect.bottom
+        ) continue;
+        collideRect(ball, rect);
+      }
     }
 
-    // Tiny random movement
-    if (Math.abs(ball.vx) < 0.05) {
-      ball.vx += random(-0.04, 0.04);
+    // Ground damping when resting
+    if (ball.y > height - ball.radius - 1) {
+      ball.y = height - ball.radius;
+      if (Math.abs(ball.vy) < 0.6) {
+        ball.vy = 0;
+        ball.vx *= SETTINGS.groundDamp;
+        ball.resting = true;
+      } else {
+        ball.vy = -Math.abs(ball.vy) * SETTINGS.wallBounce;
+        ball.squash = 0.7;
+        ball.resting = false;
+      }
+    } else {
+      ball.resting = false;
+    }
+
+    // Tiny nudge to keep things alive, only when nearly still
+    if (Math.abs(ball.vx) < 0.02 && Math.abs(ball.vy) < 0.02 && !ball.resting) {
+      ball.vx += random(-0.03, 0.03);
     }
   }
 
@@ -256,33 +363,26 @@
       r
     );
 
-    gradient.addColorStop(
-      0,
-      `hsl(${ball.hue}, 95%, 90%)`
-    );
-
-    gradient.addColorStop(
-      0.5,
-      `hsl(${ball.hue}, 85%, 60%)`
-    );
-
-    gradient.addColorStop(
-      1,
-      `hsl(${ball.hue}, 80%, 38%)`
-    );
+    gradient.addColorStop(0, `hsl(${ball.hue}, 95%, 92%)`);
+    gradient.addColorStop(0.5, `hsl(${ball.hue}, 85%, 62%)`);
+    gradient.addColorStop(1, `hsl(${ball.hue}, 80%, 40%)`);
 
     ctx.save();
-
     ctx.translate(ball.x, ball.y);
     ctx.scale(1, ball.squash);
 
     ctx.beginPath();
     ctx.arc(0, 0, r, 0, Math.PI * 2);
-
     ctx.fillStyle = gradient;
     ctx.shadowColor = `hsl(${ball.hue}, 90%, 60%)`;
-    ctx.shadowBlur = 6;
+    ctx.shadowBlur = 8;
+    ctx.fill();
 
+    // Subtle highlight
+    ctx.shadowBlur = 0;
+    ctx.beginPath();
+    ctx.arc(-r * 0.25, -r * 0.3, r * 0.35, 0, Math.PI * 2);
+    ctx.fillStyle = "rgba(255,255,255,0.35)";
     ctx.fill();
 
     ctx.restore();
@@ -311,14 +411,27 @@
       balls.push(createBall());
     }
 
-    for (let i = balls.length - 1; i >= 0; i--) {
-      const ball = balls[i];
+    const subDt = dt / SETTINGS.substeps;
+    for (let s = 0; s < SETTINGS.substeps; s++) {
+      // Ball-ball collisions first
+      for (let i = 0; i < balls.length; i++) {
+        for (let j = i + 1; j < balls.length; j++) {
+          collideBalls(balls[i], balls[j]);
+        }
+      }
+      // Then update each ball
+      for (const ball of balls) {
+        update(ball, subDt);
+      }
+    }
 
-      update(ball, dt);
+    for (const ball of balls) {
       draw(ball);
+    }
 
-      // Remove balls after they leave the screen
-      if (ball.y > height + 30) {
+    // Remove balls that fall off screen
+    for (let i = balls.length - 1; i >= 0; i--) {
+      if (balls[i].y > height + 40) {
         balls.splice(i, 1);
       }
     }
@@ -370,16 +483,24 @@
     }
   });
 
-  // Update when the page changes
+  // Update when the page changes (throttled obstacle refresh)
   window.addEventListener("resize", resize);
 
   window.addEventListener(
     "scroll",
-    refreshObstacles,
+    () => {
+      const now = performance.now();
+      if (now - obstacleRefreshTimer < 150) return;
+      obstacleRefreshTimer = now;
+      refreshObstacles();
+    },
     { passive: true, capture: true }
   );
 
   const observer = new MutationObserver(() => {
+    const now = performance.now();
+    if (now - obstacleRefreshTimer < 200) return;
+    obstacleRefreshTimer = now;
     refreshObstacles();
   });
 
