@@ -20,22 +20,16 @@ export async function onRequestGet(context) {
     };
     if (token) headers['Authorization'] = `Bearer ${token}`;
 
-    // Try common extensions
-    for (const ext of ['jpg', 'jpeg', 'png', 'webp', 'gif']) {
+    // Try common extensions in parallel
+    const results = await Promise.all(['jpg', 'jpeg', 'png', 'webp', 'gif'].map(async ext => {
       const res = await fetch(`https://api.github.com/repos/${repo}/contents/profiles/${user}.${ext}?ref=${branch}`, { headers });
-      if (res.status === 200) {
-        const json = await res.json();
-        return new Response(JSON.stringify({ url: json.download_url }), {
-          status: 200,
-          headers: { 'content-type': 'application/json' }
-        });
-      }
-    }
-
-    return new Response(JSON.stringify({ url: null }), {
-      status: 200,
-      headers: { 'content-type': 'application/json' }
-    });
+      if (res.status !== 200) return null;
+      const json = await res.json();
+      return json?.download_url || null;
+    }));
+    const foundUrl = results.find(Boolean);
+    if (foundUrl) return new Response(JSON.stringify({ url: foundUrl }), { status: 200, headers: { 'content-type': 'application/json' } });
+    return new Response(JSON.stringify({ url: null }), { status: 200, headers: { 'content-type': 'application/json' } });
   } catch (e) {
     return new Response(JSON.stringify({ url: null, error: e.message }), {
       status: 200,

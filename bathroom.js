@@ -193,7 +193,7 @@
     finally { button.disabled = false; }
   });
 
-  loadPhotos().then(load).catch(error => { statusEl.textContent = error.message; });
+  Promise.all([loadPhotos(), load()]).then(() => render()).catch(error => { statusEl.textContent = error.message; });
   let socket = null, pingTimer = null, reconnectTimer = null;
   function connect() {
     const protocol = location.protocol === 'https:' ? 'wss:' : 'ws:';
