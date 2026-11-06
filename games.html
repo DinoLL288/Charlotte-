@@ -1,0 +1,296 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <script src="site-shell-guard.js"></script>
+  <meta charset="UTF-8"><meta name="viewport" content="width=device-width, initial-scale=1.0"><title>Games · Collect tokens</title>
+  <script>if (!localStorage.getItem('charlotte-user')) location.href = 'login.html';</script>
+  <link rel="stylesheet" href="theme.css">
+  <style>
+    .hero{padding:78px 20px 66px;text-align:center;color:#fff;background:linear-gradient(160deg,#0d2c44,#2a78a8)}.hero .eyebrow{color:var(--gold-soft)}.hero h1{margin:10px 0;font-size:clamp(2.2rem,7vw,3.5rem);font-weight:400}.hero p:last-child{max-width:54ch;margin:0 auto;color:#e6f3fc;line-height:1.6}.top-bar{position:absolute;top:16px;left:16px;z-index:2}.shell{width:min(920px,100%);margin:-30px auto 60px;padding:0 18px;position:relative}.tabs{display:flex;gap:8px;overflow:auto;padding:10px;border-radius:18px;background:rgba(255,255,255,.93);box-shadow:0 14px 36px #143f5f22}.tab{flex:none;border:0;border-radius:999px;padding:10px 15px;color:#315d78;background:transparent;font:inherit;font-weight:700;cursor:pointer}.tab[aria-selected=true]{color:#fff;background:#143f5f}.panel{display:none;margin-top:18px;padding:clamp(20px,4vw,32px);border:1px solid white;border-radius:24px;background:rgba(255,253,247,.97);box-shadow:0 20px 50px #143f5f22}.panel.active{display:block}.panel h2{margin:0;color:#123a58;font-size:1.6rem}.intro{margin:8px 0 18px;color:#5c7c93;line-height:1.55}.token-bar{display:flex;align-items:center;gap:10px;padding:10px 14px;border-radius:14px;background:#fff7df;border:1px solid #e9d9b4;color:#73591f;font-weight:700;margin-bottom:14px}.game-area{position:relative;min-height:280px;padding:16px;border:1px dashed #c3d8e4;border-radius:16px;background:#fbfdfe;overflow:hidden}.btn{border:1px solid #143f5f;border-radius:999px;padding:10px 18px;color:#fff;background:#143f5f;font:inherit;font-weight:700;cursor:pointer}.btn:disabled{opacity:.5;cursor:wait}.btn.secondary{color:#315d78;background:#eef7fb;border-color:#cddfe8}.status{min-height:1.4em;margin:12px 0 0;color:#73591f;font-weight:700}.hearts-field{position:relative;height:320px;overflow:hidden}.heart{position:absolute;font-size:1.6rem;cursor:pointer;user-select:none;transition:transform .1s}.heart:hover{transform:scale(1.2)}.mole-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:10px;max-width:360px;margin:0 auto}.hole{height:90px;border-radius:50%;background:radial-gradient(circle at 50% 80%,#c8dceb,#eaf4fa);display:grid;place-items:center;font-size:2rem;cursor:pointer;overflow:hidden;position:relative}.mole{display:none}.hole.active .mole{display:block;animation:pop .2s ease}.@keyframes pop{from{transform:scale(0)}to{transform:scale(1)}}.reaction-area{position:relative;height:320px;background:#f0f8ff;border-radius:16px}.target{position:absolute;width:50px;height:50px;border-radius:50%;background:#143f5f;color:#fff;display:grid;place-items:center;font-size:1.4rem;cursor:pointer;box-shadow:0 4px 12px #143f5f55}.simon-grid{display:grid;grid-template-columns:repeat(2,1fr);gap:10px;max-width:280px;margin:0 auto}.simon-btn{height:80px;border-radius:16px;border:3px solid #fff;cursor:pointer;opacity:.6;transition:opacity .15s,transform .1s}.simon-btn.lit{opacity:1;transform:scale(1.05)}.simon-btn[data-color="0"]{background:#e74c3c}.simon-btn[data-color="1"]{background:#3498db}.simon-btn[data-color="2"]{background:#2ecc71}.simon-btn[data-color="3"]{background:#f1c40f}.memory-grid{display:grid;grid-template-columns:repeat(4,1fr);gap:8px;max-width:360px;margin:0 auto}.mem-card{height:70px;border-radius:12px;background:#143f5f;color:#fff;display:grid;place-items:center;font-size:1.6rem;cursor:pointer;transition:transform .2s}.mem-card.flipped{background:#fff;color:#143f5f;border:2px solid #143f5f}.mem-card.matched{background:#d4edda;color:#155724;border:2px solid #28a745;pointer-events:none}@media(max-width:520px){.mole-grid{gap:6px}.hole{height:70px}.memory-grid{gap:6px}.mem-card{height:55px;font-size:1.3rem}}
+  </style>
+</head>
+<body>
+  <div class="top-bar"><a class="button" href="index.html">← Back to hub</a></div>
+  <header class="hero"><p class="eyebrow">Play &amp; earn</p><h1>Token games</h1><p>Five little games. Every token you earn here powers up the fidget balls on the hub page — more tokens, more balls per spawn.</p></header>
+  <main class="shell">
+    <div class="token-bar">🪙 Tokens: <span id="tokenCount">0</span> &nbsp;|&nbsp; <a href="index.html" style="color:#73591f;text-decoration:underline">Back to hub (fidget balls)</a></div>
+    <div class="tabs" role="tablist">
+      <button class="tab" role="tab" aria-selected="true" data-tab="catch">Catch hearts</button>
+      <button class="tab" role="tab" aria-selected="false" data-tab="memory">Memory match</button>
+      <button class="tab" role="tab" aria-selected="false" data-tab="whack">Whack-a-heart</button>
+      <button class="tab" role="tab" aria-selected="false" data-tab="reaction">Reaction tap</button>
+      <button class="tab" role="tab" aria-selected="false" data-tab="simon">Simon says</button>
+    </div>
+
+    <!-- Catch hearts -->
+    <section class="panel active" id="panel-catch">
+      <h2>Catch the hearts 🩷</h2>
+      <p class="intro">Tap the falling hearts before they hit the ground. 3 misses and the round ends. Each catch = 1 token.</p>
+      <div class="game-area"><div class="hearts-field" id="heartsField"></div></div>
+      <div class="status" id="catchStatus">Tap Start to play.</div>
+      <button class="btn" id="catchStart">Start</button>
+    </section>
+
+    <!-- Memory match -->
+    <section class="panel" id="panel-memory">
+      <h2>Memory match 🃏</h2>
+      <p class="intro">Flip cards to find matching pairs. Match all pairs to earn 5 bonus tokens (1 per match).</p>
+      <div class="game-area"><div class="memory-grid" id="memGrid"></div></div>
+      <div class="status" id="memStatus">Tap Start to play.</div>
+      <button class="btn" id="memStart">Start</button>
+    </section>
+
+    <!-- Whack-a-heart -->
+    <section class="panel" id="panel-whack">
+      <h2>Whack-a-heart 🔨</h2>
+      <p class="intro">Hearts pop up in the holes. Tap them fast! 30 seconds. Each whack = 1 token.</p>
+      <div class="game-area"><div class="mole-grid" id="moleGrid"></div></div>
+      <div class="status" id="whackStatus">Tap Start to play.</div>
+      <button class="btn" id="whackStart">Start</button>
+    </section>
+
+    <!-- Reaction tap -->
+    <section class="panel" id="panel-reaction">
+      <h2>Reaction tap ⚡</h2>
+      <p class="intro">A target appears somewhere. Tap it before it vanishes (1.5s). 3 misses = game over. Each hit = 1 token.</p>
+      <div class="game-area"><div class="reaction-area" id="reactArea"></div></div>
+      <div class="status" id="reactStatus">Tap Start to play.</div>
+      <button class="btn" id="reactStart">Start</button>
+    </section>
+
+    <!-- Simon says -->
+    <section class="panel" id="panel-simon">
+      <h2>Simon says 🎨</h2>
+      <p class="intro">Watch the sequence of colors, then repeat it. Each correct round = 2 tokens.</p>
+      <div class="game-area"><div class="simon-grid" id="simonGrid"></div></div>
+      <div class="status" id="simonStatus">Tap Start to play.</div>
+      <button class="btn" id="simonStart">Start</button>
+    </section>
+  </main>
+  <script src="dialog.js"></script><script src="avatar.js"></script>
+  <script>
+  (function(){
+    const user = localStorage.getItem('charlotte-user') || 'Unknown';
+    let tokenBalance = 0;
+    function updateTokenCount(){ document.getElementById('tokenCount').textContent = tokenBalance; }
+    function addTokens(n){
+      fetch('/api/question-room', {method:'POST',headers:{'content-type':'application/json'},body:JSON.stringify({action:'playful-award',user:user,amount:n})})
+        .then(r=>r.json()).then(j=>{ if(j&&j.state) tokenBalance = j.state.tokens[user]||0; updateTokenCount(); })
+        .catch(()=>{});
+    }
+    function loadTokens(){
+      fetch('/api/question-room?view=playful-state',{cache:'no-store'})
+        .then(r=>r.json()).then(s=>{ tokenBalance = (s.tokens&&s.tokens[user])||0; updateTokenCount(); })
+        .catch(()=>{});
+    }
+    loadTokens();
+
+    // Tabs
+    document.querySelectorAll('.tab').forEach(tab=>{
+      tab.addEventListener('click',()=>{
+        document.querySelectorAll('.tab').forEach(t=>t.setAttribute('aria-selected','false'));
+        document.querySelectorAll('.panel').forEach(p=>p.classList.remove('active'));
+        tab.setAttribute('aria-selected','true');
+        document.getElementById('panel-'+tab.dataset.tab).classList.add('active');
+      });
+    });
+
+    // ===== CATCH HEARTS =====
+    (function(){
+      const field = document.getElementById('heartsField');
+      const status = document.getElementById('catchStatus');
+      const startBtn = document.getElementById('catchStart');
+      let running=false, score=0, misses=0, hearts=[], timer=null, spawnTimer=null;
+      function spawnHeart(){
+        const h = document.createElement('div');
+        h.className='heart'; h.textContent='🩷';
+        h.style.left = Math.random()*90+'%';
+        h.style.top = '-30px';
+        field.appendChild(h);
+        hearts.push({el:h, y:-30, speed: 1.5+Math.random()*2});
+        h.addEventListener('click',()=>catchHeart(h));
+      }
+      function catchHeart(h){
+        const idx = hearts.findIndex(x=>x.el===h);
+        if(idx<0) return;
+        hearts.splice(idx,1);
+        h.remove();
+        score++;
+        addTokens(1);
+        status.textContent = `Score: ${score}  Misses: ${misses}/3`;
+      }
+      function tick(){
+        for(let i=hearts.length-1;i>=0;i--){
+          const hr = hearts[i];
+          hr.y += hr.speed;
+          hr.el.style.top = hr.y+'px';
+          if(hr.y > field.offsetHeight){
+            hearts.splice(i,1); hr.el.remove();
+            misses++;
+            status.textContent = `Score: ${score}  Misses: ${misses}/3`;
+            if(misses>=3){ endGame(); return; }
+          }
+        }
+        if(running) requestAnimationFrame(tick);
+      }
+      function endGame(){
+        running=false;
+        clearInterval(spawnTimer);
+        status.textContent = `Game over! You caught ${score} hearts = ${score} tokens. Tap Start to play again.`;
+        startBtn.disabled=false;
+      }
+      startBtn.addEventListener('click',()=>{
+        // cleanup
+        hearts.forEach(h=>h.el.remove()); hearts=[];
+        score=0; misses=0;
+        status.textContent='Catch the hearts!';
+        startBtn.disabled=true;
+        running=true;
+        spawnTimer=setInterval(()=>{ if(running) spawnHeart(); }, 900);
+        requestAnimationFrame(tick);
+      });
+    })();
+
+    // ===== MEMORY MATCH =====
+    (function(){
+      const grid = document.getElementById('memGrid');
+      const status = document.getElementById('memStatus');
+      const startBtn = document.getElementById('memStart');
+      const emojis = ['🩷','💙','💚','💛','💜','🧡'];
+      let cards=[], flipped=[], matched=0, lock=false;
+      function build(){
+        grid.innerHTML='';
+        const deck = [...emojis,...emojis].sort(()=>Math.random()-0.5);
+        cards=[]; flipped=[]; matched=0; lock=false;
+        deck.forEach((e,i)=>{
+          const c = document.createElement('div');
+          c.className='mem-card'; c.dataset.emoji=e; c.textContent='?';
+          c.addEventListener('click',()=>flip(c));
+          grid.appendChild(c); cards.push(c);
+        });
+        status.textContent='Find all the pairs!';
+      }
+      function flip(c){
+        if(lock || c.classList.contains('flipped') || c.classList.contains('matched')) return;
+        c.classList.add('flipped'); c.textContent=c.dataset.emoji; flipped.push(c);
+        if(flipped.length===2){
+          lock=true;
+          const [a,b]=flipped;
+          if(a.dataset.emoji===b.dataset.emoji){
+            a.classList.add('matched'); b.classList.add('matched');
+            matched++;
+            addTokens(1);
+            status.textContent=`Match! ${matched}/${emojis.length} pairs. +1 token`;
+            flipped=[]; lock=false;
+            if(matched===emojis.length){ addTokens(5); status.textContent=`You won! +5 bonus tokens. Total earned this round: ${emojis.length+5}.`; }
+          } else {
+            setTimeout(()=>{ a.classList.remove('flipped'); a.textContent='?'; b.classList.remove('flipped'); b.textContent='?'; flipped=[]; lock=false; }, 800);
+          }
+        }
+      }
+      startBtn.addEventListener('click', build);
+    })();
+
+    // ===== WHACK-A-HEART =====
+    (function(){
+      const grid = document.getElementById('moleGrid');
+      const status = document.getElementById('whackStatus');
+      const startBtn = document.getElementById('whackStart');
+      let running=false, score=0, timer=null, spawnTimer=null;
+      // build holes
+      for(let i=0;i<9;i++){
+        const hole = document.createElement('div');
+        hole.className='hole';
+        hole.innerHTML='<span class="mole">🩷</span>';
+        hole.addEventListener('click',()=>{ if(hole.classList.contains('active')){ hole.classList.remove('active'); score++; addTokens(1); status.textContent=`Whacks: ${score}  Time: ${timeLeft}s`; }});
+        grid.appendChild(hole);
+      }
+      const holes = Array.from(grid.querySelectorAll('.hole'));
+      let timeLeft=30;
+      function spawnMole(){
+        if(!running) return;
+        const h = holes[Math.floor(Math.random()*holes.length)];
+        if(h.classList.contains('active')) return;
+        h.classList.add('active');
+        setTimeout(()=>h.classList.remove('active'), 900);
+      }
+      startBtn.addEventListener('click',()=>{
+        holes.forEach(h=>h.classList.remove('active'));
+        score=0; timeLeft=30; running=true; startBtn.disabled=true;
+        status.textContent=`Whacks: 0  Time: 30s`;
+        spawnTimer=setInterval(()=>{ if(running) spawnMole(); }, 700);
+        timer=setInterval(()=>{
+          if(!running) return;
+          timeLeft--;
+          status.textContent=`Whacks: ${score}  Time: ${timeLeft}s`;
+          if(timeLeft<=0){
+            running=false; clearInterval(timer); clearInterval(spawnTimer);
+            holes.forEach(h=>h.classList.remove('active'));
+            status.textContent=`Time's up! ${score} whacks = ${score} tokens. Tap Start to play again.`;
+            startBtn.disabled=false;
+          }
+        },1000);
+      });
+    })();
+
+    // ===== REACTION TAP =====
+    (function(){
+      const area = document.getElementById('reactArea');
+      const status = document.getElementById('reactStatus');
+      const startBtn = document.getElementById('reactStart');
+      let running=false, score=0, misses=0, target=null, timer=null;
+      function showTarget(){
+        if(!running) return;
+        if(target){ target.remove(); target=null; misses++; status.textContent=`Score: ${score}  Misses: ${misses}/3`; if(misses>=3){ endGame(); return; } }
+        const t = document.createElement('div');
+        t.className='target'; t.textContent='🎯';
+        t.style.left = (Math.random()*(area.offsetWidth-60))+'px';
+        t.style.top = (Math.random()*(area.offsetHeight-60))+'px';
+        area.appendChild(t); target=t;
+        t.addEventListener('click',()=>{ if(!running||!target) return; score++; addTokens(1); target.remove(); target=null; status.textContent=`Score: ${score}  Misses: ${misses}/3`; });
+        timer=setTimeout(()=>{ if(target){ target.remove(); target=null; misses++; status.textContent=`Score: ${score}  Misses: ${misses}/3`; if(misses>=3){ endGame(); } else { showTarget(); } } }, 1500);
+      }
+      function endGame(){ running=false; clearTimeout(timer); if(target){target.remove();target=null;} status.textContent=`Game over! ${score} hits = ${score} tokens. Tap Start to play again.`; startBtn.disabled=false; }
+      startBtn.addEventListener('click',()=>{ if(target){target.remove();target=null;} score=0; misses=0; running=true; startBtn.disabled=true; status.textContent='Hit the target!'; showTarget(); });
+    })();
+
+    // ===== SIMON SAYS =====
+    (function(){
+      const grid = document.getElementById('simonGrid');
+      const status = document.getElementById('simonStatus');
+      const startBtn = document.getElementById('simonStart');
+      for(let i=0;i<4;i++){ const b=document.createElement('div'); b.className='simon-btn'; b.dataset.color=i; grid.appendChild(b); }
+      const btns = Array.from(grid.querySelectorAll('.simon-btn'));
+      let seq=[], playerIdx=0, round=0, playing=false, showing=false;
+      function light(i){ btns[i].classList.add('lit'); setTimeout(()=>btns[i].classList.remove('lit'), 400); }
+      function playSeq(){
+        showing=true; status.textContent=`Round ${round}: watch...`;
+        let i=0;
+        const iv=setInterval(()=>{
+          if(i>=seq.length){ clearInterval(iv); showing=false; playerIdx=0; status.textContent=`Round ${round}: your turn!`; return; }
+          light(seq[i]); i++;
+        },600);
+      }
+      function nextRound(){
+        round++;
+        seq.push(Math.floor(Math.random()*4));
+        playSeq();
+      }
+      btns.forEach((b,i)=>{
+        b.addEventListener('click',()=>{
+          if(!playing||showing) return;
+          light(i);
+          if(i===seq[playerIdx]){
+            playerIdx++;
+            if(playerIdx===seq.length){ addTokens(2); status.textContent=`Correct! +2 tokens. Round ${round} done.`; setTimeout(nextRound, 800); }
+          } else {
+            playing=false; status.textContent=`Wrong! You reached round ${round}. Tap Start to play again.`; startBtn.disabled=false;
+          }
+        });
+      });
+      startBtn.addEventListener('click',()=>{ seq=[]; round=0; playing=true; startBtn.disabled=true; status.textContent='Watch the sequence...'; nextRound(); });
+    })();
+  })();
+  </script>
+</body>
+</html>
