@@ -174,15 +174,19 @@
       await Promise.all([...new Set(users)].map(async user => {
         if (!user || user === 'Unknown' || Object.prototype.hasOwnProperty.call(profilePics, user)) return;
 
-        const cached = localStorage.getItem('charlotte-avatar-' + user);
+        const cacheKey = 'charlotte-avatar-' + user;
+        const cached = localStorage.getItem(cacheKey);
         if (cached) profilePics[user] = cached;
+        const lastFetch = Number(localStorage.getItem(cacheKey + '-time') || 0);
+        if (Date.now() - lastFetch < 5 * 60 * 1000) return;
 
         try {
           const res = await fetch('/api/profile?user=' + encodeURIComponent(user));
           const json = await res.json();
           if (json.url) {
             profilePics[user] = json.url;
-            localStorage.setItem('charlotte-avatar-' + user, json.url);
+            localStorage.setItem(cacheKey, json.url);
+            localStorage.setItem(cacheKey + '-time', String(Date.now()));
           } else if (!cached) {
             profilePics[user] = null;
           }
