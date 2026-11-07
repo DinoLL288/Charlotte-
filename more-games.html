@@ -152,6 +152,34 @@
   (function(){
     const user = localStorage.getItem('charlotte-user') || 'Unknown';
     let tokenBalance = 0;
+    let socket = null, reconnectTimer = null;
+    function connectWS() {
+      if (socket && socket.readyState === WebSocket.OPEN) return;
+      const protocol = location.protocol === 'https:' ? 'wss:' : 'ws:';
+      socket = new WebSocket(protocol + '//' + location.host + '/api/question-room?user=' + encodeURIComponent(user) + '&sessionDate=2000-01-01');
+      socket.onmessage = function(event) {
+        try {
+          const msg = JSON.parse(event.data);
+          if (msg.type === 'game-move' || msg.type === 'game-reset') {
+            window.dispatchEvent(new CustomEvent('gamemove', { detail: msg }));
+          }
+        } catch(e) {}
+      };
+      socket.onclose = function() { reconnectTimer = setTimeout(connectWS, 3000); };
+    }
+    connectWS();
+    function sendGameMove(game, move) {
+      if (socket && socket.readyState === WebSocket.OPEN) {
+        socket.send(JSON.stringify({ type: 'game-move', game, move }));
+      }
+    }
+    function sendGameReset(game) {
+      if (socket && socket.readyState === WebSocket.OPEN) {
+        socket.send(JSON.stringify({ type: 'game-reset', game }));
+      }
+    }
+    window.__sendGameMove = sendGameMove;
+    window.__sendGameReset = sendGameReset;
     function updateTokenCount(){ document.getElementById('tokenCount').textContent = tokenBalance; }
     function addTokens(n){
       fetch('/api/question-room', {method:'POST',headers:{'content-type':'application/json'},body:JSON.stringify({action:'playful-award',user:user,amount:n})})
@@ -282,51 +310,133 @@
       newGame();
     })();
 
-    // ===== 4. ROCK PAPER SCISSORS =====
+    // ===== 4. ROCK PAPER SCISSORS (with 2-player mode) =====
     (function(){
       const result = document.getElementById('rpsResult');
       const scoreEl = document.getElementById('rpsScore');
       const status = document.getElementById('rpsStatus');
       const moves = {rock:'✊',paper:'✋',scissors:'✌️'};
       const beats = {rock:'scissors',paper:'rock',scissors:'paper'};
+      const modeDiv = document.createElement('div');
+      modeDiv.style.cssText = 'text-align:center;margin-bottom:10px;';
+      modeDiv.innerHTML = '<button class="btn secondary" id="rpsModeBtn" style="font-size:.85rem;padding:6px 14px;">Mode: vs Computer</button>';
+      result.parentElement.insertBefore(modeDiv, result);
+      const modeBtn = document.getElementById('rpsModeBtn');
+
+      const user = localStorage.getItem('charlotte-user')||'Unknown';
+      const otherUser = user === 'Luke' ? 'Charlotte' : 'Luke';
+      let multiplayer = false;
       let you=0, comp=0, round=0, maxRounds=5;
-      document.querySelectorAll('.rps-btn').forEach(btn=>{
-        btn.addEventListener('click',()=>{
+      let myMove = null, oppMove = null, waitingForOpp = false;
+
+      function resetRound(){
+        myMove = null; oppMove = null; waitingForOpp = false;
+        result.textContent = multiplayer ? 'Pick your move (hidden). Waiting for both...' : 'Tap a move to start!';
+      }
+
+      function resolveRound(){
+        if(!myMove || !oppMove) return;
+        round++;
+        const yourMove = myMove, compMove = oppMove;
+        if(yourMove===compMove){ result.textContent = 'You: ' + moves[yourMove] + ' vs ' + moves[compMove] + ' — Tie!'; }
+        else if(beats[yourMove]===compMove){ you++; addTokens(1); result.textContent = 'You: ' + moves[yourMove] + ' vs ' + moves[compMove] + ' — You win! +1 token'; }
+        else { comp++; result.textContent = 'You: ' + moves[yourMove] + ' vs ' + moves[compMove] + ' — ' + otherUser + ' wins!'; }
+        scoreEl.textContent = 'You: ' + you + '  vs  ' + (multiplayer ? otherUser : 'Computer') + ': ' + comp + '  (Round ' + round + '/' + maxRounds + ')';
+        myMove = null; oppMove = null;
+        if(round>=maxRounds){ status.textContent = you>comp ? 'You won the match! ' + you + '-' + comp : you<comp ? (multiplayer?otherUser:'Computer') + ' won ' + comp + '-' + you : 'Tie ' + you + '-' + comp; round=0; you=0; comp=0; setTimeout(function(){ resetRound(); scoreEl.textContent = 'You: 0  vs  ' + (multiplayer?otherUser:'Computer') + ': 0'; status.textContent = ''; }, 2500); }
+        else { status.textContent = multiplayer ? 'Both picked! Next round...' : ''; setTimeout(resetRound, 1500); }
+      }
+
+      document.querySelectorAll('.rps-btn').forEach(function(btn){
+        btn.addEventListener('click', function(){
           const yourMove = btn.dataset.move;
-          const compMove = ['rock','paper','scissors'][Math.floor(Math.random()*3)];
-          round++;
-          if(yourMove===compMove){ result.textContent=`You: ${moves[yourMove]} vs ${moves[compMove]} — Tie!`; }
-          else if(beats[yourMove]===compMove){ you++; addTokens(1); result.textContent=`You: ${moves[yourMove]} vs ${moves[compMove]} — You win! +1 token`; }
-          else { comp++; result.textContent=`You: ${moves[yourMove]} vs ${moves[compMove]} — Computer wins!`; }
-          scoreEl.textContent = `You: ${you}  vs  Computer: ${comp}  (Round ${round}/${maxRounds})`;
-          if(round>=maxRounds){ status.textContent = you>comp ? `You won the match! ${you}-${comp}` : you<comp ? `Computer won ${comp}-${you}` : `Tie ${you}-${comp}`; round=0; you=0; comp=0; setTimeout(()=>{ result.textContent='Tap a move to start!'; scoreEl.textContent='You: 0  vs  Computer: 0'; status.textContent=''; }, 2000); }
+          if(multiplayer){
+            if(myMove) return; // already picked
+            myMove = yourMove;
+            result.textContent = 'You picked ' + moves[yourMove] + ' (hidden). Waiting for ' + otherUser + '...';
+            window.__sendGameMove('rps', { move: yourMove });
+            // check if opponent already picked
+            if(oppMove) resolveRound();
+          } else {
+            const compMove = ['rock','paper','scissors'][Math.floor(Math.random()*3)];
+            round++;
+            if(yourMove===compMove){ result.textContent = 'You: ' + moves[yourMove] + ' vs ' + moves[compMove] + ' — Tie!'; }
+            else if(beats[yourMove]===compMove){ you++; addTokens(1); result.textContent = 'You: ' + moves[yourMove] + ' vs ' + moves[compMove] + ' — You win! +1 token'; }
+            else { comp++; result.textContent = 'You: ' + moves[yourMove] + ' vs ' + moves[compMove] + ' — Computer wins!'; }
+            scoreEl.textContent = 'You: ' + you + '  vs  Computer: ' + comp + '  (Round ' + round + '/' + maxRounds + ')';
+            if(round>=maxRounds){ status.textContent = you>comp ? 'You won the match!' : you<comp ? 'Computer won' : 'Tie'; round=0; you=0; comp=0; setTimeout(function(){ result.textContent='Tap a move to start!'; scoreEl.textContent='You: 0  vs  Computer: 0'; status.textContent=''; }, 2000); }
+          }
         });
       });
+
+      window.addEventListener('gamemove', function(e){
+        const msg = e.detail;
+        if(msg.game !== 'rps' || msg.user === user) return;
+        if(msg.type === 'game-reset'){ resetRound(); round=0; you=0; comp=0; scoreEl.textContent = 'You: 0  vs  ' + otherUser + ': 0'; status.textContent = ''; return; }
+        if(msg.move && msg.move.move){
+          oppMove = msg.move.move;
+          if(myMove) resolveRound();
+          else { result.textContent = otherUser + ' picked (hidden). Your turn!'; }
+        }
+      });
+
+      modeBtn.addEventListener('click', function(){
+        multiplayer = !multiplayer;
+        modeBtn.textContent = multiplayer ? 'Mode: 2 Players' : 'Mode: vs Computer';
+        round=0; you=0; comp=0;
+        resetRound();
+        scoreEl.textContent = 'You: 0  vs  ' + (multiplayer ? otherUser : 'Computer') + ': 0';
+        status.textContent = '';
+        if(multiplayer) window.__sendGameReset('rps');
+      });
+
+      resetRound();
     })();
 
-    // ===== 5. TIC-TAC-TOE =====
+    // ===== 5. TIC-TAC-TOE (with 2-player mode) =====
     (function(){
       const grid = document.getElementById('tttGrid');
       const status = document.getElementById('tttStatus');
       const startBtn = document.getElementById('tttStart');
-      let board=[], playing=false;
-      function build(){ grid.innerHTML=''; board=Array(9).fill(null); playing=true; status.textContent='Your turn (❌)'; 
+      const modeDiv = document.createElement('div');
+      modeDiv.style.cssText = 'text-align:center;margin-bottom:10px;';
+      modeDiv.innerHTML = '<button class="btn secondary" id="tttModeBtn" style="font-size:.85rem;padding:6px 14px;">Mode: vs Computer</button>';
+      grid.parentElement.insertBefore(modeDiv, grid);
+      const modeBtn = document.getElementById('tttModeBtn');
+      let board=[], playing=false, multiplayer=false;
+      const user = localStorage.getItem('charlotte-user')||'Unknown';
+      const otherUser = user === 'Luke' ? 'Charlotte' : 'Luke';
+      function build(){ grid.innerHTML=''; board=Array(9).fill(null); playing=true;
+        if(multiplayer){ status.textContent = (user==='Luke') ? 'Your turn (X)' : 'Waiting for ' + otherUser + '...'; }
+        else { status.textContent = 'Your turn (X)'; }
         for(let i=0;i<9;i++){ const c=document.createElement('div'); c.className='ttt-cell'; c.dataset.i=i; c.addEventListener('click',()=>move(i)); grid.appendChild(c); }
       }
       function checkWin(b, p){ const wins=[[0,1,2],[3,4,5],[6,7,8],[0,3,6],[1,4,7],[2,5,8],[0,4,8],[2,4,6]]; return wins.some(w=>w.every(i=>b[i]===p)); }
+      function renderBoard(){ grid.querySelectorAll('.ttt-cell').forEach((c,i)=>{ c.textContent=board[i]||''; if(board[i]) c.classList.add('taken'); }); }
       function move(i){
         if(!playing||board[i]) return;
-        board[i]='X'; renderBoard();
-        if(checkWin(board,'X')){ playing=false; addTokens(3); status.textContent='You win! +3 tokens'; return; }
-        if(board.every(c=>c)){ playing=false; addTokens(1); status.textContent='Tie! +1 token'; return; }
-        // computer move
-        let moveIdx = findBestMove();
-        board[moveIdx]='O'; renderBoard();
-        if(checkWin(board,'O')){ playing=false; status.textContent='Computer wins! Try again.'; return; }
-        if(board.every(c=>c)){ playing=false; addTokens(1); status.textContent='Tie! +1 token'; }
+        const myTurn = multiplayer ? (user==='Luke' ? board.filter(x=>x==='X').length===board.filter(x=>x==='O').length : board.filter(x=>x==='O').length < board.filter(x=>x==='X').length) : true;
+        if(multiplayer && !myTurn){ status.textContent = 'Wait for ' + otherUser + "'s move..."; return; }
+        const sym = multiplayer ? (user==='Luke' ? 'X' : 'O') : 'X';
+        // In single player, human is always X
+        const humanSym = multiplayer ? (user==='Luke' ? 'X' : 'O') : 'X';
+        const isMyMove = !multiplayer || (humanSym==='X' ? board.filter(x=>x==='X').length===board.filter(x=>x==='O').length : board.filter(x=>x==='O').length < board.filter(x=>x==='X').length);
+        if(multiplayer && !isMyMove){ status.textContent = 'Wait for ' + otherUser + "'s move..."; return; }
+        board[i] = humanSym;
+        renderBoard();
+        if(checkWin(board,humanSym)){ playing=false; addTokens(3); status.textContent='You win! +3 tokens'; if(multiplayer) window.__sendGameMove('ttt',{cell:i,symbol:humanSym}); return; }
+        if(board.every(c=>c)){ playing=false; addTokens(1); status.textContent='Tie! +1 token'; if(multiplayer) window.__sendGameMove('ttt',{cell:i,symbol:humanSym}); return; }
+        if(multiplayer){
+          window.__sendGameMove('ttt',{cell:i,symbol:humanSym});
+          status.textContent = 'Waiting for ' + otherUser + '...';
+        } else {
+          let moveIdx = findBestMove();
+          board[moveIdx]='O'; renderBoard();
+          if(checkWin(board,'O')){ playing=false; status.textContent='Computer wins! Try again.'; return; }
+          if(board.every(c=>c)){ playing=false; addTokens(1); status.textContent='Tie! +1 token'; }
+        }
       }
       function findBestMove(){
-        // Try to win, then block, then center, then corner, then random
         for(let i=0;i<9;i++){ if(!board[i]){ board[i]='O'; if(checkWin(board,'O')){ board[i]=null; return i; } board[i]=null; } }
         for(let i=0;i<9;i++){ if(!board[i]){ board[i]='X'; if(checkWin(board,'X')){ board[i]=null; return i; } board[i]=null; } }
         if(!board[4]) return 4;
@@ -335,8 +445,32 @@
         const sides=[1,3,5,7].filter(i=>!board[i]);
         return sides[Math.floor(Math.random()*sides.length)];
       }
-      function renderBoard(){ grid.querySelectorAll('.ttt-cell').forEach((c,i)=>{ c.textContent=board[i]||''; if(board[i]) c.classList.add('taken'); }); }
-      startBtn.addEventListener('click', build);
+      window.addEventListener('gamemove', function(e){
+        const msg = e.detail;
+        if(msg.game !== 'ttt' || msg.user === (localStorage.getItem('charlotte-user')||'Unknown')) return;
+        if(msg.type === 'game-reset'){ build(); return; }
+        if(!playing) return;
+        const cell = msg.move.cell;
+        const sym = msg.move.symbol === 'X' ? 'O' : 'X';
+        if(cell !== undefined && !board[cell]){
+          board[cell] = sym === 'X' ? 'O' : 'X';
+          // The opponent's symbol is the opposite of ours
+          const oppSym = (localStorage.getItem('charlotte-user')||'Unknown') === 'Luke' ? 'O' : 'X';
+          board[cell] = oppSym;
+          renderBoard();
+          const oppName = (localStorage.getItem('charlotte-user')||'Unknown') === 'Luke' ? 'Charlotte' : 'Luke';
+          if(checkWin(board, oppSym)){ playing=false; status.textContent = oppName + ' wins!'; return; }
+          if(board.every(c=>c)){ playing=false; addTokens(1); status.textContent='Tie! +1 token'; return; }
+          status.textContent = 'Your turn (' + (oppSym==='X' ? 'O' : 'X') + ')';
+        }
+      });
+      modeBtn.addEventListener('click',()=>{
+        multiplayer = !multiplayer;
+        modeBtn.textContent = multiplayer ? 'Mode: 2 Players' : 'Mode: vs Computer';
+        build();
+        if(multiplayer) window.__sendGameReset('ttt');
+      });
+      startBtn.addEventListener('click', ()=>{ build(); if(multiplayer) window.__sendGameReset('ttt'); });
       build();
     })();
 
