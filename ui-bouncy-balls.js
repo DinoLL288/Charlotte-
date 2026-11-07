@@ -35,27 +35,53 @@
     pile: []              // rendered resting balls [{x,y,r,hue}]
   };
 
-  function loadState() {
-    try {
-      const raw = localStorage.getItem(STORAGE_KEY);
-      if (raw) {
-        const parsed = JSON.parse(raw);
-        if (parsed && typeof parsed === "object") {
-          state.tokens = Number.isFinite(parsed.tokens) ? Math.max(0, parsed.tokens) : 0;
-          state.spawnBatch = Number.isFinite(parsed.spawnBatch) ? Math.max(1, Math.min(12, parsed.spawnBatch)) : 1;
-          state.upgradeCost = Number.isFinite(parsed.upgradeCost) ? Math.max(5, parsed.upgradeCost) : 5;
-          state.collected = Number.isFinite(parsed.collected) ? Math.max(0, parsed.collected) : 0;
-          state.wave = Number.isFinite(parsed.wave) ? Math.max(1, parsed.wave) : 1;
-          state.waveRemaining = Number.isFinite(parsed.waveRemaining) ? Math.max(0, Math.min(BASE.waveSize, parsed.waveRemaining)) : BASE.waveSize;
-          if (Array.isArray(parsed.pile)) {
-            state.pile = parsed.pile.filter(b => b && Number.isFinite(b.x) && Number.isFinite(b.y)).slice(0, BASE.maxPile);
+  let stateLoaded = false;
+
+  async function loadState() {
+    const user = localStorage.getItem('charlotte-user');
+    if (user) {
+      try {
+        const res = await fetch('/api/question-room?view=bouncy-balls&user=' + encodeURIComponent(user), { cache: 'no-store' });
+        if (res.ok) {
+          const data = await res.json();
+          if (data && typeof data === 'object') {
+            state.tokens = Math.max(0, Number(data.tokens) || 0);
+            state.spawnBatch = Math.max(1, Math.min(12, Number(data.spawnBatch) || 1));
+            state.upgradeCost = Math.max(5, Number(data.upgradeCost) || 5);
+            state.collected = Math.max(0, Number(data.collected) || 0);
+            state.wave = Math.max(1, Number(data.wave) || 1);
+            state.waveRemaining = Math.max(0, Math.min(BASE.waveSize, Number(data.waveRemaining) || BASE.waveSize));
+            state.pile = Array.isArray(data.pile) ? data.pile.slice(0, BASE.maxPile) : [];
+            stateLoaded = true;
           }
         }
-      }
-    } catch (e) { /* ignore */ }
+      } catch (e) { /* fall back to localStorage */ }
+    }
+    // Fallback to localStorage if server failed or no user
+    if (!stateLoaded) {
+      try {
+        const raw = localStorage.getItem(STORAGE_KEY);
+        if (raw) {
+          const parsed = JSON.parse(raw);
+          if (parsed && typeof parsed === 'object') {
+            state.tokens = Number.isFinite(parsed.tokens) ? Math.max(0, parsed.tokens) : 0;
+            state.spawnBatch = Number.isFinite(parsed.spawnBatch) ? Math.max(1, Math.min(12, parsed.spawnBatch)) : 1;
+            state.upgradeCost = Number.isFinite(parsed.upgradeCost) ? Math.max(5, parsed.upgradeCost) : 5;
+            state.collected = Number.isFinite(parsed.collected) ? Math.max(0, parsed.collected) : 0;
+            state.wave = Number.isFinite(parsed.wave) ? Math.max(1, parsed.wave) : 1;
+            state.waveRemaining = Number.isFinite(parsed.waveRemaining) ? Math.max(0, Math.min(BASE.waveSize, parsed.waveRemaining)) : BASE.waveSize;
+            if (Array.isArray(parsed.pile)) {
+              state.pile = parsed.pile.filter(b => b && Number.isFinite(b.x) && Number.isFinite(b.y)).slice(0, BASE.maxPile);
+            }
+          }
+        }
+      } catch (e) { /* ignore */ }
+    }
+    stateLoaded = true;
   }
 
   function saveState() {
+    // Save to localStorage as cache
     try {
       localStorage.setItem(STORAGE_KEY, JSON.stringify({
         tokens: state.tokens,
@@ -67,10 +93,25 @@
         pile: state.pile.slice(0, BASE.maxPile)
       }));
     } catch (e) { /* ignore */ }
+    // Save to server
+    const user = localStorage.getItem('charlotte-user');
+    if (!user) return;
+    fetch('/api/question-room', {
+      method: 'POST',
+      headers: { 'content-type': 'application/json' },
+      body: JSON.stringify({ action: 'bouncy-balls', user, state: {
+        tokens: state.tokens,
+        spawnBatch: state.spawnBatch,
+        upgradeCost: state.upgradeCost,
+        collected: state.collected,
+        wave: state.wave,
+        waveRemaining: state.waveRemaining,
+        pile: state.pile.slice(0, BASE.maxPile)
+      } })
+    }).catch(() => { /* ignore */ });
   }
 
-  loadState();
-
+  loadState().catch(() => { /* ignore */ });
   let enabled = false;
   let balls = [];          // live physics balls
   let obstacles = [];

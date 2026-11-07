@@ -98,6 +98,11 @@ export class QuestionNightRoom {
     if (request.method === 'GET' && url.searchParams.get('view') === 'playful-state') {
       return Response.json(await this.getPlayfulState(), { headers: { 'cache-control': 'no-store' } });
     }
+    if (request.method === 'GET' && url.searchParams.get('view') === 'bouncy-balls') {
+      const user = url.searchParams.get('user');
+      if (!['Charlotte', 'Luke'].includes(user)) return Response.json({ error: 'Choose a valid account' }, { status: 400 });
+      return Response.json(await this.getBouncyBallsState(user), { headers: { 'cache-control': 'no-store' } });
+    }
 
     if (request.method === 'GET' && url.searchParams.get('view') === 'love-tasks') {
       return Response.json(await this.getLoveTasks(), { headers: { 'cache-control': 'no-store' } });
@@ -478,6 +483,34 @@ export class QuestionNightRoom {
     };
   }
 
+  async getBouncyBallsState(user) {
+    const all = await this.ctx.storage.get('bouncyBallsState') || {};
+    const s = all[user] || {};
+    return {
+      tokens: Math.max(0, Number(s.tokens) || 0),
+      spawnBatch: Math.max(1, Math.min(12, Number(s.spawnBatch) || 1)),
+      upgradeCost: Math.max(5, Number(s.upgradeCost) || 5),
+      collected: Math.max(0, Number(s.collected) || 0),
+      wave: Math.max(1, Number(s.wave) || 1),
+      waveRemaining: Math.max(0, Math.min(40, Number(s.waveRemaining) || 40)),
+      pile: Array.isArray(s.pile) ? s.pile.slice(0, 80) : []
+    };
+  }
+
+  async saveBouncyBallsState(user, state) {
+    const all = await this.ctx.storage.get('bouncyBallsState') || {};
+    all[user] = {
+      tokens: Math.max(0, Number(state.tokens) || 0),
+      spawnBatch: Math.max(1, Math.min(12, Number(state.spawnBatch) || 1)),
+      upgradeCost: Math.max(5, Number(state.upgradeCost) || 5),
+      collected: Math.max(0, Number(state.collected) || 0),
+      wave: Math.max(1, Number(state.wave) || 1),
+      waveRemaining: Math.max(0, Math.min(40, Number(state.waveRemaining) || 40)),
+      pile: Array.isArray(state.pile) ? state.pile.slice(0, 80) : []
+    };
+    await this.ctx.storage.put('bouncyBallsState', all);
+  }
+
   async getLoveTasks() {
     const state = await this.ctx.storage.get('loveTasks') || {};
     return { tasks: Array.isArray(state.tasks) ? state.tasks : [] };
@@ -542,6 +575,13 @@ export class QuestionNightRoom {
         await this.ctx.storage.put('playfulState', state);
         await this.broadcastRefresh();
         return Response.json({ ok: true, state });
+      }
+      if (body.action === 'bouncy-balls') {
+        const user = body.user;
+        if (!['Charlotte', 'Luke'].includes(user)) return Response.json({ error: 'Choose a valid account' }, { status: 400 });
+        const incoming = body.state && typeof body.state === 'object' ? body.state : {};
+        await this.saveBouncyBallsState(user, incoming);
+        return Response.json({ ok: true, state: await this.getBouncyBallsState(user) });
       }
 
       if (body.action === 'love-buy') {
