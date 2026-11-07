@@ -94,6 +94,20 @@
         "date": "2026-11-07T02:40:18.549Z",
         "id": "6ecc0f82-a0ed-4fed-b241-7df8446d9a7e"
       }
+    ],
+    "2026-11-05": [
+      {
+        "title": "WhatsApp video call",
+        "kind": "whatsapp-call",
+        "callType": "video",
+        "durationMinutes": 720,
+        "initiatedBy": "Luke",
+        "startTime": "18:12",
+        "time": "",
+        "author": "Luke",
+        "date": "2026-11-07T02:40:48.099Z",
+        "id": "929cfbb9-be94-403d-9bc5-6c3eab85b842"
+      }
     ]
   }
 }
