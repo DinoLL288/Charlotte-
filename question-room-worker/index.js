@@ -897,6 +897,21 @@ export class QuestionNightRoom {
     if (payload.type === 'spotify-play-request') {
       await this.broadcastSpotifyPlayback({ type: 'spotify-play-request', user: attachment.user });
     }
+    if (payload.type === 'game-move') {
+      const game = String(payload.game || '').slice(0, 30);
+      const move = payload.move && typeof payload.move === 'object' ? payload.move : {};
+      if (game) {
+        await this.broadcastGameMove({ type: 'game-move', game, user: attachment.user, move, sentAt: Date.now() });
+      }
+      return;
+    }
+    if (payload.type === 'game-reset') {
+      const game = String(payload.game || '').slice(0, 30);
+      if (game) {
+        await this.broadcastGameMove({ type: 'game-reset', game, user: attachment.user, sentAt: Date.now() });
+      }
+      return;
+    }
     if (payload.type === 'spotify-playback') {
       const music = {
         trackId: String(payload.track || '').slice(0, 200),
@@ -992,8 +1007,8 @@ export class QuestionNightRoom {
     }
   }
 
-  async broadcastReaction(reaction) {
-    const message = JSON.stringify(reaction);
+  async broadcastGameMove(msg) {
+    const message = JSON.stringify(msg);
     for (const socket of this.ctx.getWebSockets()) {
       try { socket.send(message); } catch { /* closed socket */ }
     }
