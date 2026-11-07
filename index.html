@@ -446,7 +446,7 @@
       var today = new Date();
       today.setHours(0, 0, 0, 0);
       var days = Math.ceil((target - today) / 86400000);
-      if (localStorage.getItem('eu-reminder-dismissed') === '1' || days < 0) return;
+      if (days < 0) return;
       detail.textContent = days === 0
         ? 'Check whether eu.org approved your domain today.'
         : days === 1
@@ -457,9 +457,9 @@
         e.preventDefault();
         e.stopPropagation();
         banner.hidden = true;
-        localStorage.setItem('eu-reminder-dismissed', '1');
       });
     })();
   </script>
+  <script src="together.js"></script>
 </body>
 </html>
