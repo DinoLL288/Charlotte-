@@ -426,6 +426,7 @@
     }
   </style>
   <link rel="stylesheet" href="theme.css">
+  <link rel="preconnect" href="https://ui-avatars.com" crossorigin>
   <link rel="stylesheet" href="site-polish.css" data-site-polish="true"><link rel="stylesheet" href="site-theme.css" data-site-theme="true"><link rel="stylesheet" href="motion.css">
 </head>
 <body>
@@ -577,7 +578,7 @@
             ${moment.title ? `<h3>${escapeHtml(moment.title)}</h3>` : ''}
             ${moment.body ? `<p>${escapeHtml(moment.body)}</p>` : ''}
             <div class="moment-meta">
-              <img src="${escapeHtml(avatar)}" alt="${escapeHtml(author)}'s profile picture">
+              <img src="${escapeHtml(avatar)}" alt="${escapeHtml(author)}'s profile picture" loading="lazy">
               <span>Added by ${escapeHtml(author)}</span>
               ${canDelete ? '<button class="delete-moment" type="button">Delete</button>' : ''}
             </div>

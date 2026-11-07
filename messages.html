@@ -127,6 +127,7 @@
     .top-bar { position: fixed; top: 16px; left: 16px; z-index: 5; }
   </style>
   <link rel="stylesheet" href="theme.css">
+  <link rel="preconnect" href="https://ui-avatars.com" crossorigin>
   <link rel="stylesheet" href="site-polish.css" data-site-polish="true"><link rel="stylesheet" href="site-theme.css" data-site-theme="true"><link rel="stylesheet" href="motion.css">
 </head>
 <body>
@@ -227,7 +228,7 @@
         const avatar = profilePics[author] || fallbackAvatar(author);
         const meta = `
           <div class="note-meta">
-            <img class="note-avatar" src="${escapeAttr(avatar)}" alt="${escapeAttr(author)}'s profile picture">
+            <img class="note-avatar" src="${escapeAttr(avatar)}" alt="${escapeAttr(author)}'s profile picture" loading="lazy">
             <span>By ${escapeHtml(author)} • ${escapeHtml(note.date || '')}${note.editedAt ? ' • edited ' + escapeHtml(note.editedAt) : ''}</span>
             ${note.locked ? `<span class="note-lock">🔒 ${note.lockedBy === currentUser ? 'Protected by me' : 'Protected by ' + escapeHtml(note.lockedBy || 'the other person')}</span>` : ''}
           </div>
