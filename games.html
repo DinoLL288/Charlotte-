@@ -254,14 +254,23 @@
       startBtn.addEventListener('click',()=>{ if(target){target.remove();target=null;} score=0; misses=0; running=true; startBtn.disabled=true; status.textContent='Hit the target!'; showTarget(); });
     })();
 
-    // ===== SIMON SAYS =====
+    // ===== SIMON SAYS (with 2-player mode) =====
     (function(){
       const grid = document.getElementById('simonGrid');
       const status = document.getElementById('simonStatus');
       const startBtn = document.getElementById('simonStart');
+      const modeDiv = document.createElement('div');
+      modeDiv.style.cssText = 'text-align:center;margin-bottom:10px;';
+      modeDiv.innerHTML = '<button class="btn secondary" id="simonModeBtn" style="font-size:.85rem;padding:6px 14px;">Mode: Solo</button>';
+      grid.parentElement.insertBefore(modeDiv, grid);
+      const modeBtn = document.getElementById('simonModeBtn');
       for(let i=0;i<4;i++){ const b=document.createElement('div'); b.className='simon-btn'; b.dataset.color=i; grid.appendChild(b); }
       const btns = Array.from(grid.querySelectorAll('.simon-btn'));
+      const user = localStorage.getItem('charlotte-user')||'Unknown';
+      const otherUser = user === 'Luke' ? 'Charlotte' : 'Luke';
+      let multiplayer = false;
       let seq=[], playerIdx=0, round=0, playing=false, showing=false;
+      let myProgress=0, oppProgress=0, roundActive=false;
       function light(i){ btns[i].classList.add('lit'); setTimeout(()=>btns[i].classList.remove('lit'), 400); }
       function playSeq(){
         showing=true; status.textContent=`Round ${round}: watch...`;
@@ -273,7 +282,9 @@
       }
       function nextRound(){
         round++;
-        seq.push(Math.floor(Math.random()*4));
+        const newColor = Math.floor(Math.random()*4);
+        seq.push(newColor);
+        if(multiplayer) window.__sendGameMove('simon', {newColor: newColor, round: round});
         playSeq();
       }
       btns.forEach((b,i)=>{
@@ -282,14 +293,65 @@
           light(i);
           if(i===seq[playerIdx]){
             playerIdx++;
-            if(playerIdx===seq.length){ addTokens(2); status.textContent=`Correct! +2 tokens. Round ${round} done.`; setTimeout(nextRound, 800); }
+            if(playerIdx===seq.length){
+              myProgress = round;
+              if(multiplayer){
+                window.__sendGameMove('simon', {completed: true, round: round});
+                status.textContent = `Correct! Round ${round} done. Waiting for ${otherUser}...`;
+              } else {
+                addTokens(2); status.textContent=`Correct! +2 tokens. Round ${round} done.`; setTimeout(nextRound, 800);
+              }
+            }
           } else {
-            playing=false; status.textContent=`Wrong! You reached round ${round}. Tap Start to play again.`; startBtn.disabled=false;
+            playing=false;
+            if(multiplayer){
+              window.__sendGameMove('simon', {failed: true, round: round});
+              status.textContent = `Wrong! You reached round ${round}.`;
+            } else {
+              status.textContent=`Wrong! You reached round ${round}. Tap Start to play again.`; startBtn.disabled=false;
+            }
           }
         });
       });
-      startBtn.addEventListener('click',()=>{ seq=[]; round=0; playing=true; startBtn.disabled=true; status.textContent='Watch the sequence...'; nextRound(); });
+      window.addEventListener('gamemove', function(e){
+        const msg = e.detail;
+        if(msg.game !== 'simon' || msg.user === user) return;
+        if(msg.type === 'game-reset'){ seq=[]; round=0; playing=true; startBtn.disabled=true; status.textContent='Watch the sequence...'; nextRound(); return; }
+        if(msg.move && msg.move.newColor !== undefined && msg.move.round !== undefined){
+          // opponent started a new round
+          if(!playing){ playing=true; startBtn.disabled=true; }
+          if(msg.move.round > seq.length){
+            seq.push(msg.move.newColor);
+            round = msg.move.round;
+            playSeq();
+          }
+        }
+        if(msg.move && msg.move.completed){
+          oppProgress = msg.move.round;
+          // Check if both completed this round
+          // If opponent completed and we haven't failed, we win this round
+        }
+        if(msg.move && msg.move.failed){
+          // opponent failed - we win
+          if(playing){
+            addTokens(2); status.textContent = `${otherUser} slipped at round ${msg.move.round}! You win! +2 tokens`;
+            playing=false; startBtn.disabled=false;
+          }
+        }
+      });
+      modeBtn.addEventListener('click',()=>{
+        multiplayer = !multiplayer;
+        modeBtn.textContent = multiplayer ? 'Mode: 2 Players' : 'Mode: Solo';
+        seq=[]; round=0; playing=false; startBtn.disabled=false;
+        status.textContent = multiplayer ? 'Both players tap Start to begin.' : 'Tap Start to play.';
+      });
+      startBtn.addEventListener('click',()=>{
+        seq=[]; round=0; playing=true; startBtn.disabled=true; status.textContent='Watch the sequence...';
+        if(multiplayer) window.__sendGameReset('simon');
+        nextRound();
+      });
     })();
+
   })();
   </script>
 </body>

@@ -250,38 +250,117 @@
       });
     })();
 
-    // ===== 2. COLOR TAP =====
+    // ===== 2. COLOR TAP (with 2-player mode) =====
     (function(){
       const colors = [{name:'RED',color:'#e74c3c'},{name:'BLUE',color:'#3498db'},{name:'GREEN',color:'#2ecc71'},{name:'YELLOW',color:'#f1c40f'}];
       const wordEl = document.getElementById('colorWord');
       const btnsEl = document.getElementById('colorBtns');
       const status = document.getElementById('colorStatus');
       const startBtn = document.getElementById('colorStart');
-      let round=0, score=0, total=10, playing=false;
+      const modeDiv = document.createElement('div');
+      modeDiv.style.cssText = 'text-align:center;margin-bottom:10px;';
+      modeDiv.innerHTML = '<button class="btn secondary" id="colorModeBtn" style="font-size:.85rem;padding:6px 14px;">Mode: Solo</button>';
+      wordEl.parentElement.insertBefore(modeDiv, wordEl);
+      const modeBtn = document.getElementById('colorModeBtn');
+      let round=0, score=0, total=10, playing=false, multiplayer=false;
+      let seed=0, questions=[], oppScore=0, finished=false;
+      const user = localStorage.getItem('charlotte-user')||'Unknown';
+      const otherUser = user === 'Luke' ? 'Charlotte' : 'Luke';
+      // seeded RNG
+      function seededRandom(s){ let x = Math.sin(s++) * 10000; return x - Math.floor(x); }
+      function generateQuestions(s){
+        const qs = [];
+        for(let i=0;i<total;i++){
+          const wi = Math.floor(seededRandom(s+i*2)*colors.length);
+          const di = Math.floor(seededRandom(s+i*2+1)*colors.length);
+          qs.push({word:colors[wi].name, display:colors[di].color, answer:colors[wi].name});
+        }
+        return qs;
+      }
       colors.forEach(c=>{
         const b=document.createElement('button');
         b.className='color-btn'; b.style.background=c.color; b.textContent=c.name;
         b.addEventListener('click',()=>answer(c.name));
         btnsEl.appendChild(b);
       });
-      function nextRound(){
+      function showQuestion(){
         if(round>=total){ endGame(); return; }
-        round++;
-        const wordColor = colors[Math.floor(Math.random()*colors.length)];
-        const displayColor = colors[Math.floor(Math.random()*colors.length)];
-        wordEl.textContent = wordColor.name;
-        wordEl.style.color = displayColor.color;
-        wordEl.dataset.answer = wordColor.name;
-        status.textContent = `Round ${round}/${total}  Score: ${score}`;
+        const q = questions[round];
+        wordEl.textContent = q.word;
+        wordEl.style.color = q.display;
+        wordEl.dataset.answer = q.answer;
+        status.textContent = `Round ${round+1}/${total}  Score: ${score}` + (multiplayer ? '  Opp: ' + oppScore : '');
       }
       function answer(name){
         if(!playing) return;
-        if(name===wordEl.dataset.answer){ score++; addTokens(1); status.textContent=`Correct! Score: ${score}`; }
-        else { status.textContent=`Wrong! It was ${wordEl.dataset.answer}. Score: ${score}`; }
-        nextRound();
+        if(name===wordEl.dataset.answer){ score++; if(!multiplayer) addTokens(1); }
+        round++;
+        if(multiplayer){
+          window.__sendGameMove('color', {round: round, correct: name===wordEl.dataset.answer, score: score});
+        }
+        showQuestion();
       }
-      function endGame(){ playing=false; status.textContent=`Done! ${score}/${total} correct = ${score} tokens. Tap Start to play again.`; startBtn.disabled=false; }
-      startBtn.addEventListener('click',()=>{ round=0; score=0; playing=true; startBtn.disabled=true; nextRound(); });
+      function endGame(){
+        playing=false;
+        if(multiplayer){
+          status.textContent = `Done! You: ${score}/${total}. Waiting for ${otherUser}...`;
+          window.__sendGameMove('color', {finished: true, score: score});
+        } else {
+          status.textContent = `Done! ${score}/${total} correct = ${score} tokens. Tap Start to play again.`;
+        }
+        startBtn.disabled=false;
+      }
+      window.addEventListener('gamemove', function(e){
+        const msg = e.detail;
+        if(msg.game !== 'color' || msg.user === user) return;
+        if(msg.type === 'game-reset'){ playing=false; status.textContent = 'New game starting...'; return; }
+        if(msg.move && msg.move.finished){
+          oppScore = msg.move.score;
+          // Determine winner
+          if(score > oppScore){ addTokens(3); status.textContent = `You win! ${score} vs ${oppScore}. +3 tokens`; }
+          else if(score < oppScore){ status.textContent = `${otherUser} wins ${oppScore}-${score}.`; }
+          else { addTokens(1); status.textContent = `Tie! ${score}-${oppScore}. +1 token`; }
+        } else if(msg.move && msg.move.round !== undefined){
+          // opponent answered a round
+          if(msg.move.correct) oppScore = msg.move.score;
+        }
+      });
+      modeBtn.addEventListener('click',()=>{
+        multiplayer = !multiplayer;
+        modeBtn.textContent = multiplayer ? 'Mode: 2 Players' : 'Mode: Solo';
+        playing=false; startBtn.disabled=false;
+        status.textContent = multiplayer ? 'Both players tap Start to begin.' : 'Tap Start to play.';
+      });
+      startBtn.addEventListener('click',()=>{
+        round=0; score=0; oppScore=0; finished=false;
+        if(multiplayer){
+          seed = Math.floor(Math.random()*100000);
+          questions = generateQuestions(seed);
+          playing=true; startBtn.disabled=true;
+          status.textContent = 'Waiting for ' + otherUser + ' to start...';
+          window.__sendGameMove('color', {start: true, seed: seed});
+          showQuestion();
+        } else {
+          seed = Math.floor(Math.random()*100000);
+          questions = generateQuestions(seed);
+          playing=true; startBtn.disabled=true;
+          showQuestion();
+        }
+      });
+      // Listen for opponent's game start
+      window.addEventListener('gamemove', function(e){
+        const msg = e.detail;
+        if(msg.game !== 'color' || msg.user === user) return;
+        if(msg.move && msg.move.start){
+          if(!playing){
+            seed = msg.move.seed;
+            questions = generateQuestions(seed);
+            playing=true; startBtn.disabled=true;
+            round=0; score=0; oppScore=0;
+            showQuestion();
+          }
+        }
+      });
     })();
 
     // ===== 3. NUMBER GUESS =====
@@ -527,24 +606,45 @@
       startBtn.addEventListener('click',()=>{ idx=0; score=0; playing=true; startBtn.disabled=true; nextWord(); });
     })();
 
-    // ===== 8. MATH BLITZ =====
+    // ===== 8. MATH BLITZ (with 2-player mode) =====
     (function(){
       const problem = document.getElementById('mathProblem');
       const input = document.getElementById('mathInput');
       const status = document.getElementById('mathStatus');
       const startBtn = document.getElementById('mathStart');
       const submitBtn = document.getElementById('mathSubmit');
+      const modeDiv = document.createElement('div');
+      modeDiv.style.cssText = 'text-align:center;margin-bottom:10px;';
+      modeDiv.innerHTML = '<button class="btn secondary" id="mathModeBtn" style="font-size:.85rem;padding:6px 14px;">Mode: Solo</button>';
+      problem.parentElement.insertBefore(modeDiv, problem);
+      const modeBtn = document.getElementById('mathModeBtn');
       let q=0, score=0, playing=false, answer=0, startTime=0;
+      let multiplayer=false, seed=0, questions=[], oppScore=0;
+      const user = localStorage.getItem('charlotte-user')||'Unknown';
+      const otherUser = user === 'Luke' ? 'Charlotte' : 'Luke';
+      function seededRandom(s){ let x = Math.sin(s++) * 10000; return x - Math.floor(x); }
+      function generateQuestions(s){
+        const qs = [];
+        for(let i=0;i<10;i++){
+          const a = Math.floor(seededRandom(s+i*3)*20)+1;
+          const b = Math.floor(seededRandom(s+i*3+1)*20)+1;
+          const isAdd = seededRandom(s+i*3+2) > 0.5;
+          if(isAdd){ qs.push({text: a+' + '+b+' = ?', answer: a+b}); }
+          else { const big=Math.max(a,b), small=Math.min(a,b); qs.push({text: big+' - '+small+' = ?', answer: big-small}); }
+        }
+        return qs;
+      }
       function nextQ(){
-        if(q>=10){ playing=false; status.textContent=`Done! ${score}/10 correct = ${score} tokens. Tap Start for more.`; startBtn.disabled=false; return; }
+        if(q>=10){ playing=false; 
+          if(multiplayer){ status.textContent = `Done! You: ${score}/10. Waiting for ${otherUser}...`; window.__sendGameMove('math', {finished:true, score:score}); }
+          else { status.textContent = `Done! ${score}/10 correct = ${score} tokens. Tap Start for more.`; }
+          startBtn.disabled=false; return; }
         q++;
-        const a=Math.floor(Math.random()*20)+1;
-        const b=Math.floor(Math.random()*20)+1;
-        const isAdd = Math.random()>.5;
-        if(isAdd){ answer=a+b; problem.textContent=`${a} + ${b} = ?`; }
-        else { const big=Math.max(a,b), small=Math.min(a,b); answer=big-small; problem.textContent=`${big} - ${small} = ?`; }
+        const qq = questions[q-1];
+        answer = qq.answer;
+        problem.textContent = qq.text;
         input.value=''; input.disabled=false; submitBtn.disabled=false;
-        status.textContent = `Question ${q}/10  Score: ${score}`;
+        status.textContent = `Question ${q}/10  Score: ${score}` + (multiplayer ? '  Opp: ' + oppScore : '');
         startTime = Date.now();
         input.focus();
       }
@@ -553,14 +653,59 @@
         const g = parseInt(input.value,10);
         if(isNaN(g)){ status.textContent='Enter a number.'; return; }
         const elapsed = (Date.now()-startTime)/1000;
-        if(g===answer){ const tok = elapsed<3?2:1; score++; addTokens(tok); status.textContent = `Correct! +${tok} token${tok>1?'s':''}. Score: ${score}`; }
+        if(g===answer){ const tok = elapsed<3?2:1; score++; if(!multiplayer) addTokens(tok); status.textContent = `Correct! +${tok} token${tok>1?'s':''}. Score: ${score}`; }
         else { status.textContent = `Wrong, answer was ${answer}. Score: ${score}`; }
+        if(multiplayer) window.__sendGameMove('math', {round:q, correct: g===answer, score:score});
         input.disabled=true; submitBtn.disabled=true;
         setTimeout(()=>nextQ(), 1000);
       }
       submitBtn.addEventListener('click', check);
       input.addEventListener('keydown', e=>{ if(e.key==='Enter') check(); });
-      startBtn.addEventListener('click',()=>{ q=0; score=0; playing=true; startBtn.disabled=true; nextQ(); });
+      modeBtn.addEventListener('click',()=>{
+        multiplayer = !multiplayer;
+        modeBtn.textContent = multiplayer ? 'Mode: 2 Players' : 'Mode: Solo';
+        playing=false; startBtn.disabled=false;
+        status.textContent = multiplayer ? 'Both players tap Start to begin.' : 'Tap Start to play.';
+      });
+      startBtn.addEventListener('click',()=>{
+        q=0; score=0; oppScore=0;
+        if(multiplayer){
+          seed = Math.floor(Math.random()*100000);
+          questions = generateQuestions(seed);
+          playing=true; startBtn.disabled=true;
+          status.textContent = 'Waiting for ' + otherUser + ' to start...';
+          window.__sendGameMove('math', {start:true, seed:seed});
+          nextQ();
+        } else {
+          seed = Math.floor(Math.random()*100000);
+          questions = generateQuestions(seed);
+          playing=true; startBtn.disabled=true;
+          nextQ();
+        }
+      });
+      window.addEventListener('gamemove', function(e){
+        const msg = e.detail;
+        if(msg.game !== 'math' || msg.user === user) return;
+        if(msg.type === 'game-reset'){ playing=false; status.textContent = 'New game starting...'; return; }
+        if(msg.move && msg.move.start){
+          if(!playing){
+            seed = msg.move.seed;
+            questions = generateQuestions(seed);
+            playing=true; startBtn.disabled=true;
+            q=0; score=0; oppScore=0;
+            nextQ();
+          }
+        }
+        if(msg.move && msg.move.round !== undefined){
+          if(msg.move.correct) oppScore = msg.move.score;
+        }
+        if(msg.move && msg.move.finished){
+          oppScore = msg.move.score;
+          if(score > oppScore){ addTokens(3); status.textContent = `You win! ${score} vs ${oppScore}. +3 tokens`; }
+          else if(score < oppScore){ status.textContent = `${otherUser} wins ${oppScore}-${score}.`; }
+          else { addTokens(1); status.textContent = `Tie! ${score}-${oppScore}. +1 token`; }
+        }
+      });
     })();
 
     // ===== 9. FLAPPY HEART =====
