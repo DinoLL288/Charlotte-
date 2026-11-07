@@ -108,8 +108,21 @@
     const rewardPoints = panel.querySelector('#rewardPoints');
     const rewardCheer = panel.querySelector('#rewardCheer');
 
-    let points = Number(localStorage.getItem('charlotte-playful-points') || 0);
+    let points = 0;
+    const user = localStorage.getItem('charlotte-user');
+    // Load points from server
+    if (user) {
+      fetch('/api/question-room?view=playful-points&user=' + encodeURIComponent(user), { cache: 'no-store' })
+        .then(res => res.json())
+        .then(json => { points = Number(json.points) || 0; rewardPoints.textContent = points; })
+        .catch(() => {});
+    }
     rewardPoints.textContent = points;
+
+    function savePoints() {
+      if (!user) return;
+      fetch('/api/question-room', { method: 'POST', headers: { 'content-type': 'application/json' }, body: JSON.stringify({ action: 'playful-points', user, points }) }).catch(() => {});
+    }
 
     function buildBubbles() {
       bubbleGrid.innerHTML = '';
@@ -123,12 +136,12 @@
           b.classList.add('popped');
           points += 1;
           rewardPoints.textContent = points;
-          localStorage.setItem('charlotte-playful-points', String(points));
+          savePoints();
           if (!bubbleGrid.querySelector('.bubble:not(.popped)')) {
             confetti(30);
             points += 5;
             rewardPoints.textContent = points;
-            localStorage.setItem('charlotte-playful-points', String(points));
+            savePoints();
           }
         });
         bubbleGrid.appendChild(b);
@@ -198,7 +211,7 @@
       confetti(50);
       points += 3;
       rewardPoints.textContent = points;
-      localStorage.setItem('charlotte-playful-points', String(points));
+      savePoints();
     });
 
     fab.addEventListener('click', function () {

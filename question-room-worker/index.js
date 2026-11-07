@@ -98,6 +98,11 @@ export class QuestionNightRoom {
     if (request.method === 'GET' && url.searchParams.get('view') === 'playful-state') {
       return Response.json(await this.getPlayfulState(), { headers: { 'cache-control': 'no-store' } });
     }
+    if (request.method === 'GET' && url.searchParams.get('view') === 'playful-points') {
+      const user = url.searchParams.get('user');
+      if (!['Charlotte', 'Luke'].includes(user)) return Response.json({ error: 'Choose a valid account' }, { status: 400 });
+      return Response.json({ points: await this.getPlayfulPoints(user) }, { headers: { 'cache-control': 'no-store' } });
+    }
     if (request.method === 'GET' && url.searchParams.get('view') === 'bouncy-balls') {
       const user = url.searchParams.get('user');
       if (!['Charlotte', 'Luke'].includes(user)) return Response.json({ error: 'Choose a valid account' }, { status: 400 });
@@ -482,6 +487,17 @@ export class QuestionNightRoom {
       finds: Array.isArray(state.finds) ? state.finds : []
     };
   }
+  async getPlayfulPoints(user) {
+    const all = await this.ctx.storage.get('playfulPoints') || {};
+    return Math.max(0, Number(all[user]) || 0);
+  }
+
+  async savePlayfulPoints(user, points) {
+    const all = await this.ctx.storage.get('playfulPoints') || {};
+    all[user] = Math.max(0, Number(points) || 0);
+    await this.ctx.storage.put('playfulPoints', all);
+  }
+
 
   async getBouncyBallsState(user) {
     const all = await this.ctx.storage.get('bouncyBallsState') || {};
@@ -575,6 +591,13 @@ export class QuestionNightRoom {
         await this.ctx.storage.put('playfulState', state);
         await this.broadcastRefresh();
         return Response.json({ ok: true, state });
+      }
+      if (body.action === 'playful-points') {
+        const user = body.user;
+        const points = Number(body.points);
+        if (!['Charlotte', 'Luke'].includes(user) || !Number.isFinite(points) || points < 0) return Response.json({ error: 'Choose a valid points value' }, { status: 400 });
+        await this.savePlayfulPoints(user, points);
+        return Response.json({ ok: true, points: await this.getPlayfulPoints(user) });
       }
       if (body.action === 'bouncy-balls') {
         const user = body.user;
