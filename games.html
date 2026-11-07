@@ -72,11 +72,27 @@
   (function(){
     const user = localStorage.getItem('charlotte-user') || 'Unknown';
     let tokenBalance = 0;
+    let pendingTokens = 0;
+    let flushTimer = null;
     function updateTokenCount(){ document.getElementById('tokenCount').textContent = tokenBalance; }
-    function addTokens(n){
-      fetch('/api/question-room', {method:'POST',headers:{'content-type':'application/json'},body:JSON.stringify({action:'playful-award',user:user,amount:n})})
+    function flushTokens(){
+      if(pendingTokens <= 0) return;
+      const amount = pendingTokens;
+      pendingTokens = 0;
+      if(flushTimer){ clearTimeout(flushTimer); flushTimer = null; }
+      fetch('/api/question-room', {method:'POST',headers:{'content-type':'application/json'},body:JSON.stringify({action:'playful-award',user:user,amount:Math.min(amount,50)})})
         .then(r=>r.json()).then(j=>{ if(j&&j.state) tokenBalance = j.state.tokens[user]||0; updateTokenCount(); })
-        .catch(()=>{});
+        .catch(()=>{ pendingTokens += amount; }); // re-queue on failure
+    }
+    function scheduleFlush(){
+      if(flushTimer) clearTimeout(flushTimer);
+      flushTimer = setTimeout(flushTokens, 800);
+    }
+    function addTokens(n){
+      tokenBalance += n;
+      pendingTokens += n;
+      updateTokenCount();
+      scheduleFlush();
     }
     function loadTokens(){
       fetch('/api/question-room?view=playful-state',{cache:'no-store'})
@@ -84,6 +100,8 @@
         .catch(()=>{});
     }
     loadTokens();
+    // Flush pending tokens when leaving the page
+    window.addEventListener('beforeunload', flushTokens);
 
     // Tabs
     document.querySelectorAll('.tab').forEach(tab=>{
