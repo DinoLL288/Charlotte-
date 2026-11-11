@@ -98,15 +98,20 @@ export class QuestionNightRoom {
     if (request.method === 'GET' && url.searchParams.get('view') === 'journal') {
       return Response.json(await this.getJournalData(), { headers: { 'cache-control': 'no-store' } });
     }
-    if (request.method === 'GET' && url.searchParams.get('view') === 'stickers') {
+    if (request.method === 'GET' && url.searchParams.get('view') === 'discoveries') {
       const user = url.searchParams.get('user');
       if (!['Charlotte', 'Luke'].includes(user)) return Response.json({ error: 'Choose a valid account' }, { status: 400 });
-      return Response.json(await this.getStickerData(user), { headers: { 'cache-control': 'no-store' } });
+      return Response.json(await this.getDiscoveryData(user), { headers: { 'cache-control': 'no-store' } });
     }
     if (request.method === 'GET' && url.searchParams.get('view') === 'mood') {
       const user = url.searchParams.get('user');
       if (!['Charlotte', 'Luke'].includes(user)) return Response.json({ error: 'Choose a valid account' }, { status: 400 });
       return Response.json(await this.getMoodData(), { headers: { 'cache-control': 'no-store' } });
+    }
+    if (request.method === 'GET' && url.searchParams.get('view') === 'stickers') {
+      const user = url.searchParams.get('user');
+      if (!['Charlotte', 'Luke'].includes(user)) return Response.json({ error: 'Choose a valid account' }, { status: 400 });
+      return Response.json(await this.getStickerData(user), { headers: { 'cache-control': 'no-store' } });
     }
     if (request.method === 'GET' && url.searchParams.get('view') === 'playful-state') {
       return Response.json(await this.getPlayfulState(), { headers: { 'cache-control': 'no-store' } });
