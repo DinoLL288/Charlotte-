@@ -28,8 +28,9 @@ export async function onRequestGet(context) {
       return json?.download_url || null;
     }));
     const foundUrl = results.find(Boolean);
-    if (foundUrl) return new Response(JSON.stringify({ url: foundUrl }), { status: 200, headers: { 'content-type': 'application/json' } });
-    return new Response(JSON.stringify({ url: null }), { status: 200, headers: { 'content-type': 'application/json' } });
+    const cacheHeaders = { 'content-type': 'application/json', 'cache-control': 'public, s-maxage=300, stale-while-revalidate=60' };
+    if (foundUrl) return new Response(JSON.stringify({ url: foundUrl }), { status: 200, headers: cacheHeaders });
+    return new Response(JSON.stringify({ url: null }), { status: 200, headers: cacheHeaders });
   } catch (e) {
     return new Response(JSON.stringify({ url: null, error: e.message }), {
       status: 200,

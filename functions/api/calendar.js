@@ -182,9 +182,12 @@ export async function onRequestGet(context) {
 
     const calendar = await getCalendar(context);
 
-    return jsonResponse({
+    return new Response(JSON.stringify({
       events: calendar.events,
       sha: calendar.sha
+    }), {
+      status: 200,
+      headers: { 'content-type': 'application/json', 'cache-control': 'public, s-maxage=60, stale-while-revalidate=30' }
     });
 
   } catch (e) {

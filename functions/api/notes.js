@@ -74,7 +74,7 @@ export async function onRequestGet(context) {
     const result = await getNotes(env);
     return new Response(JSON.stringify(result), {
       status: 200,
-      headers: { 'content-type': 'application/json' }
+      headers: { 'content-type': 'application/json', 'cache-control': 'public, s-maxage=60, stale-while-revalidate=30' }
     });
   } catch (e) {
     return new Response(JSON.stringify({ notes: [], error: e.message }), {
