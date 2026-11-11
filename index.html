@@ -189,7 +189,8 @@
     @keyframes photo-settle { from { transform: scale(1.08); } to { transform: scale(1); } }
 
     @media (prefers-reduced-motion: no-preference) {
-      .hub-hero-photo { animation: photo-settle 2.8s var(--ease-out) both; }
+      .hub-hero-photo { animation: photo-settle 2.8s var(--ease-out) both;
+    .hero-paused .hub-hero-photo, .hero-paused .hub-hero .eyebrow, .hero-paused .hub-hero .word, .hero-paused .hub-hero-sub, .hero-paused .hub-hero .together, .hero-paused .together-since { animation-play-state: paused !important; } }
       .hub-hero .eyebrow { animation: focus-in 0.9s var(--ease-out) 0.1s backwards; }
       .hub-hero .word { animation: focus-in 0.95s var(--ease-out) backwards; animation-delay: calc(var(--i) * 110ms + 250ms); }
       .hub-hero-sub { animation: focus-in 0.9s var(--ease-out) 0.85s backwards; }
@@ -503,5 +504,11 @@
     })();
   </script>
   <script src="together.js"></script>
+  <script>
+    // Pause hero animation when tab is hidden to save GPU on mobile/old devices
+    document.addEventListener('visibilitychange', function () {
+      document.documentElement.classList.toggle('hero-paused', document.hidden);
+    });
+  </script>
 </body>
 </html>

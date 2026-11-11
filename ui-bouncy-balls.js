@@ -121,18 +121,32 @@
   let obstacleRefreshTimer = 0;
   let collecting = 0;      // balls currently being collected this frame
 
-  const canvas = document.createElement("canvas");
-  Object.assign(canvas.style, {
-    position: "fixed",
-    inset: "0",
-    width: "100%",
-    height: "100%",
-    pointerEvents: "none",
-    zIndex: "2147483000"
-  });
-  document.documentElement.appendChild(canvas);
+  let canvas = null;
+  let ctx = null;
 
-  const ctx = canvas.getContext("2d");
+  function ensureCanvas() {
+    if (canvas) return;
+    canvas = document.createElement("canvas");
+    Object.assign(canvas.style, {
+      position: "fixed",
+      inset: "0",
+      width: "100%",
+      height: "100%",
+      pointerEvents: "none",
+      zIndex: "2147483000"
+    });
+    document.documentElement.appendChild(canvas);
+    ctx = canvas.getContext("2d");
+    resize();
+  }
+
+  function removeCanvas() {
+    if (canvas) {
+      canvas.remove();
+      canvas = null;
+      ctx = null;
+    }
+  }
 
   let width = innerWidth;
   let height = innerHeight;
@@ -146,9 +160,11 @@
     dpr = Math.min(devicePixelRatio || 1, 2);
     scrollY = window.scrollY || 0;
     pageHeight = Math.max(document.documentElement.scrollHeight, document.body ? document.body.scrollHeight : 0, height);
-    canvas.width = width * dpr;
-    canvas.height = height * dpr;
-    ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
+    if (canvas && ctx) {
+      canvas.width = width * dpr;
+      canvas.height = height * dpr;
+      ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
+    }
     refreshObstacles();
   }
 
@@ -599,6 +615,7 @@
     const dt = lastTime ? Math.min(time - lastTime, 32) : 16.667;
     lastTime = time;
 
+    if (!ctx) return;
     ctx.clearRect(0, 0, width, height);
 
     // Spawn
@@ -655,7 +672,7 @@
 
   function stop() {
     if (animation) { cancelAnimationFrame(animation); animation = null; }
-    ctx.clearRect(0, 0, width, height);
+    if (ctx) ctx.clearRect(0, 0, width, height);
   }
 
   toggle.addEventListener("click", () => {
@@ -669,6 +686,7 @@
       state.settingsOpen = false;
     }
     if (enabled) {
+      ensureCanvas();
       balls = [];
       // Spawn initial batch
       const n = Math.min(state.spawnBatch, state.waveRemaining, BASE.ballCount);
@@ -681,6 +699,7 @@
     } else {
       balls = [];
       stop();
+      removeCanvas();
     }
     updateHud();
   });
@@ -727,7 +746,7 @@
     destroy() {
       stop();
       observer.disconnect();
-      canvas.remove();
+      removeCanvas();
       toggle.remove();
       hud.remove();
       settingsBtn.remove();
