@@ -233,6 +233,7 @@
 </head>
 
 <body>
+  <button id="darkModeToggle" style="position:fixed;top:16px;right:16px;z-index:20;width:40px;height:40px;border-radius:50%;border:3px solid rgba(255,255,255,.3);background:rgba(20,35,55,.6);color:#ecd7a0;font-size:1.1rem;cursor:pointer;box-shadow:0 7px 20px #347eac40;display:grid;place-items:center;backdrop-filter:blur(8px);" aria-label="Toggle dark mode">🌙</button>
   <header id="hero-calm" class="hub-hero">
     <div class="hub-hero-photo" aria-hidden="true"></div>
     <div class="hub-hero-inner">
@@ -504,6 +505,39 @@
     })();
   </script>
   <script src="together.js"></script>
+  <script>
+    // Dark mode toggle for hub page
+    (function() {
+      const btn = document.getElementById('darkModeToggle');
+      if (!btn) return;
+      const user = localStorage.getItem('charlotte-user');
+      // Load preference
+      try {
+        const prefs = JSON.parse(localStorage.getItem('charlotte-preferences-' + user) || '{}');
+        if (prefs.darkMode) { document.documentElement.dataset.darkMode = 'true'; btn.textContent = '☀️'; }
+      } catch (e) {}
+      fetch('/api/question-room?view=preferences&user=' + encodeURIComponent(user), { cache: 'no-store' })
+        .then(r => r.json()).then(p => {
+          if (p.darkMode) { document.documentElement.dataset.darkMode = 'true'; btn.textContent = '☀️'; }
+          else { document.documentElement.dataset.darkMode = 'false'; btn.textContent = '🌙'; }
+        }).catch(() => {});
+      btn.addEventListener('click', () => {
+        const isDark = document.documentElement.dataset.darkMode === 'true';
+        const newMode = !isDark;
+        document.documentElement.dataset.darkMode = String(newMode);
+        btn.textContent = newMode ? '☀️' : '🌙';
+        if (user) {
+          fetch('/api/question-room', { method: 'POST', headers: { 'content-type': 'application/json' }, body: JSON.stringify({ action: 'dark-mode', user, darkMode: newMode }) }).catch(() => {});
+          try {
+            const key = 'charlotte-preferences-' + user;
+            const prefs = JSON.parse(localStorage.getItem(key) || '{}');
+            prefs.darkMode = newMode;
+            localStorage.setItem(key, JSON.stringify(prefs));
+          } catch (e) {}
+        }
+      });
+    })();
+  </script>
   <script>
     // Pause hero animation when tab is hidden to save GPU on mobile/old devices
     document.addEventListener('visibilitychange', function () {
