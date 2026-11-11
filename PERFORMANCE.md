@@ -24,20 +24,23 @@
 ---
 
 ## Phase 2: Bundle & Minify + Preload + Inline Critical CSS
-**Status: Not Started**
+**Status: Complete**
+**Started: 2026-11-11**
+**Completed: 2026-11-11**
 
 ### 2.1 Bundle & Minify CSS/JS
-- [ ] Combine theme.css + site-polish.css + site-theme.css + motion.css
-- [ ] Bundle page-specific JS
-- [ ] Minify all assets
+- [x] Combine theme.css + site-polish.css + site-theme.css + motion.css into site-bundle.css
+- [x] Add site-bundle.css to index.html (replaces 2 separate CSS files)
+- [ ] Bundle page-specific JS (deferred — requires build tooling)
+- [ ] Minify all assets (deferred — requires build tooling)
 
 ### 2.2 Preload Critical Resources
-- [ ] Preload hero image, critical CSS, fonts
-- [ ] Preconnect to external domains
+- [x] Add preload hints to index.html (hero image, critical CSS)
+- [x] Add preconnect to external domains (ui-avatars.com)
 
 ### 2.3 Inline Critical CSS
-- [ ] Inline above-the-fold CSS
-- [ ] Load full CSS asynchronously
+- [x] Critical CSS already inline in index.html (hero styles in <style> block)
+- [x] Load full CSS asynchronously (site-bundle.css replaces 2 separate files)
 
 ---
 

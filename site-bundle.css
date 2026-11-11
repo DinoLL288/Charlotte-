@@ -1,0 +1,873 @@
+/*
+  Shared look for the whole site: the calm base.
+
+  Why it looks like this
+  - One soft background, one accent colour, very little decoration, so there is
+    only ever one thing asking for attention on a screen.
+  - Text is dark on light with plenty of room around it. No white-on-pale text.
+  - Nothing moves on its own. Motion (see motion.css) only happens when
+    something arrives or when it is touched, and it settles quickly.
+
+  Palette: still water. Mist, ink, ocean, and a thread of gold. No pink anywhere.
+  Everything below is a token, so the whole site can be re-tuned from this block.
+*/
+
+:root {
+  /* Surfaces */
+  --bg: #f3f6f8;
+  --surface: #ffffff;
+  --surface-soft: #eef3f6;
+  --line: #dbe4ea;
+  --line-strong: #c3d1da;
+
+  /* Text (all pass WCAG AA on the surfaces above) */
+  --ink: #1c3850;
+  --ink-soft: #52697b;
+  --ink-faint: #6b8090;
+
+  /* Accent: follows the colour chosen in Settings when there is one */
+  --accent: var(--couple-accent, #2c6e92);
+  --accent-ink: #1f5778;
+  --accent-soft: #e4eff5;
+  --gold: #b48a2e;
+  --gold-soft: #ecd7a0;
+  --gold-ink: #7a5d1a;
+  --danger: #a1443a;
+  --danger-soft: #fbece9;
+  --ok: #2f7553;
+  --ok-soft: #e6f3ec;
+
+  /* Shape and depth */
+  --r-sm: 12px;
+  --r-md: 16px;
+  --r-lg: 22px;
+  --shadow-sm: 0 1px 2px rgba(28, 56, 80, 0.07);
+  --shadow: 0 1px 2px rgba(28, 56, 80, 0.05), 0 10px 28px rgba(28, 56, 80, 0.07);
+  --shadow-lift: 0 2px 4px rgba(28, 56, 80, 0.06), 0 16px 36px rgba(28, 56, 80, 0.12);
+
+  /* Type */
+  --font-body: system-ui, -apple-system, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
+  --font-display: Georgia, "Times New Roman", serif;
+
+  /* Motion curves (used by motion.css) */
+  --ease-out: cubic-bezier(0.22, 1, 0.36, 1);
+  --ease-soft: cubic-bezier(0.4, 0, 0.2, 1);
+  --ease-spring: cubic-bezier(0.34, 1.45, 0.64, 1);
+
+  /* Older names that some pages still read */
+  --navy: #143f5f;
+  --ocean: #2a78a8;
+  --sky: #a9dcf7;
+  --ice: #eaf6ff;
+  --cream: #fdf8ee;
+  --deep-blue: #245b85;
+}
+
+*,
+*::before,
+*::after { box-sizing: border-box; }
+
+html {
+  -webkit-text-size-adjust: 100%;
+  text-size-adjust: 100%;
+  scroll-behavior: smooth;
+  overflow-x: clip;
+}
+
+body {
+  margin: 0;
+  overflow-x: clip;
+  font-family: var(--font-body);
+  font-size: 1rem;
+  line-height: 1.6;
+  color: var(--ink);
+  background-color: var(--bg);
+  /* One barely-there wash at the top; the rest of the page is flat. */
+  background-image: linear-gradient(180deg, #e8f0f5 0, var(--bg) 360px);
+  background-repeat: no-repeat;
+  -webkit-font-smoothing: antialiased;
+}
+
+h1,
+h2,
+h3,
+.note-title {
+  font-family: var(--font-display);
+  color: var(--ink);
+  line-height: 1.2;
+  letter-spacing: -0.01em;
+  text-wrap: balance;
+}
+
+h1 {
+  font-weight: 400;
+  font-size: clamp(2rem, 6vw, 2.9rem);
+  letter-spacing: -0.02em;
+}
+
+h2 { font-size: clamp(1.25rem, 3.6vw, 1.5rem); }
+h3 { font-size: 1.12rem; }
+
+p { text-wrap: pretty; }
+
+a { color: var(--accent-ink); text-underline-offset: 0.2em; }
+
+::selection {
+  background: var(--gold-soft);
+  color: var(--ink);
+}
+
+:focus-visible {
+  outline: 3px solid color-mix(in srgb, var(--accent) 60%, #ffffff);
+  outline-offset: 3px;
+}
+
+.sr-only {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  margin: -1px;
+  padding: 0;
+  overflow: hidden;
+  clip: rect(0, 0, 0, 0);
+  white-space: nowrap;
+  border: 0;
+}
+
+/* The quiet "back to hub" control, everywhere. */
+.top-bar .button {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-height: 40px;
+  padding: 8px 16px;
+  border: 1px solid var(--line);
+  border-radius: 999px;
+  color: var(--ink-soft);
+  background: rgba(255, 255, 255, 0.86);
+  font-family: inherit;
+  font-size: 0.9rem;
+  font-weight: 600;
+  line-height: 1.25;
+  text-decoration: none;
+  white-space: nowrap;
+  box-shadow: var(--shadow-sm);
+  -webkit-backdrop-filter: blur(10px);
+  backdrop-filter: blur(10px);
+}
+
+.top-bar .button:hover { color: var(--ink); background: #ffffff; }
+
+/* Small, plain label that sits above a heading. Sentence case on purpose. */
+.eyebrow {
+  margin: 0;
+  font-family: var(--font-body);
+  font-size: 0.9rem;
+  font-weight: 600;
+  letter-spacing: 0.01em;
+  text-transform: none;
+  color: var(--gold-ink);
+}
+
+/*
+  "Together for" timer. It is built to sit on a photo (white text), and it
+  only shows days, hours and minutes so that nothing ticks every second.
+*/
+.together {
+  display: flex;
+  align-items: stretch;
+  justify-content: center;
+  gap: 0;
+  margin: 0;
+}
+
+.together .unit {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  min-width: 68px;
+  padding: 0 16px;
+}
+
+.together .unit + .unit { border-left: 1px solid rgba(255, 255, 255, 0.28); }
+
+.together .num {
+  font-family: var(--font-display);
+  font-size: clamp(1.7rem, 5vw, 2.6rem);
+  font-variant-numeric: tabular-nums;
+  line-height: 1;
+}
+
+.together .label {
+  margin-top: 7px;
+  font-size: 0.78rem;
+  font-weight: 600;
+  letter-spacing: 0.02em;
+  opacity: 0.85;
+}
+
+@media (max-width: 420px) {
+  .together .unit { min-width: 56px; padding: 0 10px; }
+}
+
+/* Shared dialogs used instead of the browser's alert/confirm/prompt. */
+.site-dialog {
+  width: min(440px, calc(100% - 32px));
+  max-width: none;
+  padding: 0;
+  border: 1px solid var(--line);
+  border-radius: var(--r-lg);
+  color: var(--ink);
+  background: var(--surface);
+  box-shadow: 0 24px 70px rgba(18, 40, 58, 0.28);
+}
+.site-dialog::backdrop { background: rgba(20, 40, 56, 0.38); -webkit-backdrop-filter: blur(4px); backdrop-filter: blur(4px); }
+.site-dialog-form { padding: 28px; }
+.site-dialog-eyebrow { margin: 0 0 8px; color: var(--gold-ink); font-size: 0.85rem; font-weight: 600; }
+.site-dialog-title { margin: 0; color: var(--ink); font-family: var(--font-display); font-size: 1.5rem; }
+.site-dialog-message { margin: 10px 0 0; color: var(--ink-soft); line-height: 1.6; white-space: pre-wrap; overflow-wrap: anywhere; }
+.site-dialog-input { width: 100%; margin-top: 18px; padding: 12px 14px; border: 1px solid var(--line-strong); border-radius: var(--r-sm); color: var(--ink); background: #fff; font: inherit; }
+.site-dialog-input:focus { outline: 3px solid color-mix(in srgb, var(--accent) 35%, #ffffff); border-color: var(--accent); }
+.site-dialog-actions { display: flex; justify-content: flex-end; gap: 10px; margin-top: 24px; }
+.site-dialog-button { min-height: 44px; padding: 10px 20px; border: 1px solid var(--line-strong); border-radius: 999px; color: var(--accent-ink); background: #fff; font: inherit; font-weight: 600; cursor: pointer; }
+.site-dialog-button:hover { background: var(--accent-soft); }
+.site-dialog-button.is-primary { border-color: var(--accent); color: #fff; background: var(--accent); }
+.site-dialog-button.is-primary:hover { background: color-mix(in srgb, var(--accent) 88%, #000000); }
+.site-dialog-button.is-danger { border-color: var(--danger); color: #fff; background: var(--danger); }
+@media (max-width: 420px) { .site-dialog-form { padding: 24px 20px; } }
+
+@media (prefers-reduced-motion: reduce) {
+  html { scroll-behavior: auto; }
+}
+/*
+  Calm layer for every inner page.
+
+  Each page still has its own small <style> block for layout, but this file loads
+  after it and brings the pages onto one shared look: the same header, the same
+  flat surfaces, one set of buttons and form controls, and floating widgets that
+  stay out of the way. Tokens (colours, radii, shadows) live in theme.css.
+*/
+
+/* ---------- Frame ---------- */
+
+/* Pages bring their own backgrounds; they all rest on the same calm one now. */
+body {
+  color: var(--ink);
+  font-family: var(--font-body);
+  background-color: var(--bg);
+  background-image: linear-gradient(180deg, #e8f0f5 0, var(--bg) 360px);
+  background-repeat: no-repeat;
+}
+
+img, video, canvas, svg { max-width: 100%; }
+main, .shell, .screen { min-width: 0; }
+
+/* Leave room at the bottom so the floating buttons never sit on the last item. */
+body > main.screen,
+body > main.shell {
+  padding-bottom: calc(96px + env(safe-area-inset-bottom, 0px));
+}
+
+.top-bar { z-index: 25; }
+
+/* ---------- Page headers ---------- */
+
+/* Pages with a header block share one calm, light header. */
+header.hero,
+.gallery-hero {
+  position: relative;
+  min-height: 0 !important;
+  margin: 0 !important;
+  padding: 88px 20px 8px !important;
+  border: 0 !important;
+  border-radius: 0 !important;
+  overflow: visible !important;
+  color: var(--ink) !important;
+  text-align: center;
+  background: none !important;
+  box-shadow: none !important;
+}
+
+header.hero::before,
+header.hero::after,
+.gallery-hero::before,
+.gallery-hero::after { content: none !important; display: none !important; }
+
+header.hero h1,
+.gallery-hero h1 {
+  margin: 6px 0 10px;
+  color: var(--ink) !important;
+  font-size: clamp(2rem, 6vw, 2.8rem) !important;
+  text-shadow: none !important;
+}
+
+header.hero p,
+.gallery-hero p {
+  max-width: 46ch;
+  margin: 0 auto;
+  color: var(--ink-soft) !important;
+  font-size: 1rem !important;
+  line-height: 1.6;
+  text-shadow: none !important;
+}
+
+header.hero .eyebrow,
+.gallery-hero .eyebrow {
+  color: var(--gold-ink) !important;
+  font-size: 0.9rem !important;
+  font-weight: 600 !important;
+  letter-spacing: 0.01em !important;
+  text-transform: none !important;
+  text-shadow: none !important;
+}
+
+/* Cards used to overlap the header banner; the header is light now, so they sit below it. */
+.shell, .upload-card { margin-top: 0 !important; }
+
+/* Pages that start straight with a heading. */
+.subtitle { color: var(--ink-soft) !important; text-shadow: none !important; }
+main h1 { text-shadow: none; color: var(--ink); }
+main.shell, main.screen { margin-top: 0; }
+.top-bar + .card, .top-bar + .panel { margin-top: 76px; }
+
+/* ---------- Surfaces ---------- */
+
+:is(.panel, .card, .composer, .note, .entry, .history-card, .person, .tool-card, .moment, .plan,
+    .upload-card, .gallery-toolbar, .album-card, .modal-card, .td-current, .td-custom, .td-history,
+    .td-rules, .prompt-card, .settings-group, .shared-account, .status-card) {
+  color: var(--ink);
+  background: var(--surface);
+  background-image: none;
+  border: 1px solid var(--line);
+  border-radius: var(--r-lg);
+  box-shadow: var(--shadow);
+}
+
+/* A surface inside a surface turns into a quiet inset instead of a second card. */
+:is(.panel, .card, .tool-card, .upload-card, .settings-group, .td-current, .td-custom, .td-history, .td-rules) :is(.composer, .card, .person, .settings-group, .tool-card) {
+  background: var(--surface-soft);
+  border-color: transparent;
+  border-radius: var(--r-md);
+  box-shadow: none;
+}
+
+:is(.item, .td-history-item, .leader-row, .question-count, .presence-note, .revealed-clue,
+    .later-details, .call-history div, .quiet-day-count, .empty) {
+  color: var(--ink);
+  background: var(--surface-soft);
+  background-image: none;
+  border: 1px solid transparent;
+  border-radius: var(--r-sm);
+  box-shadow: none;
+}
+
+.empty {
+  color: var(--ink-soft);
+  background: transparent;
+  border: 1px dashed var(--line-strong);
+  border-radius: var(--r-md);
+}
+
+.panel h2, .card h2 { color: var(--ink); text-shadow: none; }
+.intro, .hint, .composer-hint, .form-hint, .meta, .note-meta, .note-date, .entry-meta, .event-by,
+.event-details, .modal-hint { color: var(--ink-soft); }
+.note-title, .note-lock { color: var(--ink); }
+p.status, .page-status, .status {
+  color: var(--ink-soft);
+  font-size: 0.92rem;
+  font-weight: 400;
+  line-height: 1.55;
+  text-shadow: none;
+}
+
+/* ---------- Buttons ---------- */
+
+:is(.button, .small, .mini, .small-button, .primary, .tab, .album-filter, .chip,
+    .leader-tabs button, .gallery-view-tabs button) {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.4rem;
+  min-height: 44px;
+  padding: 0.6rem 1.2rem;
+  border: 1px solid var(--accent);
+  border-radius: 999px;
+  color: #ffffff;
+  background: var(--accent);
+  box-shadow: none;
+  font: 600 0.95rem/1.25 var(--font-body);
+  text-decoration: none;
+  cursor: pointer;
+  transition: background-color 0.2s ease, border-color 0.2s ease, color 0.2s ease;
+}
+
+:is(.button, .small, .mini, .small-button, .primary):hover {
+  background: color-mix(in srgb, var(--accent) 88%, #000000);
+  box-shadow: none;
+  transform: none;
+}
+
+/* Quieter, secondary style for small controls, navigation and cancel-type actions. */
+:is(.small, .mini, .small-button, .tab, .album-filter, .chip, .leader-tabs button,
+    .gallery-view-tabs button, .calendar-header .button, .note-actions .button, .note-action,
+    .button.secondary, .button.ghost, .person .button.secondary, .cancel-edit) {
+  min-height: 40px;
+  padding: 0.45rem 1rem;
+  color: var(--accent-ink);
+  background: var(--surface);
+  border-color: var(--line-strong);
+}
+
+:is(.small, .mini, .small-button, .tab, .album-filter, .chip, .leader-tabs button,
+    .gallery-view-tabs button, .calendar-header .button, .note-actions .button, .note-action,
+    .button.secondary, .button.ghost, .cancel-edit):hover {
+  color: var(--accent-ink);
+  background: var(--accent-soft);
+  transform: none;
+}
+
+/* The selected one in a set of choices. */
+.tab[aria-selected="true"],
+.album-filter[aria-pressed="true"],
+.chip.is-active,
+.leader-tabs button[aria-pressed="true"],
+.gallery-view-tabs button[aria-pressed="true"] {
+  color: #ffffff;
+  background: var(--accent);
+  border-color: var(--accent);
+}
+
+:is(.danger, .delete-btn, .delete-entry, .delete-moment, .remove-account) {
+  color: var(--danger);
+  background: var(--danger-soft);
+  border-color: transparent;
+}
+:is(.danger, .delete-btn):hover { background: #f6dcd7; color: var(--danger); }
+
+:is(.button, .small, .mini, .primary):disabled,
+:is(.button, .small, .mini, .primary)[disabled] {
+  color: var(--ink-faint);
+  background: var(--surface-soft);
+  border-color: var(--line);
+  cursor: not-allowed;
+}
+
+/* Tabs wrap instead of hiding options off the edge of the screen. */
+.tabs {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: center;
+  gap: 8px;
+  overflow: visible;
+}
+
+/* ---------- Forms ---------- */
+
+input:not([type="file"]):not([type="checkbox"]):not([type="radio"]):not([type="range"]):not([type="color"]),
+textarea,
+select {
+  min-height: 44px;
+  padding: 0.65rem 0.85rem;
+  color: var(--ink);
+  background-color: #ffffff;
+  border: 1px solid var(--line-strong);
+  border-radius: var(--r-sm);
+  font: inherit;
+  font-size: 1rem;
+  transition: border-color 0.2s ease, box-shadow 0.2s ease;
+}
+
+textarea { line-height: 1.5; }
+::placeholder { color: var(--ink-faint); opacity: 1; }
+
+input:not([type="file"]):not([type="checkbox"]):not([type="radio"]):focus-visible,
+textarea:focus-visible,
+select:focus-visible {
+  outline: none;
+  border-color: var(--accent);
+  box-shadow: 0 0 0 4px color-mix(in srgb, var(--accent) 22%, transparent);
+}
+
+label { color: var(--ink-soft); }
+.composer-label, .field > span, label > span:first-child { font-weight: 600; }
+
+input[type="file"]::file-selector-button {
+  margin-right: 10px;
+  padding: 0.5rem 1rem;
+  border: 1px solid var(--line-strong);
+  border-radius: 999px;
+  color: var(--accent-ink);
+  background: var(--surface);
+  font: inherit;
+  font-weight: 600;
+  cursor: pointer;
+}
+
+input[type="checkbox"], input[type="radio"] { accent-color: var(--accent); }
+
+/* ---------- Decoration we no longer use ---------- */
+
+.hero::after, .hero::before,
+.panel::after, .card::before, .card::after,
+.td-current::before, .td-current::after,
+.bingo-square::after,
+#panel-jokes h2::before, #panel-bingo h2::before, #panel-hunt h2::before, #panel-truthdare h2::before {
+  content: none !important;
+  display: none !important;
+}
+
+.card-sticker, .td-game-sticker { display: none !important; }
+.panel-icon { background: var(--surface-soft) !important; box-shadow: none !important; }
+
+/* ---------- Playful tilts and lifts are gone; things stay level ---------- */
+
+.tile, .tile:nth-child(3n + 1), .tile:nth-child(3n),
+.card:hover, .bingo-square:hover { transform: none !important; }
+.tile:hover { transform: translateY(-3px) !important; }
+.tabs { padding: 0; border: 0; background: none; box-shadow: none; }
+.album-filters { display: flex; flex-wrap: wrap; gap: 8px; }
+
+.calendar-tools { grid-template-columns: minmax(0, 1fr); }
+.call-fields { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+.call-fields > *, .tool-card { min-width: 0; }
+.feed-link { overflow-wrap: anywhere; }
+.upload-card .button, .gallery-toolbar .button { background-image: none !important; }
+.gallery-view-tabs { display: flex; flex-wrap: wrap; gap: 6px; min-width: 0; max-width: 100%; }
+.gallery-view-tabs button { flex: 1 1 auto; padding: 0.4rem 0.8rem; }
+@media (max-width: 620px) { .gallery-view-tabs { flex: 1 1 100%; } }
+
+/* Cards no longer climb up over the page header. */
+.status-card, .shell > .composer, main > .composer { margin-top: 20px !important; }
+
+/* Headings that sat directly on the page background used to be white. */
+.group > h2, .screen > h2, .screen > h3, .section-heading { color: var(--ink) !important; text-shadow: none !important; }
+
+/* Timeline entries without a photo: a soft date plate instead of a dark gradient block. */
+.moment-photo.no-photo { color: var(--ink); background: var(--accent-soft) !important; background-image: none !important; }
+.moment-photo.no-photo .big-date { color: var(--ink) !important; text-shadow: none !important; }
+.moment-photo.no-photo .big-sub { color: var(--ink-soft) !important; }
+
+/* Optional tools tucked away until wanted. */
+details.fold { margin: 18px 0 0; border: 1px solid var(--line); border-radius: var(--r-lg); background: var(--surface); box-shadow: var(--shadow); }
+details.fold > summary { cursor: pointer; padding: 16px 20px; color: var(--ink); font-weight: 700; list-style: none; display: flex; align-items: center; justify-content: space-between; border-radius: inherit; }
+details.fold > summary::-webkit-details-marker { display: none; }
+details.fold > summary::after { content: "+"; color: var(--ink-faint); font-size: 1.4rem; line-height: 1; transition: transform 0.3s var(--ease-out); }
+details.fold[open] > summary::after { transform: rotate(45deg); }
+details.fold > .calendar-tools { padding: 0 16px 16px; margin: 0; }
+
+/* ---------- Calendar ---------- */
+
+.calendar-grid { grid-template-columns: repeat(7, minmax(0, 1fr)); }
+.calendar-header, .now-line, .weekday { color: var(--ink) !important; text-shadow: none !important; }
+.now-line { color: var(--ink-soft) !important; font-weight: 600; }
+.day { min-width: 0; background: var(--surface); border: 1px solid var(--line); box-shadow: none; }
+.day:hover { box-shadow: var(--shadow); }
+.day.muted { opacity: 0.45; }
+.day.today { border-color: var(--accent); box-shadow: 0 0 0 2px color-mix(in srgb, var(--accent) 30%, transparent); }
+.day.today .day-number { color: var(--accent-ink); }
+.today-tag { background: var(--accent); }
+.day-number { color: var(--ink); }
+.add-btn { color: var(--accent-ink); }
+.event { background: var(--accent-soft); color: var(--ink); }
+.event-top { flex-wrap: wrap; gap: 2px 8px; }
+.event-top strong { min-width: 0; overflow-wrap: anywhere; }
+.event-clock { flex: none; }
+.event-details { overflow-wrap: anywhere; }
+.event:hover { background: #d6e8f1; }
+.event.now { background: var(--ok-soft); box-shadow: 0 0 0 2px #7fc3a0 inset; }
+.event.quiet-calendar-event { background: #efeaf7; color: #5a4a78; border-color: #ded5ee; }
+.event.call-event { background: #f6ece6; color: #7a4a35; }
+
+@media (max-width: 640px) {
+  /* A phone is too narrow for seven columns, so each day becomes a row. */
+  #weekdayRow { display: none; }
+  #daysGrid { display: flex; flex-direction: column; gap: 8px; width: 100%; }
+  .day.muted { display: none; }
+  .day { min-height: 0; padding: 12px 14px; gap: 8px; }
+  .day-header { justify-content: flex-start; }
+  .day-header .add-btn { margin-left: auto; font-size: 1.3rem; min-width: 40px; min-height: 40px; }
+  .day-number { font-size: 1.05rem; }
+  .day-number[data-dow]::after { content: " " attr(data-dow); color: var(--ink-soft); font-weight: 500; font-size: 0.9rem; }
+  .day:not(:has(.event)) { padding-top: 6px; padding-bottom: 6px; }
+}
+
+/* ---------- Floating widgets ---------- */
+/* Quiet, neutral, small, and out of the way. Higher specificity beats the widgets' own rules. */
+
+html body .profile-pfp {
+  top: 12px;
+  right: 12px;
+  width: 40px;
+  height: 40px;
+  border: 2px solid #ffffff;
+  box-shadow: var(--shadow-sm);
+}
+
+html body #reaction-toggle,
+html body #shared-music-toggle {
+  width: 44px;
+  height: 44px;
+  color: var(--ink-soft);
+  background: rgba(255, 255, 255, 0.94);
+  border: 1px solid var(--line);
+  box-shadow: var(--shadow);
+  font-size: 1.05rem;
+  -webkit-backdrop-filter: blur(8px);
+  backdrop-filter: blur(8px);
+}
+
+html body #shared-music-toggle { font-size: 1.1rem; }
+
+html body #couple-reactions { left: 12px; bottom: calc(12px + env(safe-area-inset-bottom, 0px)); }
+html body #shared-music { right: 12px; bottom: calc(12px + env(safe-area-inset-bottom, 0px)); }
+
+html body #reaction-picker,
+html body #reaction-status,
+html body #special-date-reminder,
+html body #shared-music-panel {
+  border: 1px solid var(--line);
+  background: var(--surface);
+  box-shadow: var(--shadow-lift);
+}
+
+html body #shared-music-panel { border-radius: var(--r-md); }
+html body #special-date-reminder { bottom: calc(12px + env(safe-area-inset-bottom, 0px)); }
+html body #reaction-picker button { background: var(--surface-soft); }
+
+@media (max-width: 520px) {
+  html body #special-date-reminder { bottom: calc(68px + env(safe-area-inset-bottom, 0px)); }
+}
+
+/* Gallery lightbox and photo tiles keep their own overlay styling. */
+:root[data-couple-theme="blue"] { --couple-page: linear-gradient(150deg,#e8eef2 0%,#ccd9e1 52%,#b1c4d0 100%); --couple-panel:#f5f7f7; --couple-wash:#e8eff2; }
+:root[data-couple-theme="midnight"] { --couple-page: linear-gradient(150deg,#d9e1e8 0%,#becbd5 52%,#aabac7 100%); --couple-panel:#edf1f3; --couple-wash:#dce5eb; }
+:root[data-couple-theme="lavender"] { --couple-page: linear-gradient(150deg,#f0edf6 0%,#ddd6eb 52%,#c8bfdc 100%); --couple-panel:#faf8fc; --couple-wash:#eee9f5; }
+:root[data-couple-theme="sage"] { --couple-page: linear-gradient(150deg,#edf1e9 0%,#d6e0ce 52%,#bdcdb5 100%); --couple-panel:#f8faf5; --couple-wash:#e8eee3; }
+:root[data-couple-theme="sunset"] { --couple-page: linear-gradient(150deg,#f5eee5 0%,#ead9c7 52%,#ddc1a8 100%); --couple-panel:#fcf8f3; --couple-wash:#f4e9dd; }
+:root[data-couple-theme] { --couple-accent:#347fa3; }
+:root[data-couple-theme] body { background:var(--couple-page)!important; }
+:root[data-couple-theme] .panel,
+:root[data-couple-theme] .card,
+:root[data-couple-theme] .upload-card,
+:root[data-couple-theme] .gallery-toolbar,
+:root[data-couple-theme] .quiet-banner,
+:root[data-couple-theme] .td-current,
+:root[data-couple-theme] .td-rules,
+:root[data-couple-theme] .td-custom,
+:root[data-couple-theme] .td-history,
+:root[data-couple-theme] .person,
+:root[data-couple-theme] .calendar-card,
+:root[data-couple-theme] .month-card { background:var(--couple-panel)!important; }
+:root[data-couple-theme] .composer,
+:root[data-couple-theme] .revealed-clue,
+:root[data-couple-theme] .event,
+:root[data-couple-theme] .td-history-item { background:var(--couple-wash)!important; }
+:root[data-couple-theme] .event.special-date { border-color:var(--couple-accent)!important; }
+:root[data-text-size="large"] { font-size:18px; }
+:root[data-text-size="normal"] { font-size:16px; }
+:root[data-compact-layout="true"] .panel,
+:root[data-compact-layout="true"] .card,
+:root[data-compact-layout="true"] .person,
+:root[data-compact-layout="true"] .upload-card { padding:clamp(14px,2.8vw,22px)!important; }
+:root[data-show-reactions="false"] #couple-reactions { display:none!important; }
+:root[data-show-presence="false"] #shared-presence { display:none!important; }
+:root[data-reduced-motion="true"] *,
+:root[data-reduced-motion="true"] *::before,
+:root[data-reduced-motion="true"] *::after { animation-duration:.01ms!important;animation-iteration-count:1!important;scroll-behavior:auto!important;transition-duration:.01ms!important; }
+:root[data-couple-theme] button.button:not(.top-bar .button),
+:root[data-couple-theme] .small:not(.danger),
+:root[data-couple-theme] .tab[aria-selected="true"],
+:root[data-couple-theme] .album-filter[aria-pressed="true"] { background:var(--couple-accent)!important; border-color:var(--couple-accent)!important; color:#fff!important; }
+:root[data-couple-theme] .couple-accent { color:var(--couple-accent)!important; border-color:var(--couple-accent)!important; }
+/*
+  Motion for the whole site.
+
+  One rule: things arrive and settle, then stay still. Nothing loops, nothing
+  drifts, nothing moves while you are trying to read. Movement only happens
+  when a page opens, when something new shows up, or when you touch something.
+
+  It is switched off completely by either
+    - the device's "reduce motion" setting, or
+    - "Reduce animations and movement" in our Settings page.
+
+  Curves and timings come from the tokens in theme.css.
+*/
+
+/* ---------- Keyframes ---------- */
+
+@keyframes settle-in {
+  from { opacity: 0; transform: translate3d(0, 14px, 0); }
+  to { opacity: 1; transform: none; }
+}
+
+/* Used on headings, where a little softness at the start feels like focus arriving. */
+@keyframes focus-in {
+  from { opacity: 0; transform: translate3d(0, 10px, 0); filter: blur(6px); }
+  to { opacity: 1; transform: none; filter: none; }
+}
+
+@keyframes pop-in {
+  from { opacity: 0; transform: scale(0.94); }
+  to { opacity: 1; transform: none; }
+}
+
+@keyframes dialog-in {
+  from { opacity: 0; transform: translateY(14px) scale(0.96); }
+  to { opacity: 1; transform: none; }
+}
+
+@keyframes backdrop-in { from { opacity: 0; } to { opacity: 1; } }
+
+@keyframes progress-sweep {
+  0% { transform: translateX(-100%); }
+  100% { transform: translateX(260%); }
+}
+
+/* ---------- Page arrival ---------- */
+/*
+  The first screen of every page arrives in a short, staggered sequence.
+  "backwards" fill means nothing is held afterwards, so hover and press
+  effects on the same elements keep working.
+*/
+
+@media (prefers-reduced-motion: no-preference) {
+  header.hero > *,
+  .gallery-hero > div > *,
+  main.screen > h1,
+  main.screen > .subtitle,
+  .card > h1 {
+    animation: focus-in 0.8s var(--ease-out) backwards;
+  }
+
+  header.hero > :nth-child(2), .gallery-hero > div > :nth-child(2), main.screen > .subtitle { animation-delay: 0.08s; }
+  header.hero > :nth-child(3), .gallery-hero > div > :nth-child(3) { animation-delay: 0.16s; }
+
+  main.shell > :nth-child(-n + 6),
+  main.screen > :nth-child(n + 3):nth-child(-n + 8) {
+    animation: settle-in 0.75s var(--ease-out) backwards;
+    animation-delay: calc(var(--n, 0) * 80ms + 160ms);
+  }
+
+  main.shell > :nth-child(1), main.screen > :nth-child(3) { --n: 0; }
+  main.shell > :nth-child(2), main.screen > :nth-child(4) { --n: 1; }
+  main.shell > :nth-child(3), main.screen > :nth-child(5) { --n: 2; }
+  main.shell > :nth-child(4), main.screen > :nth-child(6) { --n: 3; }
+  main.shell > :nth-child(5), main.screen > :nth-child(7) { --n: 4; }
+  main.shell > :nth-child(6), main.screen > :nth-child(8) { --n: 5; }
+
+  /* Things that appear after the page has loaded (saved notes, new plans, and so on). */
+  .motion-in {
+    animation: settle-in 0.6s var(--ease-out) backwards;
+    animation-delay: var(--d, 0ms);
+  }
+
+  /* ---------- Touch ---------- */
+  /* A soft press and a springy release on anything you can tap. */
+
+  :is(.button, .small, .mini, .small-button, .primary, .tab, .album-filter, .chip, .leader-tabs button,
+      .gallery-view-tabs button, .top-bar .button, .site-dialog-button, .hub-row, .add-btn, .day, .event, .tile) {
+    transition: transform 0.35s var(--ease-spring), background-color 0.2s ease, border-color 0.2s ease,
+      color 0.2s ease, box-shadow 0.25s ease;
+  }
+
+  :is(.button, .small, .mini, .small-button, .primary, .tab, .album-filter, .chip, .leader-tabs button,
+      .gallery-view-tabs button, .top-bar .button, .site-dialog-button, .hub-row):active {
+    transform: scale(0.97);
+    transition-duration: 0.08s;
+  }
+
+  .day:active, .event:active, .tile:active { transform: scale(0.985); transition-duration: 0.08s; }
+
+  /* ---------- Dialogs ---------- */
+
+  .site-dialog[open] { animation: dialog-in 0.4s var(--ease-spring); }
+  .site-dialog[open]::backdrop { animation: backdrop-in 0.3s ease-out; }
+
+  /* ---------- Month changes on the calendar ---------- */
+
+  #daysGrid.slide-next { animation: slide-from-right 0.5s var(--ease-out); }
+  #daysGrid.slide-prev { animation: slide-from-left 0.5s var(--ease-out); }
+
+  /* ---------- Floating buttons step aside while you scroll ---------- */
+
+  html body #couple-reactions,
+  html body #shared-music,
+  html body #special-date-reminder {
+    transition: transform 0.5s var(--ease-out), opacity 0.35s ease;
+  }
+
+  html.dock-away body #couple-reactions,
+  html.dock-away body #shared-music:not(:has(#shared-music-panel:not([hidden]))) {
+    transform: translateY(calc(100% + 28px));
+    opacity: 0;
+    pointer-events: none;
+  }
+
+  html.dock-away body #special-date-reminder {
+    transform: translate(-50%, calc(100% + 28px));
+    opacity: 0;
+    pointer-events: none;
+  }
+}
+
+@keyframes slide-from-right { from { opacity: 0; transform: translate3d(28px, 0, 0); } to { opacity: 1; transform: none; } }
+@keyframes slide-from-left { from { opacity: 0; transform: translate3d(-28px, 0, 0); } to { opacity: 1; transform: none; } }
+
+/* ---------- Reveal on scroll ---------- */
+/*
+  Elements marked class="reveal" ease in once, the first time they scroll into
+  view. The hidden starting state only exists when scripts are running and
+  motion is allowed (html.motion-ok), and a failsafe shows everything anyway.
+*/
+
+html.motion-ok .reveal {
+  opacity: 0;
+  transform: translate3d(0, 18px, 0);
+  transition: opacity 0.8s var(--ease-out), transform 0.8s var(--ease-out);
+  transition-delay: var(--d, 0ms);
+}
+
+html.motion-ok .reveal.is-in { opacity: 1; transform: none; }
+html.motion-failsafe .reveal { opacity: 1 !important; transform: none !important; }
+
+/* ---------- Light that follows the pointer (desktop only) ---------- */
+
+@media (hover: hover) and (pointer: fine) and (prefers-reduced-motion: no-preference) {
+  .glow { position: relative; isolation: isolate; }
+  .glow::before {
+    content: "";
+    position: absolute;
+    inset: 0;
+    z-index: -1;
+    border-radius: inherit;
+    opacity: 0;
+    background: radial-gradient(260px circle at var(--mx, 50%) var(--my, 50%), color-mix(in srgb, var(--accent) 12%, transparent), transparent 70%);
+    transition: opacity 0.4s ease;
+    pointer-events: none;
+  }
+  .glow:hover::before { opacity: 1; }
+}
+
+/* ---------- Switched off ---------- */
+
+@media (prefers-reduced-motion: reduce) {
+  *, *::before, *::after {
+    animation: none !important;
+    scroll-behavior: auto !important;
+    transition-duration: 0.01ms !important;
+    transition-delay: 0s !important;
+  }
+  .reveal { opacity: 1 !important; transform: none !important; }
+}
+
+:root[data-reduced-motion="true"] *,
+:root[data-reduced-motion="true"] *::before,
+:root[data-reduced-motion="true"] *::after {
+  animation: none !important;
+  scroll-behavior: auto !important;
+  transition-duration: 0.01ms !important;
+  transition-delay: 0s !important;
+}
+
+:root[data-reduced-motion="true"] .reveal { opacity: 1 !important; transform: none !important; }
