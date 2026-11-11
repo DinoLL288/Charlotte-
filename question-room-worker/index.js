@@ -98,6 +98,11 @@ export class QuestionNightRoom {
     if (request.method === 'GET' && url.searchParams.get('view') === 'journal') {
       return Response.json(await this.getJournalData(), { headers: { 'cache-control': 'no-store' } });
     }
+    if (request.method === 'GET' && url.searchParams.get('view') === 'stickers') {
+      const user = url.searchParams.get('user');
+      if (!['Charlotte', 'Luke'].includes(user)) return Response.json({ error: 'Choose a valid account' }, { status: 400 });
+      return Response.json(await this.getStickerData(user), { headers: { 'cache-control': 'no-store' } });
+    }
     if (request.method === 'GET' && url.searchParams.get('view') === 'mood') {
       const user = url.searchParams.get('user');
       if (!['Charlotte', 'Luke'].includes(user)) return Response.json({ error: 'Choose a valid account' }, { status: 400 });
@@ -503,6 +508,13 @@ export class QuestionNightRoom {
     }
     return { moods: result };
   }
+  async getStickerData(user) {
+    const all = await this.ctx.storage.get('stickerData') || {};
+    const owned = (all.owned && all.owned[user]) || [];
+    const placements = (all.placements || []).filter(p => p.user === user);
+    return { owned, placements };
+  }
+
 
   async getJournalData() {
     const journal = await this.ctx.storage.get('journalData') || {};
@@ -618,6 +630,30 @@ export class QuestionNightRoom {
         await this.ctx.storage.put('journalData', journal);
         await this.broadcastRefresh();
         return Response.json({ ok: true, entries: journal.entries });
+      }
+      if (body.action === 'sticker-place') {
+        const user = body.user;
+        const placement = body.placement || {};
+        if (!['Charlotte', 'Luke'].includes(user)) return Response.json({ error: 'Choose a valid account' }, { status: 400 });
+        const all = await this.ctx.storage.get('stickerData') || {};
+        if (!all.placements) all.placements = [];
+        all.placements.push({ user, id: String(placement.id || '').slice(0, 30), x: Number(placement.x) || 0, y: Number(placement.y) || 0, at: new Date().toISOString() });
+        if (all.placements.length > 200) all.placements = all.placements.slice(-200);
+        await this.ctx.storage.put('stickerData', all);
+        await this.broadcastRefresh();
+        return Response.json({ ok: true });
+      }
+      if (body.action === 'sticker-unlock') {
+        const user = body.user;
+        const stickerId = String(body.stickerId || '').slice(0, 30);
+        if (!['Charlotte', 'Luke'].includes(user) || !stickerId) return Response.json({ error: 'Choose a valid sticker' }, { status: 400 });
+        const all = await this.ctx.storage.get('stickerData') || {};
+        if (!all.owned) all.owned = {};
+        if (!all.owned[user]) all.owned[user] = [];
+        if (!all.owned[user].includes(stickerId)) all.owned[user].push(stickerId);
+        await this.ctx.storage.put('stickerData', all);
+        await this.broadcastRefresh();
+        return Response.json({ ok: true, owned: all.owned[user] });
       }
       if (body.action === 'mood') {
         const user = body.user;

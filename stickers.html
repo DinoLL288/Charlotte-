@@ -1,0 +1,158 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <script src="site-shell-guard.js"></script>
+  <meta charset="UTF-8"><meta name="viewport" content="width=device-width, initial-scale=1.0"><title>Stickers · Our collection</title>
+  <script>if (!localStorage.getItem('charlotte-user')) location.href = 'login.html';</script>
+  <link rel="stylesheet" href="theme.css">
+  <link rel="stylesheet" href="site-bundle.css" data-site-polish="true" data-site-theme="true">
+  <style>
+    .hero{padding:78px 20px 66px;text-align:center;color:#fff;background:linear-gradient(160deg,#0d2c44,#2a78a8)}.hero .eyebrow{color:var(--gold-soft)}.hero h1{margin:10px 0;font-size:clamp(2.2rem,7vw,3.5rem);font-weight:400}.hero p:last-child{max-width:54ch;margin:0 auto;color:#e6f3fc;line-height:1.6}.top-bar{position:absolute;top:16px;left:16px;z-index:2}.shell{width:min(780px,100%);margin:-30px auto 60px;padding:0 18px;position:relative}
+    .hub-area{position:relative;height:220px;border-radius:20px;background:rgba(255,255,255,.6);border:1px solid rgba(255,255,255,.9);margin-bottom:20px;overflow:hidden;box-shadow:0 8px 24px rgba(29,90,128,.1)}
+    .hub-area .sticker{position:absolute;font-size:2rem;cursor:grab;transition:transform .15s;filter:drop-shadow(0 2px 4px rgba(0,0,0,.15));user-select:none}
+    .hub-area .sticker:hover{transform:scale(1.15)}
+    .hub-area .sticker.placed{cursor:default}
+    .hub-area .hint{position:absolute;bottom:8px;left:50%;transform:translateX(-50%);color:#7b91a0;font-size:.75rem;pointer-events:none}
+    .collection{padding:20px;border-radius:18px;background:rgba(255,255,255,.78);border:1px solid rgba(255,255,255,.9);margin-bottom:16px;box-shadow:0 8px 24px rgba(29,90,128,.1)}
+    .collection h3{margin:0 0 12px;font-family:var(--font-display);color:#123a58}
+    .stickers{display:grid;grid-template-columns:repeat(6,1fr);gap:8px}
+    .sticker-slot{aspect-ratio:1;border-radius:12px;background:#f0f5fa;display:grid;place-items:center;font-size:1.5rem;cursor:pointer;transition:transform .15s,background .15s;border:2px dashed #c8dceb;position:relative}
+    .sticker-slot:hover{transform:scale(1.05);background:#e8f4fa}
+    .sticker-slot.owned{border-style:solid;border-color:#c9a24a;background:#fff7df;cursor:grab}
+    .sticker-slot.locked{opacity:.3;cursor:default;filter:grayscale(1)}
+    .sticker-slot .lock{position:absolute;bottom:2px;right:4px;font-size:.6rem}
+    .instructions{padding:14px;border-radius:12px;background:rgba(255,255,255,.6);color:#4a7291;font-size:.85rem;line-height:1.6;border-left:3px solid #c9a24a;margin-top:16px}
+    .status{min-height:1.4em;margin:12px 0 0;color:#73591f;font-weight:700}
+    @media(max-width:520px){.stickers{grid-template-columns:repeat(4,1fr)}}
+  </style>
+</head>
+<body>
+  <div class="top-bar"><a class="button" href="index.html">← Back to hub</a></div>
+  <header class="hero"><p class="eyebrow">Our collection</p><h1>Stickers</h1><p>Collect them, place them, discover hidden ones. Our hub grows with us.</p></header>
+  <main class="shell">
+    <div class="hub-area" id="hubArea">
+      <div class="hint">Drag stickers from your collection onto this canvas</div>
+    </div>
+    <div class="collection">
+      <h3>Your collection (<span id="ownedCount">0</span>/12)</h3>
+      <div class="stickers" id="stickerGrid"></div>
+    </div>
+    <p class="status" id="stickerStatus" role="status"></p>
+    <div class="instructions">
+      <strong>How stickers work:</strong> Earn stickers by playing games, leaving notes, and reaching milestones. Some are hidden — explore the hub page to discover them. Drag owned stickers onto the canvas above to decorate it. Your placement is saved.
+    </div>
+  </main>
+  <script src="dialog.js"></script><script src="avatar.js"></script>
+  <script>
+  (function(){
+    const user = localStorage.getItem('charlotte-user') || 'Unknown';
+    const STICKERS = [
+      { id:'heart', icon:'🩷', name:'Heart', unlock:'Play 1 game' },
+      { id:'star', icon:'⭐', name:'Star', unlock:'Earn 10 tokens' },
+      { id:'moon', icon:'🌙', name:'Moon', unlock:'Use quiet days' },
+      { id:'music', icon:'🎵', name:'Music', unlock:'Leave 5 notes' },
+      { id:'dice', icon:'🎲', name:'Dice', unlock:'Play 3 games' },
+      { id:'camera', icon:'📷', name:'Camera', unlock:'Save 5 photos' },
+      { id:'lock', icon:'🔐', name:'Lock', unlock:'Create the safe' },
+      { id:'trophy', icon:'🏆', name:'Trophy', unlock:'Earn 100 tokens', hidden:true },
+      { id:'wave', icon:'🌊', name:'Wave', unlock:'Hidden — find it', hidden:true },
+      { id:'fire', icon:'🔥', name:'Fire', unlock:'Hidden — find it', hidden:true },
+      { id:'rainbow', icon:'🌈', name:'Rainbow', unlock:'Hidden — find it', hidden:true },
+      { id:'question', icon:'❓', name:'Mystery', unlock:'Hidden — find it', hidden:true },
+    ];
+    const hubArea = document.getElementById('hubArea');
+    const grid = document.getElementById('stickerGrid');
+    const statusEl = document.getElementById('stickerStatus');
+    const ownedCount = document.getElementById('ownedCount');
+    let owned = new Set();
+    let placements = [];
+
+    async function load() {
+      try {
+        const res = await fetch('/api/question-room?view=stickers&user=' + encodeURIComponent(user), { cache: 'no-store' });
+        const json = await res.json();
+        owned = new Set(json.owned || []);
+        placements = json.placements || [];
+      } catch (e) { owned = new Set(['heart','star','moon']); }
+      render();
+    }
+
+    function render() {
+      // Render collection
+      grid.innerHTML = STICKERS.map(s => {
+        const isOwned = owned.has(s.id);
+        const isHidden = s.hidden && !isOwned;
+        return `<div class="sticker-slot ${isOwned ? 'owned' : isHidden ? 'locked' : 'locked'}" data-id="${s.id}" draggable="${isOwned}" title="${isOwned ? s.name : s.unlock}">
+          ${isOwned ? s.icon : isHidden ? '?' : '🔒'}
+          ${!isOwned ? `<span class="lock">🔒</span>` : ''}
+        </div>`;
+      }).join('');
+      ownedCount.textContent = owned.size;
+
+      // Render placed stickers on hub
+      hubArea.querySelectorAll('.sticker.placed').forEach(s => s.remove());
+      placements.forEach(p => {
+        const sticker = STICKERS.find(s => s.id === p.id);
+        if (!sticker) return;
+        const el = document.createElement('div');
+        el.className = 'sticker placed';
+        el.textContent = sticker.icon;
+        el.style.left = p.x + 'px';
+        el.style.top = p.y + 'px';
+        hubArea.appendChild(el);
+      });
+
+      // Drag from collection
+      grid.querySelectorAll('.sticker-slot.owned').forEach(slot => {
+        slot.addEventListener('dragstart', e => {
+          e.dataTransfer.setData('text/plain', slot.dataset.id);
+          slot.style.opacity = '.5';
+        });
+        slot.addEventListener('dragend', e => { slot.style.opacity = '1'; });
+      });
+    }
+
+    // Drop on hub area
+    hubArea.addEventListener('dragover', e => e.preventDefault());
+    hubArea.addEventListener('drop', async e => {
+      e.preventDefault();
+      const id = e.dataTransfer.getData('text/plain');
+      if (!id || !owned.has(id)) return;
+      const r = hubArea.getBoundingClientRect();
+      const x = Math.max(0, Math.min(r.width - 40, e.clientX - r.left - 16));
+      const y = Math.max(0, Math.min(r.height - 40, e.clientY - r.top - 16));
+      placements.push({ id, x, y });
+      // Save to server
+      try {
+        await fetch('/api/question-room', { method: 'POST', headers: { 'content-type': 'application/json' }, body: JSON.stringify({ action: 'sticker-place', user, placement: { id, x, y } }) });
+      } catch (err) { /* ignore */ }
+      render();
+      statusEl.textContent = 'Sticker placed!';
+    });
+
+    // Click to unlock hidden stickers (easter egg)
+    hubArea.addEventListener('click', async e => {
+      const rect = hubArea.getBoundingClientRect();
+      const x = e.clientX - rect.left;
+      const y = e.clientY - rect.top;
+      // Check if clicking an empty area (hidden hotspot)
+      if (e.target === hubArea || e.target.classList.contains('hint')) {
+        // Random chance to discover a hidden sticker
+        const hidden = STICKERS.filter(s => s.hidden && !owned.has(s.id));
+        if (hidden.length && Math.random() < 0.3) {
+          const found = hidden[Math.floor(Math.random() * hidden.length)];
+          owned.add(found.id);
+          statusEl.textContent = `You found a hidden sticker: ${found.icon} ${found.name}!`;
+          try {
+            await fetch('/api/question-room', { method: 'POST', headers: { 'content-type': 'application/json' }, body: JSON.stringify({ action: 'sticker-unlock', user, stickerId: found.id }) });
+          } catch (err) { /* ignore */ }
+          render();
+        }
+      }
+    });
+
+    load();
+  })();
+  </script>
+</body>
+</html>

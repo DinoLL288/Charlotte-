@@ -1,0 +1,154 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <script src="site-shell-guard.js"></script>
+  <meta charset="UTF-8"><meta name="viewport" content="width=device-width, initial-scale=1.0"><title>Achievements · Our badges</title>
+  <script>if (!localStorage.getItem('charlotte-user')) location.href = 'login.html';</script>
+  <link rel="stylesheet" href="theme.css">
+  <link rel="stylesheet" href="site-bundle.css" data-site-polish="true" data-site-theme="true">
+  <style>
+    .hero{padding:78px 20px 66px;text-align:center;color:#fff;background:linear-gradient(160deg,#0d2c44,#2a78a8)}.hero .eyebrow{color:var(--gold-soft)}.hero h1{margin:10px 0;font-size:clamp(2.2rem,7vw,3.5rem);font-weight:400}.hero p:last-child{max-width:54ch;margin:0 auto;color:#e6f3fc;line-height:1.6}.top-bar{position:absolute;top:16px;left:16px;z-index:2}.shell{width:min(920px,100%);margin:-30px auto 60px;padding:0 18px;position:relative}
+    .stats-row{display:grid;grid-template-columns:repeat(4,1fr);gap:12px;margin-bottom:24px}
+    .stat{padding:16px;border-radius:16px;background:rgba(255,255,255,.78);border:1px solid rgba(255,255,255,.9);text-align:center;box-shadow:0 8px 24px rgba(29,90,128,.1)}
+    .stat .num{font-family:var(--font-display);font-size:1.8rem;color:#123a58}
+    .stat .label{font-size:.72rem;color:#5c7c93;margin-top:4px}
+    .badges{display:grid;grid-template-columns:repeat(auto-fill,minmax(140px,1fr));gap:14px}
+    .badge{padding:18px 12px;border-radius:16px;background:rgba(255,255,255,.78);border:1px solid rgba(255,255,255,.9);text-align:center;box-shadow:0 8px 24px rgba(29,90,128,.1);transition:transform .2s,box-shadow .2s;cursor:default}
+    .badge:hover{transform:translateY(-3px);box-shadow:0 12px 30px rgba(29,90,128,.15)}
+    .badge.locked{opacity:.35;filter:grayscale(1);cursor:default}
+    .badge .icon{font-size:2.2rem;margin-bottom:8px}
+    .badge .name{font-size:.85rem;font-weight:700;color:#123a58;margin-bottom:2px}
+    .badge .desc{font-size:.7rem;color:#7b91a0;line-height:1.4}
+    .badge .progress{margin-top:8px;height:4px;border-radius:2px;background:#e4edf2;overflow:hidden}
+    .badge .progress div{height:100%;border-radius:2px;background:linear-gradient(90deg,#4e99ba,#c9a24a);transition:width .5s}
+    .section-title{font-family:var(--font-display);color:#123a58;font-size:1.3rem;margin:24px 0 12px}
+    .loading{text-align:center;padding:40px;color:#5c7c93}
+    .empty{text-align:center;padding:24px;color:#5c7c93;border:1px dashed #bfd5e3;border-radius:16px}
+    @media(max-width:600px){.stats-row{grid-template-columns:repeat(2,1fr)}}
+  </style>
+</head>
+<body>
+  <div class="top-bar"><a class="button" href="index.html">← Back to hub</a></div>
+  <header class="hero"><p class="eyebrow">Our achievements</p><h1>Badge collection</h1><p>Every milestone we reach together, remembered forever.</p></header>
+  <main class="shell">
+    <div class="stats-row" id="statsRow"><div class="loading">Loading…</div></div>
+    <h2 class="section-title">Earned badges</h2>
+    <div class="badges" id="earnedBadges"></div>
+    <h2 class="section-title">Locked badges</h2>
+    <div class="badges" id="lockedBadges"></div>
+  </main>
+  <script src="dialog.js"></script><script src="avatar.js"></script>
+  <script>
+  (function(){
+    const user = localStorage.getItem('charlotte-user') || 'Unknown';
+    const statsRow = document.getElementById('statsRow');
+    const earnedEl = document.getElementById('earnedBadges');
+    const lockedEl = document.getElementById('lockedBadges');
+
+    // Badge definitions: { id, icon, name, desc, condition(stats) -> { unlocked, progress, total } }
+    const BADGES = [
+      { id:'first-note', icon:'✉️', name:'First words', desc:'Leave your first note', check: s => ({ unlocked: s.notes >= 1, progress: Math.min(s.notes,1), total: 1 }) },
+      { id:'note-10', icon:'📝', name:'Chatterbox', desc:'Leave 10 notes', check: s => ({ unlocked: s.notes >= 10, progress: Math.min(s.notes,10), total: 10 }) },
+      { id:'note-50', icon:'📖', name:'Novelist', desc:'Leave 50 notes', check: s => ({ unlocked: s.notes >= 50, progress: Math.min(s.notes,50), total: 50 }) },
+      { id:'first-photo', icon:'📷', name:'Memory keeper', desc:'Save your first photo', check: s => ({ unlocked: s.photos >= 1, progress: Math.min(s.photos,1), total: 1 }) },
+      { id:'photo-10', icon:'🖼️', name:'Album builder', desc:'Save 10 photos', check: s => ({ unlocked: s.photos >= 10, progress: Math.min(s.photos,10), total: 10 }) },
+      { id:'first-game', icon:'🎮', name:'Player one', desc:'Play your first game', check: s => ({ unlocked: s.games >= 1, progress: Math.min(s.games,1), total: 1 }) },
+      { id:'game-5', icon:'🏆', name:'Gamer', desc:'Play 5 games', check: s => ({ unlocked: s.games >= 5, progress: Math.min(s.games,5), total: 5 }) },
+      { id:'game-25', icon:'🎯', name:'Champion', desc:'Play 25 games', check: s => ({ unlocked: s.games >= 25, progress: Math.min(s.games,25), total: 25 }) },
+      { id:'token-50', icon:'🪙', name:'Token collector', desc:'Earn 50 tokens', check: s => ({ unlocked: s.tokens >= 50, progress: Math.min(s.tokens,50), total: 50 }) },
+      { id:'token-200', icon:'💰', name:'Treasure hunter', desc:'Earn 200 tokens', check: s => ({ unlocked: s.tokens >= 200, progress: Math.min(s.tokens,200), total: 200 }) },
+      { id:'first-checkin', icon:'🚻', name:'Checked in', desc:'Log your first bathroom check-in', check: s => ({ unlocked: s.checkins >= 1, progress: Math.min(s.checkins,1), total: 1 }) },
+      { id:'safe-created', icon:'🔐', name:'Safe keeper', desc:'Create our safe', check: s => ({ unlocked: s.hasVault, progress: s.hasVault ? 1 : 0, total: 1 }) },
+      { id:'days-7', icon:'📅', name:'One week', desc:'Together for 7 days', check: s => ({ unlocked: s.days >= 7, progress: Math.min(s.days,7), total: 7 }) },
+      { id:'days-30', icon:'🗓️', name:'One month', desc:'Together for 30 days', check: s => ({ unlocked: s.days >= 30, progress: Math.min(s.days,30), total: 30 }) },
+      { id:'days-100', icon:'🌟', name:'Centurion', desc:'Together for 100 days', check: s => ({ unlocked: s.days >= 100, progress: Math.min(s.days,100), total: 100 }) },
+      { id:'first-journal', icon:'📖', name:'Dear diary', desc:'Write your first journal entry', check: s => ({ unlocked: s.journal >= 1, progress: Math.min(s.journal,1), total: 1 }) },
+      { id:'first-mood', icon:'💛', name:'Mood logger', desc:'Log your first mood', check: s => ({ unlocked: s.moods >= 1, progress: Math.min(s.moods,1), total: 1 }) },
+      { id:'mood-7', icon:'📊', name:'Mood master', desc:'Log moods for 7 days', check: s => ({ unlocked: s.moods >= 7, progress: Math.min(s.moods,7), total: 7 }) },
+    ];
+
+    async function load() {
+      const stats = { notes: 0, photos: 0, games: 0, tokens: 0, checkins: 0, hasVault: false, days: 0, journal: 0, moods: 0 };
+      // Days together
+      const togetherSince = new Date('2026-10-26T17:46:00');
+      stats.days = Math.floor((Date.now() - togetherSince.getTime()) / 86400000);
+
+      // Notes
+      try {
+        const res = await fetch('/api/notes', { cache: 'no-store', credentials: 'same-origin' });
+        const json = await res.json();
+        stats.notes = (json.notes || []).length;
+      } catch (e) {}
+
+      // Photos
+      try {
+        const res = await fetch('/api/gallery', { cache: 'no-store', credentials: 'same-origin' });
+        const json = await res.json();
+        stats.photos = (json.photos || []).length;
+      } catch (e) {}
+
+      // Tokens & games
+      try {
+        const res = await fetch('/api/question-room?view=playful-state', { cache: 'no-store' });
+        const json = await res.json();
+        stats.tokens = (json.tokens && json.tokens[user]) || 0;
+        stats.games = (json.finds || []).length;
+      } catch (e) {}
+
+      // Checkins
+      try {
+        const res = await fetch('/api/question-room?view=bathroom', { cache: 'no-store' });
+        const json = await res.json();
+        stats.checkins = (json.events || []).length;
+      } catch (e) {}
+
+      // Vault
+      try {
+        const res = await fetch('/api/vault', { cache: 'no-store', credentials: 'same-origin' });
+        const json = await res.json();
+        if (json.vault) stats.hasVault = true;
+      } catch (e) {}
+
+      // Journal
+      try {
+        const res = await fetch('/api/question-room?view=journal', { cache: 'no-store' });
+        const json = await res.json();
+        stats.journal = (json.entries || []).length;
+      } catch (e) {}
+
+      // Moods
+      try {
+        const res = await fetch('/api/question-room?view=mood&user=' + encodeURIComponent(user), { cache: 'no-store' });
+        const json = await res.json();
+        stats.moods = Object.keys(json.moods || {}).length;
+      } catch (e) {}
+
+      // Render stats
+      statsRow.innerHTML = `
+        <div class="stat"><div class="num">${stats.notes}</div><div class="label">Notes</div></div>
+        <div class="stat"><div class="num">${stats.photos}</div><div class="label">Photos</div></div>
+        <div class="stat"><div class="num">${stats.games}</div><div class="label">Discoveries</div></div>
+        <div class="stat"><div class="num">${stats.tokens}</div><div class="label">Tokens</div></div>
+      `;
+
+      // Render badges
+      const earned = [], locked = [];
+      BADGES.forEach(b => {
+        const r = b.check(stats);
+        const html = `<div class="badge${r.unlocked ? '' : ' locked'}">
+          <div class="icon">${b.icon}</div>
+          <div class="name">${b.name}</div>
+          <div class="desc">${b.desc}</div>
+          ${!r.unlocked ? `<div class="progress"><div style="width:${Math.round(r.progress/r.total*100)}%"></div></div>` : ''}
+        </div>`;
+        if (r.unlocked) earned.push(html); else locked.push(html);
+      });
+      earnedEl.innerHTML = earned.length ? earned.join('') : '<div class="empty">No badges earned yet. Start exploring!</div>';
+      lockedEl.innerHTML = locked.length ? locked.join('') : '<div class="empty">All badges unlocked! 🎉</div>';
+    }
+
+    load();
+  })();
+  </script>
+</body>
+</html>
