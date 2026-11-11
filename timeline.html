@@ -426,6 +426,7 @@
     }
   </style>
   <link rel="stylesheet" href="theme.css">
+  <style>.moment,.moment-card{content-visibility:auto;contain-intrinsic-size:0 120px}</style>
   <link rel="preconnect" href="https://ui-avatars.com" crossorigin>
   <link rel="stylesheet" href="site-polish.css" data-site-polish="true"><link rel="stylesheet" href="site-theme.css" data-site-theme="true"><link rel="stylesheet" href="motion.css">
 </head>
@@ -567,7 +568,7 @@
         const author = moment.author || 'Unknown';
         const avatar = profilePics[author] || fallbackAvatar(author);
         const photo = moment.photo
-          ? `<div class="moment-photo"><img src="${escapeHtml(moment.photo)}" alt="${escapeHtml(moment.title || 'A moment together')}" loading="lazy"><span class="moment-date">${escapeHtml(formatDate(moment.date))}</span></div>`
+          ? `<div class="moment-photo"><img src="${escapeHtml(moment.photo)}" alt="${escapeHtml(moment.title || 'A moment together')}" loading="lazy" decoding="async"><span class="moment-date">${escapeHtml(formatDate(moment.date))}</span></div>`
           : `<div class="moment-photo no-photo"><span class="big-date">${escapeHtml(formatDate(moment.date))}</span><span class="big-sub">A moment worth keeping</span></div>`;
 
         const canDelete = !author || author === 'Unknown' || author === user;
@@ -578,7 +579,7 @@
             ${moment.title ? `<h3>${escapeHtml(moment.title)}</h3>` : ''}
             ${moment.body ? `<p>${escapeHtml(moment.body)}</p>` : ''}
             <div class="moment-meta">
-              <img src="${escapeHtml(avatar)}" alt="${escapeHtml(author)}'s profile picture" loading="lazy">
+              <img src="${escapeHtml(avatar)}" alt="${escapeHtml(author)}'s profile picture" loading="lazy" decoding="async">
               <span>Added by ${escapeHtml(author)}</span>
               ${canDelete ? '<button class="delete-moment" type="button">Delete</button>' : ''}
             </div>

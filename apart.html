@@ -682,7 +682,7 @@
           </div>
           ${entry.note ? `<p class="note">${escapeHtml(entry.note)}</p>` : ''}
           <div class="entry-meta">
-            <img src="${escapeHtml(avatar)}" alt="${escapeHtml(author)}'s profile picture" loading="lazy">
+            <img src="${escapeHtml(avatar)}" alt="${escapeHtml(author)}'s profile picture" loading="lazy" decoding="async">
             <span>Added by ${escapeHtml(author)}</span>
             ${canDelete ? '<button class="delete-entry" type="button">Remove</button>' : ''}
           </div>
