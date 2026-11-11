@@ -1,22 +1,23 @@
 # Performance Optimization Tracker
 
 ## Phase 1: Service Worker + Request Dedup + Prefetching
-**Status: In Progress**
+**Status: Complete**
 **Started: 2026-11-11**
+**Completed: 2026-11-11**
 
 ### 1.1 Service Worker (sw.js)
-- [ ] Create service worker with stale-while-revalidate for static assets
-- [ ] Cache API responses (profile, bathroom, calendar, notes, preferences)
-- [ ] Offline fallback page
-- [ ] Register service worker in index.html and all pages
+- [x] Create service worker with stale-while-revalidate for static assets
+- [x] Cache API responses (profile, bathroom, calendar, notes, preferences)
+- [x] Offline fallback page
+- [x] Register service worker in index.html and all pages (via site-shell-guard.js)
 
 ### 1.2 Request Deduplication + In-Memory Cache (request-cache.js)
-- [ ] Dedupe identical in-flight requests
-- [ ] Cache responses with TTL (profile: 5min, bathroom: 30s, prefs: 5min)
-- [ ] Apply to bathroom.js, messages.html, timeline.html, apart.html, avatar.js
+- [x] Dedupe identical in-flight requests
+- [x] Cache responses with TTL (profile: 5min, bathroom: 30s, prefs: 5min)
+- [x] Apply to bathroom.js, messages.html, timeline.html, apart.html, avatar.js (loaded via avatar.js on all pages)
 
 ### 1.3 Prefetching
-- [ ] Prefetch on hover for hub cards
+- [x] Prefetch on hover for hub cards
 - [ ] Prefetch during idle time (requestIdleCallback)
 - [ ] Prefetch API data for likely next pages
 
