@@ -700,7 +700,7 @@
     obstacleRefreshTimer = now;
     refreshObstacles();
   });
-  observer.observe(document.documentElement, {
+  observer.observe(document.body, {
     subtree: true, childList: true, attributes: true,
     attributeFilter: ["class", "style", "hidden"]
   });

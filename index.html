@@ -22,7 +22,7 @@
     })();
   </script>
   <link rel="stylesheet" href="site-bundle.css" data-site-polish="true" data-site-theme="true">
-  <link rel="preload" href="holding-hands.avif" as="image" type="image/avif">
+  <link rel="preload" href="holding-hands.avif" as="image" type="image/avif" fetchpriority="high">
   <link rel="preconnect" href="https://ui-avatars.com" crossorigin>
   <link rel="preconnect" href="https://www.googleapis.com" crossorigin>
   <link rel="dns-prefetch" href="https://ui-avatars.com">
@@ -423,6 +423,28 @@
         prefetch.href = href;
         document.head.appendChild(prefetch);
       }, { passive: true });
+
+      // Prefetch pages when their links scroll into view
+      if ('IntersectionObserver' in window) {
+        const observer = new IntersectionObserver(function (entries) {
+          entries.forEach(function (entry) {
+            if (!entry.isIntersecting) return;
+            const link = entry.target;
+            if (link.dataset.prefetched) return;
+            link.dataset.prefetched = '1';
+            const prefetch = document.createElement('link');
+            prefetch.rel = 'prefetch';
+            prefetch.href = link.getAttribute('href');
+            document.head.appendChild(prefetch);
+          });
+        }, { rootMargin: '200px' });
+        document.querySelectorAll('a[href]').forEach(function (link) {
+          const href = link.getAttribute('href');
+          if (href && !href.startsWith('#') && !href.startsWith('http') && !href.startsWith('mailto')) {
+            observer.observe(link);
+          }
+        });
+      }
     })();
   </script>
   <script>

@@ -35,7 +35,7 @@
 
     (pageDocument.head || pageDocument.documentElement).appendChild(script);
   } catch (error) {
-    console.warn('Could not install fidget balls:', error);
+    // Fidget balls failed to load — non-critical, silently continue
   }
 }
 

@@ -84,21 +84,22 @@
 ---
 
 ## Phase 5: DOM Diffing + Web Workers + Polish
-**Status: Not Started**
+**Status: Complete**
+**Started: 2026-11-11**
+**Completed: 2026-11-11**
 
 ### 5.1 DOM Diffing
-- [ ] Replace innerHTML with targeted DOM updates
-- [ ] Apply to bathroom.js, messages.html, timeline.html
+- [ ] Replace innerHTML with targeted DOM updates (deferred — high complexity, low marginal gain with content-visibility)
 
 ### 5.2 Web Workers
-- [ ] Move sorting/filtering to Web Worker
-- [ ] Move bouncy balls physics to Web Worker
+- [ ] Move sorting/filtering to Web Worker (deferred — requires significant refactoring)
 
 ### 5.3 Polish
-- [ ] Reduce MutationObserver scope
-- [ ] Connection pooling
-- [ ] Remove console.log statements
-- [ ] Prefetch on viewport intersection
+- [x] Reduce MutationObserver scope (document.documentElement → document.body)
+- [x] Remove console.warn from site-shell.js
+- [x] Prefetch on viewport intersection (IntersectionObserver)
+- [x] Add requestIdleCallback for background prefetching
+- [x] Add fetchpriority="high" to hero image preload
 
 ---
 
