@@ -271,6 +271,7 @@
     }
 
     .moment {
+      opacity: 0; transform: translateY(24px); transition: opacity .6s ease, transform .6s ease;
       background: rgba(255, 253, 247, 0.96);
       border: 1px solid rgba(255, 255, 255, 0.95);
       border-radius: 26px;
@@ -294,6 +295,7 @@
     }
 
     .moment:hover .moment-photo img { transform: scale(1.035); }
+    .moment.visible { opacity: 1; transform: none; }
 
     .moment-date {
       position: absolute;
@@ -746,5 +748,42 @@
   </script>
   <script src="avatar.js"></script>
   <script src="dialog.js"></script>
+  <script>
+    // Fade in moments as they scroll into view
+    (function() {
+      if (!('IntersectionObserver' in window)) {
+        document.querySelectorAll('.moment').forEach(m => m.classList.add('visible'));
+        return;
+      }
+      const observer = new IntersectionObserver((entries) => {
+        entries.forEach(entry => {
+          if (entry.isIntersecting) {
+            entry.target.classList.add('visible');
+            observer.unobserve(entry.target);
+          }
+        });
+      }, { threshold: 0.1, rootMargin: '50px' });
+      document.querySelectorAll('.moment').forEach(m => observer.observe(m));
+
+      // Subtle parallax on moment photos
+      const photos = document.querySelectorAll('.moment-photo img');
+      if (photos.length && !window.matchMedia('(prefers-reduced-motion: reduce)').matches) {
+        let ticking = false;
+        window.addEventListener('scroll', () => {
+          if (ticking) return;
+          ticking = true;
+          requestAnimationFrame(() => {
+            photos.forEach(photo => {
+              const rect = photo.getBoundingClientRect();
+              const center = rect.top + rect.height / 2;
+              const offset = (center - window.innerHeight / 2) * 0.05;
+              photo.style.transform = 'translateY(' + offset + 'px) scale(1.035)';
+            });
+            ticking = false;
+          });
+        }, { passive: true });
+      }
+    })();
+  </script>
 </body>
 </html>
