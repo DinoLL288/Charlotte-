@@ -14,6 +14,11 @@
     root.dataset.showReactions = String(preferences.showReactions !== false);
     root.dataset.showPresence = String(preferences.showPresence !== false);
     root.dataset.homeLayout = preferences.homeLayout === 'doors' ? 'doors' : 'calm';
+    root.dataset.darkMode = String(Boolean(preferences.darkMode));
+    if (preferences.darkMode) {
+      const toggle = document.getElementById('darkModeToggle');
+      if (toggle) toggle.textContent = '☀️';
+    }
     try { localStorage.setItem(key, JSON.stringify(preferences)); } catch {}
     if (window.parent !== window) window.parent.postMessage({ type: 'charlotte-theme', preferences }, location.origin);
   }

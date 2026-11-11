@@ -60,11 +60,40 @@
     document.body.appendChild(link);
   }
 
-  if (document.readyState === 'loading') {
-    document.addEventListener('DOMContentLoaded', mount);
-  } else {
-    mount();
-  }
+  // Dark mode toggle
+  const darkToggle = document.createElement('button');
+  darkToggle.id = 'darkModeToggle';
+  darkToggle.className = 'profile-pfp';
+  darkToggle.style.cssText = 'position:fixed;top:16px;right:72px;z-index:20;width:40px;height:40px;border-radius:50%;border:3px solid #fff;background:#1a2a3a;color:#ecd7a0;font-size:1.1rem;cursor:pointer;box-shadow:0 7px 20px #347eac40;display:grid;place-items:center;';
+  darkToggle.textContent = '🌙';
+  darkToggle.setAttribute('aria-label', 'Toggle dark mode');
+  darkToggle.addEventListener('click', () => {
+    const isDark = document.documentElement.dataset.darkMode === 'true';
+    const newMode = !isDark;
+    document.documentElement.dataset.darkMode = String(newMode);
+    darkToggle.textContent = newMode ? '☀️' : '🌙';
+    // Save to server
+    const u = localStorage.getItem('charlotte-user');
+    if (u) {
+      fetch('/api/question-room', { method: 'POST', headers: { 'content-type': 'application/json' }, body: JSON.stringify({ action: 'dark-mode', user: u, darkMode: newMode }) }).catch(() => {});
+    }
+    // Save to localStorage cache
+    try {
+      const key = 'charlotte-preferences-' + u;
+      const prefs = JSON.parse(localStorage.getItem(key) || '{}');
+      prefs.darkMode = newMode;
+      localStorage.setItem(key, JSON.stringify(prefs));
+    } catch (e) {}
+  });
+  // Set initial state from preferences
+  try {
+    const prefs = JSON.parse(localStorage.getItem('charlotte-preferences-' + user) || '{}');
+    if (prefs.darkMode) {
+      document.documentElement.dataset.darkMode = 'true';
+      darkToggle.textContent = '☀️';
+    }
+  } catch (e) {}
+  document.body.appendChild(darkToggle);
 
   const lastFetch = Number(localStorage.getItem(cacheKey + '-time') || 0);
   if (Date.now() - lastFetch >= 5 * 60 * 1000) {

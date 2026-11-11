@@ -240,3 +240,32 @@ a { color: var(--accent-ink); text-underline-offset: 0.2em; }
 @media (prefers-reduced-motion: reduce) {
   html { scroll-behavior: auto; }
 }
+
+/* ---------- Dark mode ---------- */
+:root[data-dark-mode="true"] {
+  --ink: #e8f0f7;
+  --navy: #1a2a3a;
+  --ocean: #5ba3d9;
+  --sky: #2a4a6a;
+  --ice: #1a2530;
+  --cream: #1e2a35;
+  --gold: #d4b86a;
+  --gold-soft: #b89a4a;
+  color-scheme: dark;
+}
+:root[data-dark-mode="true"] body {
+  background-color: #0f1923;
+  background-image:
+    radial-gradient(900px 620px at 10% 4%, #1a2530 0%, rgba(26, 37, 48, 0) 55%),
+    radial-gradient(1200px 760px at 92% 0%, #15202b 0%, rgba(21, 32, 43, 0) 60%),
+    radial-gradient(900px 900px at 50% 110%, #1a3040 0%, rgba(26, 48, 64, 0) 65%),
+    linear-gradient(160deg, #0f1923 0%, #15202b 42%, #1a2a35 100%);
+  color: #e8f0f7;
+}
+:root[data-dark-mode="true"] h1, :root[data-dark-mode="true"] h2 { color: #e8f0f7; }
+:root[data-dark-mode="true"] .top-bar .button { background: rgba(30, 40, 55, 0.7); border-color: rgba(255,255,255,0.15); color: #a9dcf7; }
+:root[data-dark-mode="true"] .site-dialog { background: linear-gradient(145deg, rgba(30,40,55,.98), rgba(26,37,48,.98)); color: #e8f0f7; }
+:root[data-dark-mode="true"] .site-dialog-title { color: #a9dcf7; }
+:root[data-dark-mode="true"] .site-dialog-message { color: #9ab0c4; }
+:root[data-dark-mode="true"] .site-dialog-button { background: rgba(40,55,75,.9); border-color: rgba(255,255,255,.15); color: #a9dcf7; }
+:root[data-dark-mode="true"] .site-dialog-input { background: rgba(20,30,45,.9); border-color: rgba(255,255,255,.15); color: #e8f0f7; }

@@ -475,7 +475,7 @@ export class QuestionNightRoom {
       theme: 'blue', accent: '#347fa3',
       reminderLeadDays: 1, reminderTime: '09:00', textSize: 'normal',
       reducedMotion: false, compactLayout: false, showReactions: true, showPresence: true,
-      homeLayout: 'calm', playfulExtras: true,
+      homeLayout: 'calm', playfulExtras: true, darkMode: false,
       ...(preferences[user] || {}), birthdayReminders: true
     };
   }
@@ -552,13 +552,23 @@ export class QuestionNightRoom {
         all[user] = {
           theme, accent, birthdayReminders: true, reminderLeadDays, reminderTime, textSize, homeLayout, playfulExtras,
           reducedMotion: Boolean(body.preferences?.reducedMotion), compactLayout: Boolean(body.preferences?.compactLayout),
-          showReactions: body.preferences?.showReactions !== false, showPresence: body.preferences?.showPresence !== false
+          showReactions: body.preferences?.showReactions !== false, showPresence: body.preferences?.showPresence !== false,
+          darkMode: Boolean(body.preferences?.darkMode)
         };
         await this.ctx.storage.put('profilePreferences', all);
         await this.broadcastRefresh();
         return Response.json({ ok: true, preferences: all[user] });
       }
-      if (body.action === 'playful-find') {
+      if (body.action === 'dark-mode') {
+        const user = body.user;
+        if (!['Charlotte', 'Luke'].includes(user)) return Response.json({ error: 'Choose a valid account' }, { status: 400 });
+        const all = await this.ctx.storage.get('profilePreferences') || {};
+        if (!all[user]) all[user] = {};
+        all[user].darkMode = Boolean(body.darkMode);
+        await this.ctx.storage.put('profilePreferences', all);
+        await this.broadcastRefresh();
+        return Response.json({ ok: true, darkMode: all[user].darkMode });
+      }
         const user = body.user;
         if (!['Charlotte', 'Luke'].includes(user)) return Response.json({ error: 'Choose a valid account' }, { status: 400 });
         const state = await this.getPlayfulState();

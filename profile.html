@@ -99,6 +99,7 @@
       <label class="setting-check"><input id="compactLayout" type="checkbox"><span>Use a more compact layout</span></label>
       <label class="setting-check"><input id="showReactions" type="checkbox" checked><span>Show the floating emoji reaction button</span></label>
       <label class="setting-check"><input id="showPresence" type="checkbox" checked><span>Show when the other person is online</span></label>
+      <label class="setting-check"><input id="darkMode" type="checkbox"><span>Dark mode (cozy nighttime theme)</span></label>
 <label class="setting-check"><input id="playfulExtras" type="checkbox" checked><span>Show scattered playful surprises around pages</span></label>
     </section>
     <section class="settings-group"><h2>Special-day reminders</h2>
@@ -147,6 +148,7 @@
     const compactLayout = document.getElementById('compactLayout');
     const showReactions = document.getElementById('showReactions');
     const showPresence = document.getElementById('showPresence');
+  const darkMode = document.getElementById('darkMode');
 const homeLayout = document.getElementById('homeLayout');
 const playfulExtras = document.getElementById('playfulExtras');
     const reminderLeadDays = document.getElementById('reminderLeadDays');
@@ -167,6 +169,7 @@ const playfulExtras = document.getElementById('playfulExtras');
       compactLayout.checked = Boolean(preferences.compactLayout);
       showReactions.checked = preferences.showReactions !== false;
       showPresence.checked = preferences.showPresence !== false;
+    if (darkMode) darkMode.checked = Boolean(preferences.darkMode);
       playfulExtras.checked = preferences.playfulExtras !== false;
       if (preferences && preferences.homeLayout) homeLayout.value = preferences.homeLayout === 'doors' ? 'doors' : 'calm';
       reminderLeadDays.value = String(preferences.reminderLeadDays ?? 1);
@@ -178,7 +181,10 @@ const playfulExtras = document.getElementById('playfulExtras');
       document.documentElement.dataset.compactLayout = String(compactLayout.checked);
       document.documentElement.dataset.showReactions = String(showReactions.checked);
       document.documentElement.dataset.showPresence = String(showPresence.checked);
-      const saved = { ...preferences, theme: themeChoice.value, accent: accentChoice.value, textSize: textSize.value, reducedMotion: reducedMotion.checked, compactLayout: compactLayout.checked, showReactions: showReactions.checked, showPresence: showPresence.checked, homeLayout: homeLayout.value, playfulExtras: playfulExtras.checked, reminderLeadDays: Number(reminderLeadDays.value), reminderTime: reminderTime.value, birthdayReminders: true };
+    document.documentElement.dataset.darkMode = String(darkMode.checked);
+    const darkToggle = document.getElementById('darkModeToggle');
+    if (darkToggle) darkToggle.textContent = darkMode.checked ? '☀️' : '🌙';
+      const saved = { ...preferences, theme: themeChoice.value, accent: accentChoice.value, textSize: textSize.value, reducedMotion: reducedMotion.checked, compactLayout: compactLayout.checked, showReactions: showReactions.checked, showPresence: showPresence.checked, darkMode: darkMode.checked, homeLayout: homeLayout.value, playfulExtras: playfulExtras.checked, reminderLeadDays: Number(reminderLeadDays.value), reminderTime: reminderTime.value, birthdayReminders: true };
       localStorage.setItem(preferenceKey, JSON.stringify(saved));
       window.dispatchEvent(new CustomEvent('charlotte-preferences', { detail: preferences }));
       if (window.parent !== window) window.parent.postMessage({ type: 'charlotte-theme', preferences: saved }, location.origin);
@@ -187,7 +193,7 @@ const playfulExtras = document.getElementById('playfulExtras');
     try { applyPreferences(JSON.parse(localStorage.getItem(preferenceKey) || 'null')); } catch (e) {}
     fetch('/api/question-room?view=preferences&user=' + encodeURIComponent(user), { cache: 'no-store' }).then(res => res.json()).then(applyPreferences).catch(() => {});
     document.getElementById('savePreferences').addEventListener('click', async () => {
-      const preferences = { theme: themeChoice.value, accent: accentChoice.value, textSize: textSize.value, reducedMotion: reducedMotion.checked, compactLayout: compactLayout.checked, showReactions: showReactions.checked, showPresence: showPresence.checked, homeLayout: homeLayout.value, playfulExtras: playfulExtras.checked, reminderLeadDays: Number(reminderLeadDays.value), reminderTime: reminderTime.value };
+      const preferences = { theme: themeChoice.value, accent: accentChoice.value, textSize: textSize.value, reducedMotion: reducedMotion.checked, compactLayout: compactLayout.checked, showReactions: showReactions.checked, showPresence: showPresence.checked, darkMode: darkMode.checked, homeLayout: homeLayout.value, playfulExtras: playfulExtras.checked, reminderLeadDays: Number(reminderLeadDays.value), reminderTime: reminderTime.value };
       const button = document.getElementById('savePreferences'); button.disabled = true; preferencesStatus.textContent = 'Saving our settings…';
       try {
         const response = await fetch('/api/question-room', { method: 'POST', headers: { 'content-type': 'application/json' }, body: JSON.stringify({ action: 'preferences', user, preferences }) });
