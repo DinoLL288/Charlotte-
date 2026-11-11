@@ -1,0 +1,165 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <script src="site-shell-guard.js"></script>
+  <meta charset="UTF-8"><meta name="viewport" content="width=device-width, initial-scale=1.0"><title>Mood · How are we feeling?</title>
+  <script>if (!localStorage.getItem('charlotte-user')) location.href = 'login.html';</script>
+  <link rel="stylesheet" href="theme.css">
+  <link rel="stylesheet" href="site-bundle.css" data-site-polish="true" data-site-theme="true">
+  <style>
+    .hero{padding:78px 20px 66px;text-align:center;color:#fff;background:linear-gradient(160deg,#0d2c44,#2a78a8)}.hero .eyebrow{color:var(--gold-soft)}.hero h1{margin:10px 0;font-size:clamp(2.2rem,7vw,3.5rem);font-weight:400}.hero p:last-child{max-width:54ch;margin:0 auto;color:#e6f3fc;line-height:1.6}.top-bar{position:absolute;top:16px;left:16px;z-index:2}.shell{width:min(720px,100%);margin:-30px auto 60px;padding:0 18px;position:relative}
+    .mood-log{padding:20px;border-radius:18px;background:rgba(255,255,255,.78);border:1px solid rgba(255,255,255,.9);margin-bottom:16px;box-shadow:0 8px 24px rgba(29,90,128,.1)}
+    .mood-log h3{margin:0 0 12px;font-family:var(--font-display);color:#123a58}
+    .mood-today{display:flex;gap:8px;flex-wrap:wrap;margin-bottom:12px}
+    .mood-btn{padding:10px 14px;border:1px solid #d5e3ec;border-radius:999px;background:#fff;font-size:1.3rem;cursor:pointer;transition:transform .15s,background .15s,border-color .15s}
+    .mood-btn:hover{transform:scale(1.1);background:#edf7fd}
+    .mood-btn.selected{background:#fff3d6;border-color:#c9a24a}
+    .mood-cal{display:grid;grid-template-columns:repeat(7,1fr);gap:4px;margin-top:12px}
+    .mood-day{aspect-ratio:1;border-radius:8px;display:grid;place-items:center;font-size:1.1rem;background:#f0f5fa;cursor:pointer;transition:transform .15s}
+    .mood-day:hover{transform:scale(1.1)}
+    .mood-day.empty{background:transparent;cursor:default}
+    .mood-day.today{border:2px solid #c9a24a}
+    .days-header{display:grid;grid-template-columns:repeat(7,1fr);gap:4px;margin-bottom:4px;text-align:center;font-size:.65rem;font-weight:700;color:#7b91a0;text-transform:uppercase}
+    .mood-insights{padding:20px;border-radius:18px;background:rgba(255,255,255,.78);border:1px solid rgba(255,255,255,.9);box-shadow:0 8px 24px rgba(29,90,128,.1)}
+    .mood-insights h3{margin:0 0 12px;font-family:var(--font-display);color:#123a58}
+    .insight{padding:10px 0;border-bottom:1px solid #e4edf2;font-size:.88rem;color:#4a7291;line-height:1.5}
+    .insight:last-child{border-bottom:0}
+    .insight strong{color:#123a58}
+    .status{min-height:1.4em;margin:12px 0 0;color:#73591f;font-weight:700}
+    @media(max-width:520px){.mood-today{justify-content:center}}
+  </style>
+</head>
+<body>
+  <div class="top-bar"><a class="button" href="index.html">← Back to hub</a></div>
+  <header class="hero"><p class="eyebrow">How are we feeling?</p><h1>Mood tracker</h1><p>Log your mood each day. Over time, patterns emerge.</p></header>
+  <main class="shell">
+    <div class="mood-log">
+      <h3>Today's mood</h3>
+      <div class="mood-today" id="moodToday">
+        <button class="mood-btn" data-mood="🥰">🥰</button>
+        <button class="mood-btn" data-mood="💛">💛</button>
+        <button class="mood-btn" data-mood="🌙">🌙</button>
+        <button class="mood-btn" data-mood="🤔">🤔</button>
+        <button class="mood-btn" data-mood="😴">😴</button>
+        <button class="mood-btn" data-mood="😤">😤</button>
+        <button class="mood-btn" data-mood="🎉">🎉</button>
+      </div>
+      <p style="color:#7b91a0;font-size:.85rem;margin:0;">Tap a mood to log it for today.</p>
+      <p class="status" id="moodStatus" role="status"></p>
+    </div>
+    <div class="mood-log">
+      <h3 id="calMonth">November 2026</h3>
+      <div class="days-header"><span>S</span><span>M</span><span>T</span><span>W</span><span>T</span><span>F</span><span>S</span></div>
+      <div class="mood-cal" id="moodCal"></div>
+    </div>
+    <div class="mood-insights" id="insights" style="display:none">
+      <h3>Insights</h3>
+      <div id="insightsList"></div>
+    </div>
+  </main>
+  <script src="dialog.js"></script><script src="avatar.js"></script>
+  <script>
+  (function(){
+    const user = localStorage.getItem('charlotte-user') || 'Unknown';
+    const moodToday = document.getElementById('moodToday');
+    const moodStatus = document.getElementById('moodStatus');
+    const moodCal = document.getElementById('moodCal');
+    const calMonth = document.getElementById('calMonth');
+    const insights = document.getElementById('insights');
+    const insightsList = document.getElementById('insightsList');
+    const moods = {};
+    let currentMonth = new Date();
+
+    function dateKey(d){ const y=d.getFullYear(); const m=String(d.getMonth()+1).padStart(2,'0'); const day=String(d.getDate()).padStart(2,'0'); return `${y}-${m}-${day}`; }
+
+    async function loadMoods() {
+      try {
+        const res = await fetch('/api/question-room?view=mood&user=' + encodeURIComponent(user), { cache: 'no-store' });
+        const json = await res.json();
+        if (json.moods) Object.assign(moods, json.moods);
+      } catch (e) { /* use empty */ }
+      renderCalendar();
+      renderInsights();
+    }
+
+    async function saveMood(date, mood) {
+      try {
+        const res = await fetch('/api/question-room', { method: 'POST', headers: { 'content-type': 'application/json' }, body: JSON.stringify({ action: 'mood', user, date, mood }) });
+        const json = await res.json();
+        if (!res.ok) throw new Error(json.error || 'Could not save mood');
+        if (json.moods) Object.assign(moods, json.moods);
+        moodStatus.textContent = 'Mood saved for today.';
+        renderCalendar();
+        renderInsights();
+      } catch (e) { moodStatus.textContent = e.message; }
+    }
+
+    moodToday.querySelectorAll('.mood-btn').forEach(btn => {
+      btn.addEventListener('click', () => {
+        moodToday.querySelectorAll('.mood-btn').forEach(b => b.classList.remove('selected'));
+        btn.classList.add('selected');
+        saveMood(dateKey(new Date()), btn.dataset.mood);
+      });
+    });
+
+    // Set today's mood if already logged
+    const todayKey = dateKey(new Date());
+    if (moods[todayKey]) {
+      moodToday.querySelectorAll('.mood-btn').forEach(b => {
+        if (b.dataset.mood === moods[todayKey]) b.classList.add('selected');
+      });
+    }
+
+    function renderCalendar() {
+      const year = currentMonth.getFullYear();
+      const month = currentMonth.getMonth();
+      calMonth.textContent = currentMonth.toLocaleDateString(undefined, { month: 'long', year: 'numeric' });
+      const daysInMonth = new Date(year, month + 1, 0).getDate();
+      const firstDay = new Date(year, month, 1).getDay();
+      const today = dateKey(new Date());
+      let html = '';
+      for (let i = 0; i < firstDay; i++) html += '<div class="mood-day empty"></div>';
+      for (let d = 1; d <= daysInMonth; d++) {
+        const key = `${year}-${String(month+1).padStart(2,'0')}-${String(d).padStart(2,'0')}`;
+        const mood = moods[key] || '';
+        const isToday = key === today;
+        html += `<div class="mood-day${isToday ? ' today' : ''}" data-date="${key}">${mood}</div>`;
+      }
+      moodCal.innerHTML = html;
+      moodCal.querySelectorAll('.mood-day:not(.empty)').forEach(day => {
+        day.addEventListener('click', () => {
+          const d = day.dataset.date;
+          if (d === todayKey) {
+            // Already handled by mood buttons
+          }
+        });
+      });
+    }
+
+    function renderInsights() {
+      const entries = Object.entries(moods);
+      if (entries.length < 3) { insights.style.display = 'none'; return; }
+      insights.style.display = 'block';
+      const moodCounts = {};
+      entries.forEach(([k, v]) => { moodCounts[v] = (moodCounts[v] || 0) + 1; });
+      const topMood = Object.entries(moodCounts).sort((a, b) => b[1] - a[1])[0];
+      const total = entries.length;
+      let streak = 0;
+      const sorted = entries.map(([k]) => k).sort().reverse();
+      for (let i = 0; i < sorted.length; i++) {
+        const expected = new Date(); expected.setDate(expected.getDate() - i);
+        if (sorted[i] === dateKey(expected)) streak++;
+        else break;
+      }
+      insightsList.innerHTML = `
+        <div class="insight"><strong>Most common mood:</strong> ${topMood[0]} (${topMood[1]} out of ${total} days)</div>
+        <div class="insight"><strong>Days logged:</strong> ${total}</div>
+        <div class="insight"><strong>Current streak:</strong> ${streak} day${streak !== 1 ? 's' : ''} in a row</div>
+      `;
+    }
+
+    loadMoods();
+  })();
+  </script>
+</body>
+</html>

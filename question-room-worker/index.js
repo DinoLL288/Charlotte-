@@ -95,6 +95,11 @@ export class QuestionNightRoom {
       return Response.json(await this.getPreferences(user), { headers: { 'cache-control': 'no-store' } });
     }
 
+    if (request.method === 'GET' && url.searchParams.get('view') === 'mood') {
+      const user = url.searchParams.get('user');
+      if (!['Charlotte', 'Luke'].includes(user)) return Response.json({ error: 'Choose a valid account' }, { status: 400 });
+      return Response.json(await this.getMoodData(), { headers: { 'cache-control': 'no-store' } });
+    }
     if (request.method === 'GET' && url.searchParams.get('view') === 'playful-state') {
       return Response.json(await this.getPlayfulState(), { headers: { 'cache-control': 'no-store' } });
     }
@@ -487,6 +492,15 @@ export class QuestionNightRoom {
       finds: Array.isArray(state.finds) ? state.finds : []
     };
   }
+  async getMoodData() {
+    const all = await this.ctx.storage.get('moodData') || {};
+    const result = {};
+    for (const u of ['Charlotte', 'Luke']) {
+      if (all[u]) Object.assign(result, all[u]);
+    }
+    return { moods: result };
+  }
+
   async getPlayfulPoints(user) {
     const all = await this.ctx.storage.get('playfulPoints') || {};
     return Math.max(0, Number(all[user]) || 0);
@@ -568,6 +582,18 @@ export class QuestionNightRoom {
         await this.ctx.storage.put('profilePreferences', all);
         await this.broadcastRefresh();
         return Response.json({ ok: true, darkMode: all[user].darkMode });
+      }
+      if (body.action === 'mood') {
+        const user = body.user;
+        const date = String(body.date || '').slice(0, 10);
+        const mood = String(body.mood || '').slice(0, 4);
+        if (!['Charlotte', 'Luke'].includes(user) || !/^\d{4}-\d{2}-\d{2}$/.test(date) || !mood) return Response.json({ error: 'Choose a valid date and mood.' }, { status: 400 });
+        const all = await this.ctx.storage.get('moodData') || {};
+        if (!all[user]) all[user] = {};
+        all[user][date] = mood;
+        await this.ctx.storage.put('moodData', all);
+        await this.broadcastRefresh();
+        return Response.json({ ok: true, moods: all[user] });
       }
       if (body.action === 'playful-find') {
         const user = body.user;
