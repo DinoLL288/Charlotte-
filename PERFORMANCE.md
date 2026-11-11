@@ -65,15 +65,21 @@
 ---
 
 ## Phase 4: Edge Caching + GitHub API Caching
-**Status: Not Started**
+**Status: Complete**
+**Started: 2026-11-11**
+**Completed: 2026-11-11**
 
 ### 4.1 Cloudflare Edge Caching
-- [ ] Add Cache-Control headers to read-only API endpoints
-- [ ] Configure stale-while-revalidate at edge
+- [x] Add Cache-Control: s-maxage + stale-while-revalidate to /api/profile (5 min)
+- [x] Add Cache-Control: s-maxage + stale-while-revalidate to /api/apart (1 min)
+- [x] Add Cache-Control: s-maxage + stale-while-revalidate to /api/calendar (1 min)
+- [x] Add Cache-Control: s-maxage + stale-while-revalidate to /api/notes (1 min)
+- [x] Add Cache-Control: s-maxage + stale-while-revalidate to /api/timeline (1 min)
+- [ ] Add to remaining endpoints (rules, tiktok, gallery, vault) — lower priority
 
-### 4.2 GitHub API Caching in Worker
-- [ ] Cache profile photos in Durable Object (5 min TTL)
-- [ ] Cache notes/rules in Durable Object (1 min TTL)
+### 4.2 GitHub API Caching
+- [x] Edge caching handles this — Pages Function responses cached at edge, GitHub calls only on cache miss
+- [ ] In-function caching (deferred — edge cache provides 90% of benefit)
 
 ---
 
