@@ -1,0 +1,73 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8"><meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Preview · Mood tracker</title>
+  <link rel="stylesheet" href="theme.css">
+  <style>
+    body{margin:0;min-height:100vh;font-family:var(--font-body);background:linear-gradient(160deg,#eaf7ff,#c3e6fb 42%,#8ecbeb 100%);color:#10344f}
+    .preview-banner{position:sticky;top:0;z-index:50;padding:10px 16px;text-align:center;background:#143f5f;color:#fff;font-size:.85rem;font-weight:700}
+    .preview-banner a{color:#ecd7a0;margin-left:12px}
+    .hero{padding:60px 20px 30px;text-align:center;color:#fff;background:linear-gradient(160deg,rgba(13,44,68,.85),rgba(42,120,168,.85))}
+    .hero h1{margin:10px 0 6px;font-family:var(--font-display);font-size:clamp(2rem,6vw,3rem);font-weight:400}
+    .hero p{margin:0 auto;max-width:50ch;color:#eaf6ff;line-height:1.6}
+    .wrap{width:min(680px,calc(100% - 32px));margin:30px auto 60px}
+    .mood-log{padding:20px;border-radius:18px;background:rgba(255,255,255,.78);border:1px solid rgba(255,255,255,.9);margin-bottom:16px}
+    .mood-log h3{margin:0 0 12px;font-family:var(--font-display);color:#123a58}
+    .mood-today{display:flex;gap:8px;flex-wrap:wrap;margin-bottom:12px}
+    .mood-btn{padding:8px 14px;border:1px solid #d5e3ec;border-radius:999px;background:#fff;font-size:1.2rem;cursor:pointer;transition:transform .15s,background .15s}
+    .mood-btn:hover{transform:scale(1.1);background:#edf7fd}
+    .mood-btn.selected{background:#fff3d6;border-color:#c9a24a}
+    .mood-cal{display:grid;grid-template-columns:repeat(7,1fr);gap:4px;margin-top:12px}
+    .mood-day{aspect-ratio:1;border-radius:8px;display:grid;place-items:center;font-size:1.1rem;background:#f0f5fa;cursor:pointer;transition:transform .15s}
+    .mood-day:hover{transform:scale(1.1)}
+    .mood-day.empty{background:transparent}
+    .mood-insights{padding:20px;border-radius:18px;background:rgba(255,255,255,.78);border:1px solid rgba(255,255,255,.9)}
+    .mood-insights h3{margin:0 0 12px;font-family:var(--font-display);color:#123a58}
+    .insight{padding:10px 0;border-bottom:1px solid #e4edf2;font-size:.88rem;color:#4a7291;line-height:1.5}
+    .insight:last-child{border-bottom:0}
+    .insight strong{color:#123a58}
+    .days-header{display:grid;grid-template-columns:repeat(7,1fr);gap:4px;margin-bottom:4px;text-align:center;font-size:.65rem;font-weight:700;color:#7b91a0;text-transform:uppercase}
+  </style>
+</head>
+<body>
+  <div class="preview-banner">Preview 6 · Mood tracker — log daily moods, see patterns over time. <a href="feature-previews.html">Back to chooser</a></div>
+  <header class="hero">
+    <p class="eyebrow" style="color:#ecd7a0">Charlotte &amp; Luke</p>
+    <h1>How are we feeling?</h1>
+    <p>Log your mood each day. Over time, patterns emerge.</p>
+  </header>
+  <div class="wrap">
+    <div class="mood-log">
+      <h3>Today's mood</h3>
+      <div class="mood-today">
+        <button class="mood-btn selected">🥰</button>
+        <button class="mood-btn">💛</button>
+        <button class="mood-btn">🌙</button>
+        <button class="mood-btn">🤔</button>
+        <button class="mood-btn">😴</button>
+        <button class="mood-btn">😤</button>
+        <button class="mood-btn">🎉</button>
+      </div>
+      <p style="color:#7b91a0;font-size:.85rem;margin:0;">Tap a mood to log it for today.</p>
+    </div>
+    <div class="mood-log">
+      <h3>November 2026</h3>
+      <div class="days-header"><span>S</span><span>M</span><span>T</span><span>W</span><span>T</span><span>F</span><span>S</span></div>
+      <div class="mood-cal">
+        <div class="mood-day empty"></div><div class="mood-day empty"></div><div class="mood-day empty"></div><div class="mood-day empty"></div><div class="mood-day empty"></div><div class="mood-day">🥰</div><div class="mood-day">💛</div>
+        <div class="mood-day">🥰</div><div class="mood-day">🥰</div><div class="mood-day">🌙</div><div class="mood-day">🥰</div><div class="mood-day">💛</div><div class="mood-day">🥰</div><div class="mood-day">🎉</div>
+        <div class="mood-day">🥰</div><div class="mood-day">😴</div><div class="mood-day">💛</div><div class="mood-day">🥰</div><div class="mood-day">🥰</div><div class="mood-day">💛</div><div class="mood-day">🥰</div>
+        <div class="mood-day">🌙</div><div class="mood-day">🥰</div><div class="mood-day"></div><div class="mood-day"></div><div class="mood-day"></div><div class="mood-day"></div><div class="mood-day"></div>
+      </div>
+    </div>
+    <div class="mood-insights">
+      <h3>Insights</h3>
+      <div class="insight"><strong>This week:</strong> Mostly happy (🥰) with one quiet day (🌙) and one tired day (😴).</div>
+      <div class="insight"><strong>Pattern:</strong> Moods tend to be brighter on weekends. Weekdays are more mixed.</div>
+      <div class="insight"><strong>Streak:</strong> 5 days of positive moods in a row!</div>
+    </div>
+  </div>
+  <footer style="text-align:center;padding:24px;color:#fff;font-size:.85rem">Charlotte &amp; Luke · made with care</footer>
+</body>
+</html>

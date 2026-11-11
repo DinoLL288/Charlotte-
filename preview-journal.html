@@ -1,0 +1,71 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8"><meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Preview · Memory journal</title>
+  <link rel="stylesheet" href="theme.css">
+  <style>
+    body{margin:0;min-height:100vh;font-family:var(--font-body);background:linear-gradient(160deg,#eaf7ff,#c3e6fb 42%,#8ecbeb 100%);color:#10344f}
+    .preview-banner{position:sticky;top:0;z-index:50;padding:10px 16px;text-align:center;background:#143f5f;color:#fff;font-size:.85rem;font-weight:700}
+    .preview-banner a{color:#ecd7a0;margin-left:12px}
+    .hero{padding:60px 20px 30px;text-align:center;color:#fff;background:linear-gradient(160deg,rgba(13,44,68,.85),rgba(42,120,168,.85))}
+    .hero h1{margin:10px 0 6px;font-family:var(--font-display);font-size:clamp(2rem,6vw,3rem);font-weight:400}
+    .hero p{margin:0 auto;max-width:50ch;color:#eaf6ff;line-height:1.6}
+    .wrap{width:min(680px,calc(100% - 32px));margin:30px auto 60px}
+    .entry{padding:20px;border-radius:18px;background:rgba(255,255,255,.78);border:1px solid rgba(255,255,255,.9);box-shadow:0 8px 24px rgba(29,90,128,.1);margin-bottom:16px}
+    .entry-head{display:flex;align-items:center;gap:10px;margin-bottom:10px}
+    .entry-mood{font-size:1.5rem}
+    .entry-date{color:#8a6d2b;font-size:.75rem;font-weight:800;letter-spacing:.1em;text-transform:uppercase}
+    .entry-title{font-family:var(--font-display);font-size:1.2rem;color:#123a58;margin:2px 0}
+    .entry-body{color:#4a7291;line-height:1.65;font-size:.92rem;margin:8px 0}
+    .entry-img{width:100%;border-radius:12px;margin:8px 0;max-height:200px;object-fit:cover}
+    .entry-tags{display:flex;gap:6px;flex-wrap:wrap;margin-top:8px}
+    .tag{padding:3px 10px;border-radius:999px;background:#fff7df;color:#73591f;font-size:.72rem;font-weight:700}
+    .compose{padding:20px;border-radius:18px;background:rgba(255,255,255,.78);border:1px solid rgba(255,255,255,.9);margin-bottom:20px}
+    .compose h3{margin:0 0 12px;font-family:var(--font-display);color:#123a58}
+    .compose textarea{width:100%;min-height:80px;padding:10px;border:1px solid #c8dceb;border-radius:10px;font:inherit;resize:vertical}
+    .compose .row{display:flex;gap:8px;margin-top:8px;flex-wrap:wrap}
+    .compose select,.compose input{padding:8px 12px;border:1px solid #c8dceb;border-radius:10px;font:inherit}
+    .compose button{border:1px solid #143f5f;border-radius:999px;padding:8px 16px;color:#fff;background:#143f5f;font:inherit;font-weight:700;cursor:pointer}
+  </style>
+</head>
+<body>
+  <div class="preview-banner">Preview 4 · Memory journal — diary-style entries with mood, photo, and long text. <a href="feature-previews.html">Back to chooser</a></div>
+  <header class="hero">
+    <p class="eyebrow" style="color:#ecd7a0">Charlotte &amp; Luke</p>
+    <h1>Our journal</h1>
+    <p>A diary of us. Every feeling, every moment, every little thing.</p>
+  </header>
+  <div class="wrap">
+    <div class="compose">
+      <h3>Write a new entry</h3>
+      <div class="row">
+        <select><option>💛 Happy</option><option>🌙 Quiet</option><option>🤔 Thinking</option><option>🥰 Loved</option><option>😴 Tired</option></select>
+        <input type="text" placeholder="Title (optional)">
+      </div>
+      <textarea placeholder="What's on your mind today?"></textarea>
+      <div class="row">
+        <button>Save entry</button>
+        <button style="background:#eef7fb;color:#315d78;border:1px solid #cddfe8">Attach photo</button>
+      </div>
+    </div>
+    <div class="entry">
+      <div class="entry-head"><span class="entry-mood">🥰</span><div><div class="entry-date">11 November 2026</div><div class="entry-title">The best morning</div></div></div>
+      <img class="entry-img" src="holding-hands.jpg" alt="Morning" loading="lazy">
+      <p class="entry-body">Woke up to the sound of rain. You made coffee and we sat by the window watching the drops. No phones, no plans, just us and the quiet. These are the moments I want to remember forever.</p>
+      <div class="entry-tags"><span class="tag">cozy</span><span class="tag">rain</span><span class="tag">morning</span></div>
+    </div>
+    <div class="entry">
+      <div class="entry-head"><span class="entry-mood">💛</span><div><div class="entry-date">9 November 2026</div><div class="entry-title">Game night</div></div></div>
+      <p class="entry-body">We played tic-tac-toe for an hour straight. You kept beating me and laughing about it. I love how competitive you get over the smallest things. It's one of my favourite things about you.</p>
+      <div class="entry-tags"><span class="tag">games</span><span class="tag">fun</span></div>
+    </div>
+    <div class="entry">
+      <div class="entry-head"><span class="entry-mood">🌙</span><div><div class="entry-date">7 November 2026</div><div class="entry-title">Quiet day</div></div></div>
+      <p class="entry-body">Today was a quiet day. We didn't do much — just existed in the same space. Sometimes that's all we need. I'm grateful for the silence we share.</p>
+      <div class="entry-tags"><span class="tag">quiet</span><span class="tag">grateful</span></div>
+    </div>
+  </div>
+  <footer style="text-align:center;padding:24px;color:#fff;font-size:.85rem">Charlotte &amp; Luke · made with care</footer>
+</body>
+</html>

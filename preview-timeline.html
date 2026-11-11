@@ -1,0 +1,74 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8"><meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Preview · Deep-dive timeline</title>
+  <link rel="stylesheet" href="theme.css">
+  <style>
+    body{margin:0;min-height:100vh;font-family:var(--font-body);background:linear-gradient(160deg,#eaf7ff,#c3e6fb 42%,#8ecbeb 100%);color:#10344f}
+    .preview-banner{position:sticky;top:0;z-index:50;padding:10px 16px;text-align:center;background:#143f5f;color:#fff;font-size:.85rem;font-weight:700}
+    .preview-banner a{color:#ecd7a0;margin-left:12px}
+    .hero{padding:60px 20px 30px;text-align:center;color:#fff;background:linear-gradient(160deg,rgba(13,44,68,.85),rgba(42,120,168,.85))}
+    .hero h1{margin:10px 0 6px;font-family:var(--font-display);font-size:clamp(2rem,6vw,3rem);font-weight:400}
+    .hero p{margin:0 auto;max-width:50ch;color:#eaf6ff;line-height:1.6}
+    .timeline{width:min(720px,calc(100% - 32px));margin:40px auto 60px;position:relative;padding-left:40px}
+    .timeline::before{content:"";position:absolute;left:15px;top:0;bottom:0;width:2px;background:linear-gradient(180deg,#c9a24a,#2a78a8,#c9a24a);border-radius:2px}
+    .chapter{position:relative;margin-bottom:48px;opacity:0;transform:translateY(20px);animation:fadeIn .6s ease forwards}
+    .chapter:nth-child(1){animation-delay:.1s}.chapter:nth-child(2){animation-delay:.3s}.chapter:nth-child(3){animation-delay:.5s}.chapter:nth-child(4){animation-delay:.7s}
+    @keyframes fadeIn{to{opacity:1;transform:none}}
+    .chapter-dot{position:absolute;left:-33px;top:8px;width:16px;height:16px;border-radius:50%;background:#c9a24a;border:3px solid #fff;box-shadow:0 0 0 2px #c9a24a}
+    .chapter-date{color:#8a6d2b;font-size:.75rem;font-weight:800;letter-spacing:.12em;text-transform:uppercase;margin-bottom:6px}
+    .chapter h3{margin:0 0 8px;font-family:var(--font-display);font-size:1.3rem;color:#123a58}
+    .chapter p{margin:0 0 12px;color:#4a7291;line-height:1.65;font-size:.95rem}
+    .chapter-img{width:100%;border-radius:16px;margin-bottom:12px;box-shadow:0 8px 24px rgba(29,90,128,.15);transition:transform .3s}
+    .chapter-img:hover{transform:scale(1.02)}
+    .chapter-note{padding:12px 16px;border-radius:12px;background:#fff7df;border-left:3px solid #c9a24a;color:#73591f;font-size:.88rem;line-height:1.5;font-style:italic}
+    .parallax{position:relative;overflow:hidden;height:200px;border-radius:16px;margin-bottom:12px;background:linear-gradient(135deg,#143f5f,#2a78a8);display:grid;place-items:center;color:#fff;font-family:var(--font-display);font-size:1.5rem}
+    .parallax span{position:absolute;opacity:.15;font-size:4rem}
+    .parallax span:nth-child(1){top:10px;left:20px;animation:float 6s ease-in-out infinite}
+    .parallax span:nth-child(2){bottom:10px;right:30px;animation:float 8s ease-in-out infinite reverse}
+    @keyframes float{0%,100%{transform:translateY(0)}50%{transform:translateY(-15px)}}
+  </style>
+</head>
+<body>
+  <div class="preview-banner">Preview 1 · Deep-dive timeline — our story as one long scrollable narrative. <a href="feature-previews.html">Back to chooser</a></div>
+  <header class="hero">
+    <p class="eyebrow" style="color:#ecd7a0">Charlotte &amp; Luke</p>
+    <h1>Our story, in one breath</h1>
+    <p>Scroll slowly. Every chapter is a piece of us.</p>
+  </header>
+  <div class="timeline">
+    <div class="chapter">
+      <div class="chapter-dot"></div>
+      <div class="chapter-date">26 October 2026</div>
+      <h3>The beginning</h3>
+      <div class="parallax"><span>✦</span><span>✧</span>Together</div>
+      <p>We met on a quiet evening. The kind of evening where the world feels small and the conversation feels endless. You said something that made me laugh so hard I forgot to be nervous.</p>
+      <div class="chapter-note">"I knew something shifted that night. Not dramatically — just a quiet click, like a key turning."</div>
+    </div>
+    <div class="chapter">
+      <div class="chapter-dot"></div>
+      <div class="chapter-date">1 November 2026</div>
+      <h3>First photo together</h3>
+      <img class="chapter-img" src="holding-hands.jpg" alt="Holding hands" loading="lazy">
+      <p>We took this photo without thinking. Just held hands and someone snapped it. It's blurry and imperfect and it's my favourite photo in the world.</p>
+      <div class="chapter-note">"Your hand in mine felt like the most natural thing in the world."</div>
+    </div>
+    <div class="chapter">
+      <div class="chapter-dot"></div>
+      <div class="chapter-date">5 November 2026</div>
+      <h3>First notes</h3>
+      <p>We started leaving little messages for each other. Some were funny, some were sweet, some were just "thinking of you." Each one felt like a tiny letter in a bottle.</p>
+      <div class="chapter-note">"I check for new notes every morning before I get out of bed."</div>
+    </div>
+    <div class="chapter">
+      <div class="chapter-dot"></div>
+      <div class="chapter-date">11 November 2026</div>
+      <h3>Building our universe</h3>
+      <p>We started building this site together — a little corner of the internet that's just ours. Every feature, every game, every safe little corner. It's growing with us.</p>
+      <div class="chapter-note">"This isn't a website. It's our story, written in code and love."</div>
+    </div>
+  </div>
+  <footer style="text-align:center;padding:24px;color:#fff;font-size:.85rem">Charlotte &amp; Luke · made with care</footer>
+</body>
+</html>

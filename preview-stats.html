@@ -1,0 +1,75 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8"><meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Preview · Stats dashboard</title>
+  <link rel="stylesheet" href="theme.css">
+  <style>
+    body{margin:0;min-height:100vh;font-family:var(--font-body);background:linear-gradient(160deg,#eaf7ff,#c3e6fb 42%,#8ecbeb 100%);color:#10344f}
+    .preview-banner{position:sticky;top:0;z-index:50;padding:10px 16px;text-align:center;background:#143f5f;color:#fff;font-size:.85rem;font-weight:700}
+    .preview-banner a{color:#ecd7a0;margin-left:12px}
+    .hero{padding:60px 20px 30px;text-align:center;color:#fff;background:linear-gradient(160deg,rgba(13,44,68,.85),rgba(42,120,168,.85))}
+    .hero h1{margin:10px 0 6px;font-family:var(--font-display);font-size:clamp(2rem,6vw,3rem);font-weight:400}
+    .hero p{margin:0 auto;max-width:50ch;color:#eaf6ff;line-height:1.6}
+    .wrap{width:min(720px,calc(100% - 32px));margin:30px auto 60px}
+    .stats-grid{display:grid;grid-template-columns:repeat(2,1fr);gap:12px;margin-bottom:20px}
+    .stat-card{padding:20px;border-radius:16px;background:rgba(255,255,255,.78);border:1px solid rgba(255,255,255,.9);text-align:center}
+    .stat-card .num{font-family:var(--font-display);font-size:2.5rem;color:#123a58;animation:countUp .8s ease}
+    @keyframes countUp{from{opacity:0;transform:translateY(10px)}to{opacity:1;transform:none}}
+    .stat-card .label{font-size:.78rem;color:#5c7c93;margin-top:4px}
+    .stat-card .icon{font-size:1.5rem;margin-bottom:6px}
+    .heatmap{padding:20px;border-radius:16px;background:rgba(255,255,255,.78);border:1px solid rgba(255,255,255,.9);margin-bottom:20px}
+    .heatmap h3{margin:0 0 12px;font-family:var(--font-display);color:#123a58}
+    .heatmap-grid{display:grid;grid-template-columns:repeat(7,1fr);gap:3px}
+    .heatmap-cell{aspect-ratio:1;border-radius:3px;background:#e4edf2;transition:background .2s}
+    .heatmap-cell.l1{background:#b8d4e8}.heatmap-cell.l2{background:#7eb4d4}.heatmap-cell.l3{background:#4a94b8}.heatmap-cell.l4{background:#143f5f}
+    .heatmap-legend{display:flex;align-items:center;gap:6px;margin-top:8px;font-size:.7rem;color:#7b91a0}
+    .heatmap-legend .cell{width:12px;height:12px;border-radius:2px}
+    .milestones{padding:20px;border-radius:16px;background:rgba(255,255,255,.78);border:1px solid rgba(255,255,255,.9)}
+    .milestones h3{margin:0 0 12px;font-family:var(--font-display);color:#123a58}
+    .milestone{display:flex;align-items:center;gap:10px;padding:8px 0;border-bottom:1px solid #e4edf2}
+    .milestone:last-child{border-bottom:0}
+    .milestone .icon{font-size:1.2rem}
+    .milestone .text{flex:1;color:#4a7291;font-size:.88rem}
+    .milestone .date{color:#8a6d2b;font-size:.75rem;font-weight:700}
+    @media(max-width:520px){.stats-grid{grid-template-columns:1fr 1fr}}
+  </style>
+</head>
+<body>
+  <div class="preview-banner">Preview 5 · Stats dashboard — numbers that reward engagement. <a href="feature-previews.html">Back to chooser</a></div>
+  <header class="hero">
+    <p class="eyebrow" style="color:#ecd7a0">Charlotte &amp; Luke</p>
+    <h1>Our numbers</h1>
+    <p>Every moment we've shared, counted and celebrated.</p>
+  </header>
+  <div class="wrap">
+    <div class="stats-grid">
+      <div class="stat-card"><div class="icon">✉️</div><div class="num">47</div><div class="label">Notes left</div></div>
+      <div class="stat-card"><div class="icon">📷</div><div class="num">23</div><div class="label">Photos saved</div></div>
+      <div class="stat-card"><div class="icon">🎮</div><div class="num">34</div><div class="label">Games played</div></div>
+      <div class="stat-card"><div class="icon">🪙</div><div class="num">156</div><div class="label">Tokens earned</div></div>
+      <div class="stat-card"><div class="icon">🔐</div><div class="num">8</div><div class="label">Logins saved</div></div>
+      <div class="stat-card"><div class="icon">📅</div><div class="num">16</div><div class="label">Days together</div></div>
+    </div>
+    <div class="heatmap">
+      <h3>Activity this month</h3>
+      <div class="heatmap-grid">
+        <div class="heatmap-cell"></div><div class="heatmap-cell l1"></div><div class="heatmap-cell l2"></div><div class="heatmap-cell l3"></div><div class="heatmap-cell l1"></div><div class="heatmap-cell"></div><div class="heatmap-cell l2"></div>
+        <div class="heatmap-cell l2"></div><div class="heatmap-cell l3"></div><div class="heatmap-cell l4"></div><div class="heatmap-cell l2"></div><div class="heatmap-cell l1"></div><div class="heatmap-cell l3"></div><div class="heatmap-cell l1"></div>
+        <div class="heatmap-cell l1"></div><div class="heatmap-cell l2"></div><div class="heatmap-cell l3"></div><div class="heatmap-cell l4"></div><div class="heatmap-cell l2"></div><div class="heatmap-cell l1"></div><div class="heatmap-cell"></div>
+        <div class="heatmap-cell"></div><div class="heatmap-cell l1"></div><div class="heatmap-cell l2"></div><div class="heatmap-cell"></div><div class="heatmap-cell l1"></div><div class="heatmap-cell l2"></div><div class="heatmap-cell l1"></div>
+      </div>
+      <div class="heatmap-legend">Less <div class="cell" style="background:#e4edf2"></div><div class="cell" style="background:#b8d4e8"></div><div class="cell" style="background:#7eb4d4"></div><div class="cell" style="background:#4a94b8"></div><div class="cell" style="background:#143f5f"></div> More</div>
+    </div>
+    <div class="milestones">
+      <h3>Recent milestones</h3>
+      <div class="milestone"><span class="icon">🤍</span><span class="text">First note left</span><span class="date">26 Oct</span></div>
+      <div class="milestone"><span class="icon">🎮</span><span class="text">First game played</span><span class="date">28 Oct</span></div>
+      <div class="milestone"><span class="icon">🔐</span><span class="text">Safe created</span><span class="date">1 Nov</span></div>
+      <div class="milestone"><span class="icon">📷</span><span class="text">First photo saved</span><span class="date">3 Nov</span></div>
+      <div class="milestone"><span class="icon">🏆</span><span class="text">100 tokens earned</span><span class="date">8 Nov</span></div>
+    </div>
+  </div>
+  <footer style="text-align:center;padding:24px;color:#fff;font-size:.85rem">Charlotte &amp; Luke · made with care</footer>
+</body>
+</html>

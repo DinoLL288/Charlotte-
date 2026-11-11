@@ -1,0 +1,81 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8"><meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Feature previews · chooser</title>
+  <link rel="stylesheet" href="theme.css">
+  <style>
+    body{margin:0;min-height:100vh;font-family:var(--font-body);background:linear-gradient(160deg,#eaf7ff,#c3e6fb 42%,#8ecbeb 100%);color:#10344f;padding:40px 20px 60px}
+    .wrap{width:min(960px,100%);margin:0 auto}
+    h1{font-family:var(--font-display);color:#123a58;font-size:clamp(2rem,5vw,2.8rem);margin:0 0 6px}
+    .sub{color:#4a7291;max-width:64ch;line-height:1.6;margin:0 0 28px}
+    .grid{display:grid;grid-template-columns:repeat(3,1fr);gap:16px}
+    .opt{padding:20px 18px;border-radius:20px;background:rgba(255,255,255,.78);border:1px solid rgba(255,255,255,.9);box-shadow:0 14px 34px rgba(29,90,128,.12);text-decoration:none;color:#123a58;display:block;transition:transform .18s,box-shadow .18s}
+    .opt:hover{transform:translateY(-4px);box-shadow:0 22px 46px rgba(29,90,128,.18)}
+    .opt .code{font-size:.7rem;font-weight:800;letter-spacing:.16em;text-transform:uppercase;color:#8a6d2b;margin-bottom:6px}
+    .opt h2{margin:0 0 6px;font-family:var(--font-display);font-size:1.2rem}
+    .opt p{margin:0;color:#4a7291;font-size:.85rem;line-height:1.5}
+    .opt ul{margin:8px 0 0;padding-left:16px;color:#4a7291;font-size:.8rem;line-height:1.5}
+    .note{margin-top:24px;padding:16px 18px;border-radius:16px;background:rgba(255,255,255,.6);color:#4a7291;font-size:.85rem;line-height:1.6}
+    @media(max-width:700px){.grid{grid-template-columns:1fr 1fr}}
+    @media(max-width:480px){.grid{grid-template-columns:1fr}}
+  </style>
+</head>
+<body>
+  <div class="wrap">
+    <h1>Feature previews</h1>
+    <p class="sub">Eight feature concepts designed to appeal to deep engagement (long attention span / hyperfocus) while keeping the site calm and organized. The dashboard (index.html) is untouched. Preview each, then tell me which to build.</p>
+    <div class="grid">
+      <a class="opt" href="preview-timeline.html">
+        <div class="code">Preview 1</div>
+        <h2>Deep-dive timeline</h2>
+        <p>Our story as one long scrollable narrative — photos, notes, and milestones woven together like a novel.</p>
+        <ul><li>Infinite scroll story</li><li>Parallax photo layers</li><li>No forced endpoints</li></ul>
+      </a>
+      <a class="opt" href="preview-achievements.html">
+        <div class="code">Preview 2</div>
+        <h2>Achievement badges</h2>
+        <p>Unlock badges for milestones. The site visually grows as you explore every corner together.</p>
+        <ul><li>Badge collection grid</li><li>Progress bars</li><li>Hidden unlocks</li></ul>
+      </a>
+      <a class="opt" href="preview-darkmode.html">
+        <div class="code">Preview 3</div>
+        <h2>Dark mode</h2>
+        <p>A cozy nighttime theme for late-night browsing. Toggle between light and dark.</p>
+        <ul><li>Warm dark palette</li><li>Smooth transition</li><li>Persists preference</li></ul>
+      </a>
+      <a class="opt" href="preview-journal.html">
+        <div class="code">Preview 4</div>
+        <h2>Memory journal</h2>
+        <p>A diary-style section — date, photo, mood, and long text. More like a blog than a gallery.</p>
+        <ul><li>Mood tags</li><li>Long-form entries</li><li>Calendar view</li></ul>
+      </a>
+      <a class="opt" href="preview-stats.html">
+        <div class="code">Preview 5</div>
+        <h2>Stats dashboard</h2>
+        <p>Numbers that reward engagement — notes left, games played, days together, tokens earned.</p>
+        <ul><li>Animated counters</li><li>Activity heatmap</li><li>Milestone tracking</li></ul>
+      </a>
+      <a class="opt" href="preview-mood.html">
+        <div class="code">Preview 6</div>
+        <h2>Mood tracker</h2>
+        <p>Log daily moods and see patterns over time. Appeals to analytical, data-loving minds.</p>
+        <ul><li>Daily mood log</li><li>Weekly patterns</li><li>Color-coded calendar</li></ul>
+      </a>
+      <a class="opt" href="preview-stickers.html">
+        <div class="code">Preview 7</div>
+        <h2>Collectible stickers</h2>
+        <p>Earn or find little icons that decorate the hub page over time. The site visually grows.</p>
+        <ul><li>Sticker collection</li><li>Drag to place</li><li>Hidden discoveries</li></ul>
+      </a>
+      <a class="opt" href="preview-easter.html">
+        <div class="code">Preview 8</div>
+        <h2>Easter eggs &amp; puzzle hunts</h2>
+        <p>Hidden details and clue chains that unlock new content. Rewards curiosity and exploration.</p>
+        <ul><li>Hidden hotspots</li><li>Clue chains</li><li>Secret pages</li></ul>
+      </a>
+    </div>
+    <div class="note">These are visual previews only — the real site is untouched. The hub dashboard (index.html) is not changed. Tell me which features you want built, and I'll implement them.</div>
+  </div>
+</body>
+</html>

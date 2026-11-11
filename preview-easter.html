@@ -1,0 +1,80 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8"><meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Preview · Easter eggs &amp; puzzle hunts</title>
+  <link rel="stylesheet" href="theme.css">
+  <style>
+    body{margin:0;min-height:100vh;font-family:var(--font-body);background:linear-gradient(160deg,#eaf7ff,#c3e6fb 42%,#8ecbeb 100%);color:#10344f}
+    .preview-banner{position:sticky;top:0;z-index:50;padding:10px 16px;text-align:center;background:#143f5f;color:#fff;font-size:.85rem;font-weight:700}
+    .preview-banner a{color:#ecd7a0;margin-left:12px}
+    .hero{padding:60px 20px 30px;text-align:center;color:#fff;background:linear-gradient(160deg,rgba(13,44,68,.85),rgba(42,120,168,.85))}
+    .hero h1{margin:10px 0 6px;font-family:var(--font-display);font-size:clamp(2rem,6vw,3rem);font-weight:400}
+    .hero p{margin:0 auto;max-width:50ch;color:#eaf6ff;line-height:1.6}
+    .wrap{width:min(680px,calc(100% - 32px));margin:30px auto 60px}
+    .hunt-area{position:relative;height:300px;border-radius:20px;background:rgba(255,255,255,.6);border:1px solid rgba(255,255,255,.9);margin-bottom:20px;overflow:hidden}
+    .hotspot{position:absolute;width:40px;height:40px;border-radius:50%;cursor:pointer;display:grid;place-items:center;font-size:1.2rem;transition:transform .2s;opacity:.7}
+    .hotspot:hover{transform:scale(1.3);opacity:1}
+    .hotspot.found{opacity:1;animation:found .4s ease}
+    @keyframes found{0%{transform:scale(1)}50%{transform:scale(1.5)}100%{transform:scale(1)}}
+    .clue-chain{padding:20px;border-radius:18px;background:rgba(255,255,255,.78);border:1px solid rgba(255,255,255,.9);margin-bottom:16px}
+    .clue-chain h3{margin:0 0 12px;font-family:var(--font-display);color:#123a58}
+    .clue{padding:10px 0;border-bottom:1px solid #e4edf2;font-size:.88rem;color:#4a7291;line-height:1.5}
+    .clue:last-child{border-bottom:0}
+    .clue .num{display:inline-block;width:24px;height:24px;border-radius:50%;background:#fff0c7;color:#73591f;font-size:.75rem;font-weight:800;text-align:center;line-height:24px;margin-right:8px}
+    .clue.locked{opacity:.4}
+    .clue.locked .num{background:#e4edf2;color:#9aabb7}
+    .secret{padding:20px;border-radius:18px;background:linear-gradient(135deg,#fff7df,#fff);border:2px dashed #c9a24a;text-align:center;margin-top:16px}
+    .secret h3{margin:0 0 8px;font-family:var(--font-display);color:#73591f}
+    .secret p{margin:0;color:#73591f;font-size:.9rem;line-height:1.5}
+    .found-count{position:absolute;top:12px;right:16px;padding:6px 12px;border-radius:999px;background:rgba(255,255,255,.9);color:#73591f;font-size:.8rem;font-weight:700}
+  </style>
+</head>
+<body>
+  <div class="preview-banner">Preview 8 · Easter eggs &amp; puzzle hunts — hidden details and clue chains. <a href="feature-previews.html">Back to chooser</a></div>
+  <header class="hero">
+    <p class="eyebrow" style="color:#ecd7a0">Charlotte &amp; Luke</p>
+    <h1>Secrets &amp; surprises</h1>
+    <p>Tap around. Some things are hidden. Some things unlock others.</p>
+  </header>
+  <div class="wrap">
+    <div class="hunt-area" id="huntArea">
+      <div class="found-count" id="foundCount">Found: 0/4</div>
+      <div class="hotspot" style="top:40px;left:60px" data-id="1" title="Tap me">🔍</div>
+      <div class="hotspot" style="top:120px;right:80px" data-id="2" title="Tap me">🗝️</div>
+      <div class="hotspot" style="bottom:60px;left:40%" data-id="3" title="Tap me">✨</div>
+      <div class="hotspot" style="bottom:30px;right:30px" data-id="4" title="Tap me">💌</div>
+    </div>
+    <div class="clue-chain">
+      <h3>Clue chain: "Our first date"</h3>
+      <div class="clue"><span class="num">1</span> Found the magnifying glass — it reveals the next clue location.</div>
+      <div class="clue"><span class="num">2</span> Found the key — unlocks the secret page.</div>
+      <div class="clue locked"><span class="num">3</span> Locked — find the sparkles first.</div>
+      <div class="clue locked"><span class="num">4</span> Locked — find the letter first.</div>
+    </div>
+    <div class="secret" id="secretBox" style="display:none">
+      <h3>🎉 You found all the secrets!</h3>
+      <p>A hidden page has been unlocked: <a href="#" style="color:#73591f;font-weight:700">our secret story →</a></p>
+    </div>
+    <div class="instructions" style="margin-top:16px;padding:14px;border-radius:12px;background:rgba(255,255,255,.6);color:#4a7291;font-size:.85rem;line-height:1.6;border-left:3px solid #c9a24a">
+      <strong>How easter eggs work:</strong> Hidden hotspots are scattered across pages. Finding them unlocks clues, which lead to secret content. Some are obvious, some require exploration. Progress is saved server-side.
+    </div>
+  </div>
+  <footer style="text-align:center;padding:24px;color:#fff;font-size:.85rem">Charlotte &amp; Luke · made with care</footer>
+  <script>
+    let found = 0;
+    const total = 4;
+    const countEl = document.getElementById('foundCount');
+    const secretBox = document.getElementById('secretBox');
+    document.querySelectorAll('.hotspot').forEach(h=>{
+      h.addEventListener('click',()=>{
+        if(h.classList.contains('found')) return;
+        h.classList.add('found');
+        found++;
+        countEl.textContent = `Found: ${found}/${total}`;
+        if(found>=total) secretBox.style.display='block';
+      });
+    });
+  </script>
+</body>
+</html>

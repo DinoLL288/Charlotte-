@@ -1,0 +1,86 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8"><meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Preview · Collectible stickers</title>
+  <link rel="stylesheet" href="theme.css">
+  <style>
+    body{margin:0;min-height:100vh;font-family:var(--font-body);background:linear-gradient(160deg,#eaf7ff,#c3e6fb 42%,#8ecbeb 100%);color:#10344f}
+    .preview-banner{position:sticky;top:0;z-index:50;padding:10px 16px;text-align:center;background:#143f5f;color:#fff;font-size:.85rem;font-weight:700}
+    .preview-banner a{color:#ecd7a0;margin-left:12px}
+    .hero{padding:60px 20px 30px;text-align:center;color:#fff;background:linear-gradient(160deg,rgba(13,44,68,.85),rgba(42,120,168,.85))}
+    .hero h1{margin:10px 0 6px;font-family:var(--font-display);font-size:clamp(2rem,6vw,3rem);font-weight:400}
+    .hero p{margin:0 auto;max-width:50ch;color:#eaf6ff;line-height:1.6}
+    .wrap{width:min(720px,calc(100% - 32px));margin:30px auto 60px}
+    .hub-preview{position:relative;height:200px;border-radius:20px;background:rgba(255,255,255,.6);border:1px solid rgba(255,255,255,.9);margin-bottom:20px;overflow:hidden}
+    .hub-preview .sticker{position:absolute;font-size:2rem;cursor:grab;transition:transform .15s;filter:drop-shadow(0 2px 4px rgba(0,0,0,.15))}
+    .hub-preview .sticker:hover{transform:scale(1.15)}
+    .hub-preview .sticker.placed{cursor:default}
+    .collection{padding:20px;border-radius:18px;background:rgba(255,255,255,.78);border:1px solid rgba(255,255,255,.9);margin-bottom:16px}
+    .collection h3{margin:0 0 12px;font-family:var(--font-display);color:#123a58}
+    .stickers{display:grid;grid-template-columns:repeat(6,1fr);gap:8px}
+    .sticker-slot{aspect-ratio:1;border-radius:12px;background:#f0f5fa;display:grid;place-items:center;font-size:1.5rem;cursor:pointer;transition:transform .15s,background .15s;border:2px dashed #c8dceb}
+    .sticker-slot:hover{transform:scale(1.05);background:#e8f4fa}
+    .sticker-slot.owned{border-style:solid;border-color:#c9a24a;background:#fff7df;cursor:grab}
+    .sticker-slot.locked{opacity:.3;cursor:default}
+    .instructions{padding:14px;border-radius:12px;background:rgba(255,255,255,.6);color:#4a7291;font-size:.85rem;line-height:1.6;border-left:3px solid #c9a24a}
+    @media(max-width:520px){.stickers{grid-template-columns:repeat(4,1fr)}}
+  </style>
+</head>
+<body>
+  <div class="preview-banner">Preview 7 · Collectible stickers — earn, place, and discover hidden ones. <a href="feature-previews.html">Back to chooser</a></div>
+  <header class="hero">
+    <p class="eyebrow" style="color:#ecd7a0">Charlotte &amp; Luke</p>
+    <h1>Our stickers</h1>
+    <p>Collect them, place them, discover hidden ones. The hub page becomes ours over time.</p>
+  </header>
+  <div class="wrap">
+    <div class="hub-preview" id="hubPreview">
+      <div class="sticker" style="top:20px;left:30px" draggable="true">🩷</div>
+      <div class="sticker" style="top:60px;right:40px" draggable="true">⭐</div>
+      <div class="sticker" style="bottom:30px;left:50%" draggable="true">🌙</div>
+      <div style="position:absolute;bottom:8px;left:50%;transform:translateX(-50%);color:#7b91a0;font-size:.75rem;">Drag stickers around the hub preview</div>
+    </div>
+    <div class="collection">
+      <h3>Your collection (7/12)</h3>
+      <div class="stickers">
+        <div class="sticker-slot owned">🩷</div>
+        <div class="sticker-slot owned">⭐</div>
+        <div class="sticker-slot owned">🌙</div>
+        <div class="sticker-slot owned">🎵</div>
+        <div class="sticker-slot owned">🎲</div>
+        <div class="sticker-slot owned">📷</div>
+        <div class="sticker-slot owned">🔐</div>
+        <div class="sticker-slot locked">🏆</div>
+        <div class="sticker-slot locked">🌊</div>
+        <div class="sticker-slot locked">🔥</div>
+        <div class="sticker-slot locked">🌈</div>
+        <div class="sticker-slot locked">?</div>
+      </div>
+    </div>
+    <div class="instructions">
+      <strong>How stickers work:</strong> Earn stickers by playing games, leaving notes, and reaching milestones. Some are hidden — tap around the hub page to discover them. Drag owned stickers onto the hub to decorate it. Your placement is saved.
+    </div>
+  </div>
+  <footer style="text-align:center;padding:24px;color:#fff;font-size:.85rem">Charlotte &amp; Luke · made with care</footer>
+  <script>
+    // Simple drag for preview
+    document.querySelectorAll('.sticker').forEach(s=>{
+      s.addEventListener('dragstart', e=>{ e.dataTransfer.setData('text/plain', s.textContent); s.style.opacity='.5'; });
+      s.addEventListener('dragend', e=>{ s.style.opacity='1'; });
+    });
+    const area = document.getElementById('hubPreview');
+    area.addEventListener('dragover', e=>e.preventDefault());
+    area.addEventListener('drop', e=>{
+      e.preventDefault();
+      const text = e.dataTransfer.getData('text/plain');
+      const r = area.getBoundingClientRect();
+      const s = document.createElement('div');
+      s.className='sticker placed'; s.textContent=text;
+      s.style.left = (e.clientX-r.left-16)+'px';
+      s.style.top = (e.clientY-r.top-16)+'px';
+      area.appendChild(s);
+    });
+  </script>
+</body>
+</html>

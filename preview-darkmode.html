@@ -1,0 +1,50 @@
+<!DOCTYPE html>
+<html lang="en" data-theme="light">
+<head>
+  <meta charset="UTF-8"><meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Preview · Dark mode</title>
+  <link rel="stylesheet" href="theme.css">
+  <style>
+    :root[data-theme="light"]{--dm-bg:#eaf7ff;--dm-card:rgba(255,255,255,.78);--dm-text:#10344f;--dm-muted:#4a7291;--dm-accent:#143f5f}
+    :root[data-theme="dark"]{--dm-bg:#0f1923;--dm-card:rgba(30,40,55,.85);--dm-text:#e8f0f7;--dm-muted:#9ab0c4;--dm-accent:#7ec8e3}
+    body{margin:0;min-height:100vh;font-family:var(--font-body);background:var(--dm-bg);color:var(--dm-text);transition:background .3s,color .3s}
+    .preview-banner{position:sticky;top:0;z-index:50;padding:10px 16px;text-align:center;background:#143f5f;color:#fff;font-size:.85rem;font-weight:700}
+    .preview-banner a{color:#ecd7a0;margin-left:12px}
+    .toggle-btn{position:fixed;top:16px;right:16px;z-index:60;padding:10px 16px;border-radius:999px;border:1px solid rgba(255,255,255,.3);background:var(--dm-card);color:var(--dm-text);font:600 13px system-ui;cursor:pointer;box-shadow:0 4px 14px rgba(0,0,0,.15);transition:background .3s,color .3s}
+    .hero{padding:60px 20px 30px;text-align:center;color:#fff;background:linear-gradient(160deg,rgba(13,44,68,.85),rgba(42,120,168,.85))}
+    .hero h1{margin:10px 0 6px;font-family:var(--font-display);font-size:clamp(2rem,6vw,3rem);font-weight:400}
+    .hero p{margin:0 auto;max-width:50ch;color:#eaf6ff;line-height:1.6}
+    .wrap{width:min(600px,calc(100% - 32px));margin:30px auto 60px;display:grid;gap:14px}
+    .card{padding:20px;border-radius:16px;background:var(--dm-card);border:1px solid rgba(255,255,255,.15);box-shadow:0 8px 24px rgba(0,0,0,.08);transition:background .3s}
+    .card h3{margin:0 0 6px;font-family:var(--font-display);color:var(--dm-accent)}
+    .card p{margin:0;color:var(--dm-muted);line-height:1.6;font-size:.92rem}
+    .note{padding:14px;border-radius:12px;background:var(--dm-card);color:var(--dm-muted);font-size:.85rem;line-height:1.6;border-left:3px solid #c9a24a}
+  </style>
+</head>
+<body>
+  <div class="preview-banner">Preview 3 · Dark mode — toggle between light and dark themes. <a href="feature-previews.html">Back to chooser</a></div>
+  <button class="toggle-btn" id="themeToggle">🌙 Dark mode</button>
+  <header class="hero">
+    <p class="eyebrow" style="color:#ecd7a0">Charlotte &amp; Luke</p>
+    <h1>Our little universe</h1>
+    <p>Every note, photo, plan and promise — kept in one quiet corner.</p>
+  </header>
+  <div class="wrap">
+    <div class="card"><h3>Notes</h3><p>Messages we leave for each other. Three new notes waiting.</p></div>
+    <div class="card"><h3>Photos &amp; videos</h3><p>Our albums, photos and little movies.</p></div>
+    <div class="card"><h3>Calendar</h3><p>Dates, plans and countdowns.</p></div>
+    <div class="note">This is a preview of how dark mode would look. The actual implementation would add a toggle to the hub page and persist the preference server-side (or in localStorage as a UI preference).</div>
+  </div>
+  <script>
+    const toggle = document.getElementById('themeToggle');
+    const root = document.documentElement;
+    function apply(theme){
+      root.setAttribute('data-theme', theme);
+      toggle.textContent = theme === 'dark' ? '☀️ Light mode' : '🌙 Dark mode';
+      localStorage.setItem('preview-theme', theme);
+    }
+    toggle.addEventListener('click', ()=> apply(root.getAttribute('data-theme')==='dark' ? 'light' : 'dark'));
+    apply(localStorage.getItem('preview-theme') || 'light');
+  </script>
+</body>
+</html>
