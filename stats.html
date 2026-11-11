@@ -1,0 +1,178 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <script src="site-shell-guard.js"></script>
+  <meta charset="UTF-8"><meta name="viewport" content="width=device-width, initial-scale=1.0"><title>Stats · Our numbers</title>
+  <script>if (!localStorage.getItem('charlotte-user')) location.href = 'login.html';</script>
+  <link rel="stylesheet" href="theme.css">
+  <link rel="stylesheet" href="site-bundle.css" data-site-polish="true" data-site-theme="true">
+  <style>
+    .hero{padding:78px 20px 66px;text-align:center;color:#fff;background:linear-gradient(160deg,#0d2c44,#2a78a8)}.hero .eyebrow{color:var(--gold-soft)}.hero h1{margin:10px 0;font-size:clamp(2.2rem,7vw,3.5rem);font-weight:400}.hero p:last-child{max-width:54ch;margin:0 auto;color:#e6f3fc;line-height:1.6}.top-bar{position:absolute;top:16px;left:16px;z-index:2}.shell{width:min(920px,100%);margin:-30px auto 60px;padding:0 18px;position:relative}
+    .stats-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:14px;margin-bottom:24px}
+    .stat-card{padding:20px;border-radius:18px;background:rgba(255,255,255,.78);border:1px solid rgba(255,255,255,.9);text-align:center;box-shadow:0 8px 24px rgba(29,90,128,.1)}
+    .stat-card .icon{font-size:1.8rem;margin-bottom:6px}
+    .stat-card .num{font-family:var(--font-display);font-size:2.2rem;color:#123a58}
+    .stat-card .label{font-size:.78rem;color:#5c7c93;margin-top:4px}
+    .heatmap{padding:20px;border-radius:18px;background:rgba(255,255,255,.78);border:1px solid rgba(255,255,255,.9);margin-bottom:20px;box-shadow:0 8px 24px rgba(29,90,128,.1)}
+    .heatmap h3{margin:0 0 12px;font-family:var(--font-display);color:#123a58}
+    .heatmap-grid{display:grid;grid-template-columns:repeat(7,1fr);gap:3px}
+    .heatmap-cell{aspect-ratio:1;border-radius:3px;background:#e4edf2;transition:background .2s}
+    .heatmap-cell.l1{background:#b8d4e8}.heatmap-cell.l2{background:#7eb4d4}.heatmap-cell.l3{background:#4a94b8}.heatmap-cell.l4{background:#143f5f}
+    .heatmap-legend{display:flex;align-items:center;gap:6px;margin-top:8px;font-size:.7rem;color:#7b91a0}
+    .heatmap-legend .cell{width:12px;height:12px;border-radius:2px}
+    .milestones{padding:20px;border-radius:18px;background:rgba(255,255,255,.78);border:1px solid rgba(255,255,255,.9);box-shadow:0 8px 24px rgba(29,90,128,.1)}
+    .milestones h3{margin:0 0 12px;font-family:var(--font-display);color:#123a58}
+    .milestone{display:flex;align-items:center;gap:10px;padding:8px 0;border-bottom:1px solid #e4edf2}
+    .milestone:last-child{border-bottom:0}
+    .milestone .icon{font-size:1.2rem}
+    .milestone .text{flex:1;color:#4a7291;font-size:.88rem}
+    .milestone .date{color:#8a6d2b;font-size:.75rem;font-weight:700}
+    .loading{text-align:center;padding:40px;color:#5c7c93}
+    @media(max-width:600px){.stats-grid{grid-template-columns:repeat(2,1fr)}}
+    @media(max-width:400px){.stats-grid{grid-template-columns:1fr}}
+  </style>
+</head>
+<body>
+  <div class="top-bar"><a class="button" href="index.html">← Back to hub</a></div>
+  <header class="hero"><p class="eyebrow">Our numbers</p><h1>Stats dashboard</h1><p>Every moment we've shared, counted and celebrated.</p></header>
+  <main class="shell">
+    <div class="stats-grid" id="statsGrid">
+      <div class="loading">Loading our numbers…</div>
+    </div>
+    <div class="heatmap" id="heatmapSection" style="display:none">
+      <h3>Activity this month</h3>
+      <div class="heatmap-grid" id="heatmapGrid"></div>
+      <div class="heatmap-legend">Less <div class="cell" style="background:#e4edf2"></div><div class="cell" style="background:#b8d4e8"></div><div class="cell" style="background:#7eb4d4"></div><div class="cell" style="background:#4a94b8"></div><div class="cell" style="background:#143f5f"></div> More</div>
+    </div>
+    <div class="milestones" id="milestonesSection" style="display:none">
+      <h3>Recent milestones</h3>
+      <div id="milestonesList"></div>
+    </div>
+  </main>
+  <script src="dialog.js"></script><script src="avatar.js"></script>
+  <script>
+  (function(){
+    const user = localStorage.getItem('charlotte-user') || 'Unknown';
+    const statsGrid = document.getElementById('statsGrid');
+    const heatmapSection = document.getElementById('heatmapSection');
+    const heatmapGrid = document.getElementById('heatmapGrid');
+    const milestonesSection = document.getElementById('milestonesSection');
+    const milestonesList = document.getElementById('milestonesList');
+
+    async function loadStats() {
+      const stats = [];
+      // Notes count
+      try {
+        const res = await fetch('/api/notes', { cache: 'no-store', credentials: 'same-origin' });
+        const json = await res.json();
+        const notes = json.notes || [];
+        stats.push({ icon: '✉️', num: notes.length, label: 'Notes left' });
+        // Recent notes as milestones
+        const recentNotes = notes.slice(-3).reverse();
+        recentNotes.forEach(n => {
+          const d = new Date(n.date || n.createdAt);
+          const dateStr = d.toLocaleDateString(undefined, { day: 'numeric', month: 'short' });
+          addMilestone('✉️', `Note: "${(n.title || n.body || '').slice(0, 40)}"`, dateStr);
+        });
+      } catch (e) { stats.push({ icon: '✉️', num: '?', label: 'Notes left' }); }
+
+      // Photos count
+      try {
+        const res = await fetch('/api/gallery', { cache: 'no-store', credentials: 'same-origin' });
+        const json = await res.json();
+        const photos = json.photos || [];
+        stats.push({ icon: '📷', num: photos.length, label: 'Photos saved' });
+      } catch (e) { stats.push({ icon: '📷', num: '?', label: 'Photos saved' }); }
+
+      // Tokens
+      try {
+        const res = await fetch('/api/question-room?view=playful-state', { cache: 'no-store' });
+        const json = await res.json();
+        const tokens = (json.tokens && json.tokens[user]) || 0;
+        stats.push({ icon: '🪙', num: tokens, label: 'Tokens earned' });
+      } catch (e) { stats.push({ icon: '🪙', num: '?', label: 'Tokens earned' }); }
+
+      // Games played (from playful finds)
+      try {
+        const res = await fetch('/api/question-room?view=playful-state', { cache: 'no-store' });
+        const json = await res.json();
+        const finds = json.finds || [];
+        stats.push({ icon: '🎮', num: finds.length, label: 'Discoveries found' });
+      } catch (e) { stats.push({ icon: '🎮', num: '?', label: 'Discoveries found' }); }
+
+      // Bathroom events count
+      try {
+        const res = await fetch('/api/question-room?view=bathroom', { cache: 'no-store' });
+        const json = await res.json();
+        const events = json.events || [];
+        stats.push({ icon: '🚻', num: events.length, label: 'Bathroom check-ins' });
+        // Build heatmap from events
+        buildHeatmap(events);
+        heatmapSection.style.display = 'block';
+      } catch (e) { stats.push({ icon: '🚻', num: '?', label: 'Bathroom check-ins' }); }
+
+      // Days together (hardcoded)
+      const togetherSince = new Date('2026-10-26T17:46:00');
+      const daysTogether = Math.floor((Date.now() - togetherSince.getTime()) / 86400000);
+      stats.push({ icon: '💛', num: daysTogether, label: 'Days together' });
+
+      // Vault count
+      try {
+        const res = await fetch('/api/vault', { cache: 'no-store', credentials: 'same-origin' });
+        const json = await res.json();
+        const vault = json.vault;
+        // We can't decrypt, but we can show that a safe exists
+        stats.push({ icon: '🔐', num: vault ? '✓' : '0', label: 'Safe entries' });
+      } catch (e) { stats.push({ icon: '🔐', num: '?', label: 'Safe entries' }); }
+
+      // Render stats
+      statsGrid.innerHTML = stats.map(s => `
+        <div class="stat-card">
+          <div class="icon">${s.icon}</div>
+          <div class="num">${s.num}</div>
+          <div class="label">${s.label}</div>
+        </div>
+      `).join('');
+
+      // Show milestones
+      if (milestonesList.children.length > 0) milestonesSection.style.display = 'block';
+    }
+
+    function buildHeatmap(events) {
+      const now = new Date();
+      const year = now.getFullYear();
+      const month = now.getMonth();
+      const daysInMonth = new Date(year, month + 1, 0).getDate();
+      const firstDay = new Date(year, month, 1).getDay();
+      const counts = {};
+      events.forEach(e => {
+        const d = new Date(e.at);
+        if (d.getFullYear() === year && d.getMonth() === month) {
+          const day = d.getDate();
+          counts[day] = (counts[day] || 0) + 1;
+        }
+      });
+      const maxCount = Math.max(1, ...Object.values(counts));
+      let html = '';
+      for (let i = 0; i < firstDay; i++) html += '<div class="heatmap-cell" style="background:transparent"></div>';
+      for (let d = 1; d <= daysInMonth; d++) {
+        const c = counts[d] || 0;
+        const level = c === 0 ? '' : c <= maxCount * 0.25 ? 'l1' : c <= maxCount * 0.5 ? 'l2' : c <= maxCount * 0.75 ? 'l3' : 'l4';
+        html += `<div class="heatmap-cell ${level}" title="${d}: ${c} check-ins"></div>`;
+      }
+      heatmapGrid.innerHTML = html;
+    }
+
+    function addMilestone(icon, text, date) {
+      const div = document.createElement('div');
+      div.className = 'milestone';
+      div.innerHTML = `<span class="icon">${icon}</span><span class="text">${text}</span><span class="date">${date}</span>`;
+      milestonesList.appendChild(div);
+      milestonesSection.style.display = 'block';
+    }
+
+    loadStats();
+  })();
+  </script>
+</body>
+</html>
