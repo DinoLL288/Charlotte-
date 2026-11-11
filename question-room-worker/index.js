@@ -569,6 +569,7 @@ export class QuestionNightRoom {
         await this.broadcastRefresh();
         return Response.json({ ok: true, darkMode: all[user].darkMode });
       }
+      if (body.action === 'playful-find') {
         const user = body.user;
         if (!['Charlotte', 'Luke'].includes(user)) return Response.json({ error: 'Choose a valid account' }, { status: 400 });
         const state = await this.getPlayfulState();
