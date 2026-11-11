@@ -12,3 +12,10 @@
   const page = `${name}${location.search}${location.hash}`;
   location.replace(`app-shell.html?page=${encodeURIComponent(page)}`);
 })();
+
+// Register service worker for caching and offline support
+if ('serviceWorker' in navigator && window.top === window.self) {
+  window.addEventListener('load', () => {
+    navigator.serviceWorker.register('/sw.js').catch(() => {});
+  });
+}

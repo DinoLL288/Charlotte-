@@ -408,7 +408,23 @@
         });
     })();
   </script>
-  <script src="avatar.js"></script>
+  <script>
+    (function () {
+      // Prefetch pages on hover for instant navigation
+      document.addEventListener('mouseover', function (e) {
+        const link = e.target.closest('a[href]');
+        if (!link) return;
+        const href = link.getAttribute('href');
+        if (!href || href.startsWith('#') || href.startsWith('http') || href.startsWith('mailto')) return;
+        if (link.dataset.prefetched) return;
+        link.dataset.prefetched = '1';
+        const prefetch = document.createElement('link');
+        prefetch.rel = 'prefetch';
+        prefetch.href = href;
+        document.head.appendChild(prefetch);
+      }, { passive: true });
+    })();
+  </script>
   <script>
     (function () {
       const user = localStorage.getItem('charlotte-user');
