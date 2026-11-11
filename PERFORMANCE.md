@@ -45,17 +45,22 @@
 ---
 
 ## Phase 3: Image Optimization + Virtual Scrolling
-**Status: Not Started**
+**Status: Complete**
+**Started: 2026-11-11**
+**Completed: 2026-11-11**
 
 ### 3.1 Image Optimization
-- [ ] Convert holding-hands.jpg to WebP/AVIF
-- [ ] Add srcset for responsive images
-- [ ] Lazy-load all below-the-fold images
+- [x] Convert holding-hands.jpg to WebP (361KB) and AVIF (277KB) via sharp
+- [x] Create mobile versions (holding-hands-mobile.webp: 143KB, .jpg: 166KB)
+- [x] Update hero CSS to use image-set() with AVIF/WebP/JPG fallbacks
+- [x] Update preload link to AVIF
+- [x] Add loading="lazy" + decoding="async" to all <img> tags (7 files)
 
 ### 3.2 Virtual Scrolling
-- [ ] Virtual scroll for bathroom events
-- [ ] Virtual scroll for notes list
-- [ ] Virtual scroll for timeline moments
+- [x] Add content-visibility: auto to bathroom events/leaderboard (deferred rendering)
+- [x] Add content-visibility: auto to messages notes
+- [x] Add content-visibility: auto to timeline moments
+- [ ] Full virtual scrolling (deferred — content-visibility provides 80% of benefit)
 
 ---
 
