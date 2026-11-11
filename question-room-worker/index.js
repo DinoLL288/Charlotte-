@@ -95,6 +95,9 @@ export class QuestionNightRoom {
       return Response.json(await this.getPreferences(user), { headers: { 'cache-control': 'no-store' } });
     }
 
+    if (request.method === 'GET' && url.searchParams.get('view') === 'journal') {
+      return Response.json(await this.getJournalData(), { headers: { 'cache-control': 'no-store' } });
+    }
     if (request.method === 'GET' && url.searchParams.get('view') === 'mood') {
       const user = url.searchParams.get('user');
       if (!['Charlotte', 'Luke'].includes(user)) return Response.json({ error: 'Choose a valid account' }, { status: 400 });
@@ -501,6 +504,11 @@ export class QuestionNightRoom {
     return { moods: result };
   }
 
+  async getJournalData() {
+    const journal = await this.ctx.storage.get('journalData') || {};
+    return { entries: Array.isArray(journal.entries) ? journal.entries : [] };
+  }
+
   async getPlayfulPoints(user) {
     const all = await this.ctx.storage.get('playfulPoints') || {};
     return Math.max(0, Number(all[user]) || 0);
@@ -582,6 +590,34 @@ export class QuestionNightRoom {
         await this.ctx.storage.put('profilePreferences', all);
         await this.broadcastRefresh();
         return Response.json({ ok: true, darkMode: all[user].darkMode });
+      }
+      if (body.action === 'journal-save') {
+        const user = body.user;
+        if (!['Charlotte', 'Luke'].includes(user)) return Response.json({ error: 'Choose a valid account' }, { status: 400 });
+        const entry = body.entry || {};
+        const title = String(entry.title || '').slice(0, 120);
+        const bodyText = String(entry.body || '').slice(0, 5000);
+        const mood = String(entry.mood || '').slice(0, 4);
+        const tags = Array.isArray(entry.tags) ? entry.tags.map(t => String(t).slice(0, 30)).slice(0, 10) : [];
+        const photo = typeof entry.photo === 'string' ? entry.photo.slice(0, 500) : '';
+        const date = String(entry.date || new Date().toISOString());
+        const journal = await this.getJournalData();
+        const newEntry = { id: crypto.randomUUID(), user, title, body: bodyText, mood, tags, photo, date, createdAt: new Date().toISOString() };
+        journal.entries.unshift(newEntry);
+        if (journal.entries.length > 500) journal.entries = journal.entries.slice(0, 500);
+        await this.ctx.storage.put('journalData', journal);
+        await this.broadcastRefresh();
+        return Response.json({ ok: true, entries: journal.entries });
+      }
+      if (body.action === 'journal-delete') {
+        const user = body.user;
+        const id = String(body.id || '');
+        if (!['Charlotte', 'Luke'].includes(user) || !id) return Response.json({ error: 'Choose a valid entry' }, { status: 400 });
+        const journal = await this.getJournalData();
+        journal.entries = journal.entries.filter(e => !(e.id === id && e.user === user));
+        await this.ctx.storage.put('journalData', journal);
+        await this.broadcastRefresh();
+        return Response.json({ ok: true, entries: journal.entries });
       }
       if (body.action === 'mood') {
         const user = body.user;

@@ -1,0 +1,135 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <script src="site-shell-guard.js"></script>
+  <meta charset="UTF-8"><meta name="viewport" content="width=device-width, initial-scale=1.0"><title>Journal · Our memories</title>
+  <script>if (!localStorage.getItem('charlotte-user')) location.href = 'login.html';</script>
+  <link rel="stylesheet" href="theme.css">
+  <link rel="stylesheet" href="site-bundle.css" data-site-polish="true" data-site-theme="true">
+  <style>
+    .hero{padding:78px 20px 66px;text-align:center;color:#fff;background:linear-gradient(160deg,#0d2c44,#2a78a8)}.hero .eyebrow{color:var(--gold-soft)}.hero h1{margin:10px 0;font-size:clamp(2.2rem,7vw,3.5rem);font-weight:400}.hero p:last-child{max-width:54ch;margin:0 auto;color:#e6f3fc;line-height:1.6}.top-bar{position:absolute;top:16px;left:16px;z-index:2}.shell{width:min(780px,100%);margin:-30px auto 60px;padding:0 18px;position:relative}
+    .compose{padding:22px;border-radius:20px;background:rgba(255,255,255,.78);border:1px solid rgba(255,255,255,.9);box-shadow:0 8px 24px rgba(29,90,128,.1);margin-bottom:20px}
+    .compose h3{margin:0 0 12px;font-family:var(--font-display);color:#123a58}
+    .compose .row{display:flex;gap:8px;margin-bottom:10px;flex-wrap:wrap}
+    .compose select,.compose input{padding:9px 12px;border:1px solid #c8dceb;border-radius:10px;font:inherit;background:#fff}
+    .compose textarea{width:100%;min-height:90px;padding:10px;border:1px solid #c8dceb;border-radius:10px;font:inherit;resize:vertical;box-sizing:border-box}
+    .compose button{border:1px solid #143f5f;border-radius:999px;padding:9px 18px;color:#fff;background:#143f5f;font:inherit;font-weight:700;cursor:pointer}
+    .compose button.secondary{color:#315d78;background:#eef7fb;border-color:#cddfe8}
+    .entry{padding:20px;border-radius:18px;background:rgba(255,255,255,.78);border:1px solid rgba(255,255,255,.9);box-shadow:0 8px 24px rgba(29,90,128,.1);margin-bottom:16px}
+    .entry-head{display:flex;align-items:center;gap:10px;margin-bottom:10px}
+    .entry-mood{font-size:1.5rem}
+    .entry-meta{flex:1}
+    .entry-date{color:#8a6d2b;font-size:.72rem;font-weight:800;letter-spacing:.1em;text-transform:uppercase}
+    .entry-title{font-family:var(--font-display);font-size:1.15rem;color:#123a58;margin:2px 0}
+    .entry-body{color:#4a7291;line-height:1.65;font-size:.92rem;margin:8px 0;white-space:pre-wrap}
+    .entry-img{width:100%;border-radius:12px;margin:8px 0;max-height:250px;object-fit:cover}
+    .entry-tags{display:flex;gap:6px;flex-wrap:wrap;margin-top:8px}
+    .tag{padding:3px 10px;border-radius:999px;background:#fff7df;color:#73591f;font-size:.72rem;font-weight:700}
+    .entry-actions{display:flex;gap:8px;margin-top:10px}
+    .entry-actions button{border:1px solid #d5e3ec;border-radius:999px;padding:6px 12px;color:#315d78;background:#fff;font:inherit;font-size:.8rem;font-weight:700;cursor:pointer}
+    .entry-actions button.danger{color:#8a5238;border-color:#e8d4c9}
+    .status{min-height:1.4em;margin:12px 0 0;color:#73591f;font-weight:700}
+    .empty{padding:24px;border:1px dashed #bfd5e3;border-radius:16px;text-align:center;color:#5c7c93}
+  </style>
+</head>
+<body>
+  <div class="top-bar"><a class="button" href="index.html">← Back to hub</a></div>
+  <header class="hero"><p class="eyebrow">Our memories</p><h1>Memory journal</h1><p>A diary of us. Every feeling, every moment, every little thing.</p></header>
+  <main class="shell">
+    <div class="compose">
+      <h3>Write a new entry</h3>
+      <div class="row">
+        <select id="journalMood"><option>🥰 Loved</option><option>💛 Happy</option><option>🌙 Quiet</option><option>🤔 Thinking</option><option>😴 Tired</option><option>😤 Frustrated</option><option>🎉 Excited</option></select>
+        <input type="text" id="journalTitle" placeholder="Title (optional)" style="flex:1">
+      </div>
+      <textarea id="journalBody" placeholder="What's on your mind today?"></textarea>
+      <div class="row">
+        <input type="text" id="journalTags" placeholder="Tags (comma separated)" style="flex:1">
+        <button id="journalSave">Save entry</button>
+      </div>
+      <p class="status" id="journalStatus" role="status"></p>
+    </div>
+    <div id="journalEntries"></div>
+    <p class="empty" id="journalEmpty" style="display:none">No entries yet. Write your first memory above.</p>
+  </main>
+  <script src="dialog.js"></script><script src="avatar.js"></script>
+  <script>
+  (function(){
+    const user = localStorage.getItem('charlotte-user') || 'Unknown';
+    const entriesEl = document.getElementById('journalEntries');
+    const emptyEl = document.getElementById('journalEmpty');
+    const statusEl = document.getElementById('journalStatus');
+    let entries = [];
+
+    async function load() {
+      try {
+        const res = await fetch('/api/question-room?view=journal', { cache: 'no-store' });
+        const json = await res.json();
+        entries = json.entries || [];
+        render();
+      } catch (e) { statusEl.textContent = 'Could not load journal.'; }
+    }
+
+    function render() {
+      if (!entries.length) { entriesEl.innerHTML = ''; emptyEl.style.display = 'block'; return; }
+      emptyEl.style.display = 'none';
+      entriesEl.innerHTML = entries.slice().reverse().map(e => `
+        <div class="entry">
+          <div class="entry-head">
+            <span class="entry-mood">${e.mood || '💛'}</span>
+            <div class="entry-meta">
+              <div class="entry-date">${new Date(e.date).toLocaleDateString(undefined, { weekday: 'long', day: 'numeric', month: 'long', year: 'numeric' })}</div>
+              ${e.title ? `<div class="entry-title">${escapeHtml(e.title)}</div>` : ''}
+            </div>
+          </div>
+          ${e.photo ? `<img class="entry-img" src="${escapeHtml(e.photo)}" alt="Photo" loading="lazy">` : ''}
+          <p class="entry-body">${escapeHtml(e.body)}</p>
+          ${e.tags && e.tags.length ? `<div class="entry-tags">${e.tags.map(t => `<span class="tag">${escapeHtml(t)}</span>`).join('')}</div>` : ''}
+          <div class="entry-actions">
+            <button data-id="${e.id}" class="delete-btn">Delete</button>
+          </div>
+        </div>
+      `).join('');
+      entriesEl.querySelectorAll('.delete-btn').forEach(btn => {
+        btn.addEventListener('click', async () => {
+          if (!await window.siteDialog.confirm('Delete this journal entry?')) return;
+          try {
+            const res = await fetch('/api/question-room', { method: 'POST', headers: { 'content-type': 'application/json' }, body: JSON.stringify({ action: 'journal-delete', user, id: btn.dataset.id }) });
+            const json = await res.json();
+            if (!res.ok) throw new Error(json.error || 'Could not delete');
+            entries = json.entries || entries.filter(e => e.id !== btn.dataset.id);
+            render();
+            statusEl.textContent = 'Entry deleted.';
+          } catch (err) { statusEl.textContent = err.message; }
+        });
+      });
+    }
+
+    function escapeHtml(s) { const d = document.createElement('div'); d.textContent = s || ''; return d.innerHTML; }
+
+    document.getElementById('journalSave').addEventListener('click', async () => {
+      const body = document.getElementById('journalBody').value.trim();
+      if (!body) { statusEl.textContent = 'Write something first.'; return; }
+      const title = document.getElementById('journalTitle').value.trim();
+      const mood = document.getElementById('journalMood').value.split(' ')[0];
+      const tags = document.getElementById('journalTags').value.split(',').map(t => t.trim()).filter(Boolean);
+      const btn = document.getElementById('journalSave'); btn.disabled = true; statusEl.textContent = 'Saving…';
+      try {
+        const res = await fetch('/api/question-room', { method: 'POST', headers: { 'content-type': 'application/json' }, body: JSON.stringify({ action: 'journal-save', user, entry: { title, body, mood, tags, date: new Date().toISOString() } }) });
+        const json = await res.json();
+        if (!res.ok) throw new Error(json.error || 'Could not save');
+        entries = json.entries || entries;
+        render();
+        document.getElementById('journalBody').value = '';
+        document.getElementById('journalTitle').value = '';
+        document.getElementById('journalTags').value = '';
+        statusEl.textContent = 'Entry saved.';
+      } catch (e) { statusEl.textContent = e.message; }
+      finally { btn.disabled = false; }
+    });
+
+    load();
+  })();
+  </script>
+</body>
+</html>
