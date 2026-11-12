@@ -64,7 +64,7 @@
   const darkToggle = document.createElement('button');
   darkToggle.id = 'darkModeToggle';
   darkToggle.className = 'profile-pfp';
-  darkToggle.style.cssText = 'position:fixed;top:16px;right:72px;z-index:20;width:40px;height:40px;border-radius:50%;border:3px solid #fff;background:#1a2a3a;color:#ecd7a0;font-size:1.1rem;cursor:pointer;box-shadow:0 7px 20px #347eac40;display:grid;place-items:center;';
+  darkToggle.style.cssText = 'position:fixed;bottom:18px;left:68px;z-index:20;width:40px;height:40px;border-radius:50%;border:3px solid #fff;background:#1a2a3a;color:#ecd7a0;font-size:1.1rem;cursor:pointer;box-shadow:0 7px 20px #347eac40;display:grid;place-items:center;';
   darkToggle.textContent = '🌙';
   darkToggle.setAttribute('aria-label', 'Toggle dark mode');
   darkToggle.addEventListener('click', () => {
