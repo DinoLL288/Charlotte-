@@ -462,13 +462,21 @@
     (function () {
       const user = localStorage.getItem('charlotte-user');
       const key = user ? 'charlotte-preferences-' + user : null;
-      function layoutFromPrefs(prefs) { return (prefs && prefs.homeLayout === 'doors') ? 'doors' : 'calm'; }
+      function layoutFromPrefs(prefs) { return (prefs && prefs.homeLayout) || 'calm'; }
       function apply(layout) {
-        const doors = layout === 'doors';
+        // Redirect to dyslexia layout pages
+        const dyslexiaLayouts = ['dyslexia-a','dyslexia-b','dyslexia-c','dyslexia-d','dyslexia-e'];
+        if (dyslexiaLayouts.includes(layout)) {
+          if (window.top === window.self) {
+            window.location.href = layout + '.html';
+          }
+          return;
+        }
         const calmHero = document.getElementById('hero-calm');
         const calmMain = document.getElementById('main-calm');
         const doorsHero = document.getElementById('hero-doors');
         const doorsMain = document.getElementById('main-doors');
+        const doors = layout === 'doors';
         if (calmHero) calmHero.hidden = doors;
         if (calmMain) calmMain.hidden = doors;
         if (doorsHero) doorsHero.hidden = !doors;

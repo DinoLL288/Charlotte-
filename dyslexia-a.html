@@ -2,7 +2,7 @@
 <html lang="en">
 <head>
   <meta charset="UTF-8"><meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Layout A · One thing at a time</title>
+  <title>Layout A Â· One thing at a time</title>
   <link rel="stylesheet" href="theme.css">
   <style>
     body{margin:0;min-height:100vh;font-family:var(--font-body);background:linear-gradient(160deg,#c8edff,#a9dcf7 55%,#8ccfff);color:#10344f}
@@ -26,38 +26,38 @@
   </style>
 </head>
 <body>
-  <div class="preview-banner">Layout A · One thing at a time — single card focus, swipe to see more. <a href="dyslexia-layouts.html">Back to chooser</a></div>
+  <div class="preview-banner">Layout A Â· One thing at a time â€” single card focus, swipe to see more. <a href="dyslexia-layouts.html">Back to chooser</a></div>
   <header class="hero">
     <h1>Our little universe</h1>
     <p>One room at a time. Swipe to explore.</p>
   </header>
   <div class="carousel">
     <div class="card" id="card">
-      <div class="icon">🤍</div>
+      <div class="icon">ðŸ¤</div>
       <div class="title">Our love</div>
       <div class="sub">The heart &amp; our little memory</div>
     </div>
     <div class="nav">
-      <button class="secondary" id="prev">← Back</button>
-      <button id="next">Next →</button>
+      <button class="secondary" id="prev">â† Back</button>
+      <button id="next">Next â†’</button>
     </div>
     <div class="dots" id="dots"></div>
     <div class="counter" id="counter">1 of 12</div>
   </div>
   <script>
     const items = [
-      {icon:'🤍',title:'Our love',sub:'The heart & our little memory'},
-      {icon:'✉️',title:'Notes',sub:'Messages we leave for each other'},
-      {icon:'📷',title:'Photos & videos',sub:'Our albums and little movies'},
-      {icon:'📅',title:'Calendar',sub:'Dates, plans and countdowns'},
-      {icon:'💬',title:'Question night',sub:'A shared room for us'},
-      {icon:'🎲',title:'Play & ask',sub:'Games and little questions'},
-      {icon:'🌙',title:'Quiet days',sub:'When one of us needs space'},
-      {icon:'📖',title:'Memory journal',sub:'Our diary of moments'},
-      {icon:'💛',title:'Mood tracker',sub:'How are we feeling today?'},
-      {icon:'🏆',title:'Achievements',sub:'Badges and milestones'},
-      {icon:'🎨',title:'Stickers',sub:'Collect and decorate'},
-      {icon:'🗝️',title:'Secrets',sub:'Puzzle hunts and hidden things'},
+      {icon:'ðŸ¤',title:'Our love',sub:'The heart & our little memory'},
+      {icon:'âœ‰ï¸',title:'Notes',sub:'Messages we leave for each other'},
+      {icon:'ðŸ“·',title:'Photos & videos',sub:'Our albums and little movies'},
+      {icon:'ðŸ“…',title:'Calendar',sub:'Dates, plans and countdowns'},
+      {icon:'ðŸ’¬',title:'Question night',sub:'A shared room for us'},
+      {icon:'ðŸŽ²',title:'Play & ask',sub:'Games and little questions'},
+      {icon:'ðŸŒ™',title:'Quiet days',sub:'When one of us needs space'},
+      {icon:'ðŸ“–',title:'Memory journal',sub:'Our diary of moments'},
+      {icon:'ðŸ’›',title:'Mood tracker',sub:'How are we feeling today?'},
+      {icon:'ðŸ†',title:'Achievements',sub:'Badges and milestones'},
+      {icon:'ðŸŽ¨',title:'Stickers',sub:'Collect and decorate'},
+      {icon:'ðŸ—ï¸',title:'Secrets',sub:'Puzzle hunts and hidden things'},
     ];
     let idx = 0;
     const card = document.getElementById('card');
@@ -78,5 +78,7 @@
     document.getElementById('next').addEventListener('click',()=>{ if(idx<items.length-1){idx++;show(idx);} });
     show(0);
   </script>
+  <script src="together.js"></script>
+  <script src="avatar.js"></script>
 </body>
 </html>

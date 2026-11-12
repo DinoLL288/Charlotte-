@@ -584,7 +584,7 @@ export class QuestionNightRoom {
         const reminderLeadDays = Number(body.preferences?.reminderLeadDays);
         const reminderTime = String(body.preferences?.reminderTime || '');
         const textSize = ['normal', 'large'].includes(body.preferences?.textSize) ? body.preferences.textSize : '';
-        const homeLayout = ['calm', 'doors'].includes(body.preferences?.homeLayout) ? body.preferences.homeLayout : 'calm';
+        const homeLayout = ['calm', 'doors', 'dyslexia-a', 'dyslexia-b', 'dyslexia-c', 'dyslexia-d', 'dyslexia-e'].includes(body.preferences?.homeLayout) ? body.preferences.homeLayout : 'calm';
         const playfulExtras = body.preferences?.playfulExtras !== false;
         if (!theme || !accent || ![0, 1, 3, 7, 14].includes(reminderLeadDays) || !/^([01]\d|2[0-3]):[0-5]\d$/.test(reminderTime) || !textSize) return Response.json({ error: 'Choose a valid theme, accent, text size, and reminder time.' }, { status: 400 });
         const all = await this.ctx.storage.get('profilePreferences') || {};

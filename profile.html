@@ -82,7 +82,7 @@
     <button class="button" id="saveAvatar">Save profile picture</button>
     <section class="settings-group"><h2>Home page</h2>
       <p class="settings-help">Choose which calmer home page we open to. The calm list is the default; the three-doors layout groups everything into Us, Plans, and Care &amp; quiet.</p>
-      <label class="settings-row" for="homeLayout">Home page layout<select id="homeLayout"><option value="calm">Calm list (default)</option><option value="doors">Three doors (Option A)</option></select></label>
+      <label class="settings-row" for="homeLayout">Home page layout<select id="homeLayout"><option value="calm">Calm list (default)</option><option value="doors">Three doors (Option A)</option><option value="dyslexia-a">Layout A · One thing at a time</option><option value="dyslexia-b">Layout B · Big buttons, big text</option><option value="dyslexia-c">Layout C · Sections with breathing room</option><option value="dyslexia-d">Layout D · Today view</option><option value="dyslexia-e">Layout E · List with icons</option></select></label>
       <div class="shared-account-actions">
         <a class="button" href="design-option-a.html" target="_blank" rel="noopener">Preview Three doors</a>
         <a class="button" href="index.html" target="_blank" rel="noopener">Preview Calm list</a>
@@ -171,7 +171,7 @@ const playfulExtras = document.getElementById('playfulExtras');
       showPresence.checked = preferences.showPresence !== false;
     if (darkMode) darkMode.checked = Boolean(preferences.darkMode);
       playfulExtras.checked = preferences.playfulExtras !== false;
-      if (preferences && preferences.homeLayout) homeLayout.value = preferences.homeLayout === 'doors' ? 'doors' : 'calm';
+      if (preferences && preferences.homeLayout) homeLayout.value = preferences.homeLayout;
       reminderLeadDays.value = String(preferences.reminderLeadDays ?? 1);
       reminderTime.value = preferences.reminderTime || '09:00';
       document.documentElement.dataset.coupleTheme = themeChoice.value;
