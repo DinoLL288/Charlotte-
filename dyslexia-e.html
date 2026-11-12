@@ -1,0 +1,49 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8"><meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Layout E · List with icons</title>
+  <link rel="stylesheet" href="theme.css">
+  <style>
+    body{margin:0;min-height:100vh;font-family:var(--font-body);background:linear-gradient(160deg,#c8edff,#a9dcf7 55%,#8ccfff);color:#10344f}
+    .preview-banner{position:sticky;top:0;z-index:50;padding:10px 16px;text-align:center;background:#143f5f;color:#fff;font-size:.85rem;font-weight:700}
+    .preview-banner a{color:#ecd7a0;margin-left:12px}
+    .hero{padding:50px 20px 20px;text-align:center;color:#fff;background:linear-gradient(160deg,rgba(13,44,68,.85),rgba(42,120,168,.85))}
+    .hero h1{margin:8px 0 4px;font-family:var(--font-display);font-size:clamp(2rem,6vw,2.8rem);font-weight:400}
+    .hero p{margin:0 auto;max-width:40ch;color:#eaf6ff;line-height:1.6;font-size:1.05rem}
+    .wrap{width:min(520px,calc(100% - 32px));margin:30px auto 60px}
+    .row{display:flex;align-items:center;gap:16px;padding:18px 20px;margin-bottom:10px;border-radius:16px;background:rgba(255,255,255,.85);border:2px solid #fff;text-decoration:none;color:#123a58;transition:background .15s}
+    .row:hover{background:rgba(255,255,255,.95)}
+    .row .icon{font-size:1.8rem;width:36px;text-align:center;flex:none}
+    .row .title{font-weight:700;font-size:1.1rem}
+    .sep{height:1px;background:rgba(201,162,74,.3);margin:16px 0}
+    .section-label{font-size:.75rem;font-weight:800;letter-spacing:.12em;text-transform:uppercase;color:#8a6d2b;margin:20px 0 8px;padding-left:4px}
+  </style>
+</head>
+<body>
+  <div class="preview-banner">Layout E · List with icons — single column, linear reading. <a href="dyslexia-layouts.html">Back to chooser</a></div>
+  <header class="hero">
+    <h1>Our little universe</h1>
+    <p>Scroll down. One item per row.</p>
+  </header>
+  <div class="wrap">
+    <div class="section-label">Us</div>
+    <a class="row" href="love.html"><span class="icon">🤍</span><span class="title">Our love</span></a>
+    <a class="row" href="messages.html"><span class="icon">✉️</span><span class="title">Notes</span></a>
+    <a class="row" href="timeline.html"><span class="icon">🌅</span><span class="title">Our timeline</span></a>
+    <a class="row" href="journal.html"><span class="icon">📖</span><span class="title">Memory journal</span></a>
+    <div class="section-label">Plans</div>
+    <a class="row" href="calendar.html"><span class="icon">📅</span><span class="title">Calendar</span></a>
+    <a class="row" href="gallery.html"><span class="icon">📷</span><span class="title">Photos &amp; videos</span></a>
+    <a class="row" href="tiktok.html"><span class="icon">🎵</span><span class="title">TikTok plans</span></a>
+    <div class="section-label">Play</div>
+    <a class="row" href="games.html"><span class="icon">🪙</span><span class="title">Token games</span></a>
+    <a class="row" href="more-games.html"><span class="icon">🎮</span><span class="title">More games</span></a>
+    <a class="row" href="play.html"><span class="icon">🎲</span><span class="title">Play &amp; ask</span></a>
+    <div class="section-label">Care</div>
+    <a class="row" href="apart.html"><span class="icon">🌙</span><span class="title">Quiet days</span></a>
+    <a class="row" href="rules.html"><span class="icon">🕊️</span><span class="title">Rules</span></a>
+    <a class="row" href="bathroom.html"><span class="icon">🚻</span><span class="title">Bathroom</span></a>
+  </div>
+</body>
+</html>

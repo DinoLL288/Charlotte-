@@ -1,0 +1,63 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8"><meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Layout D · Today view</title>
+  <link rel="stylesheet" href="theme.css">
+  <style>
+    body{margin:0;min-height:100vh;font-family:var(--font-body);background:linear-gradient(160deg,#c8edff,#a9dcf7 55%,#8ccfff);color:#10344f}
+    .preview-banner{position:sticky;top:0;z-index:50;padding:10px 16px;text-align:center;background:#143f5f;color:#fff;font-size:.85rem;font-weight:700}
+    .preview-banner a{color:#ecd7a0;margin-left:12px}
+    .hero{padding:50px 20px 20px;text-align:center;color:#fff;background:linear-gradient(160deg,rgba(13,44,68,.85),rgba(42,120,168,.85))}
+    .hero h1{margin:8px 0 4px;font-family:var(--font-display);font-size:clamp(2rem,6vw,2.8rem);font-weight:400}
+    .hero p{margin:0 auto;max-width:40ch;color:#eaf6ff;line-height:1.6;font-size:1.05rem}
+    .wrap{width:min(480px,calc(100% - 32px));margin:30px auto 60px}
+    .today-card{padding:24px;border-radius:20px;background:rgba(255,255,255,.9);border:2px solid #fff;box-shadow:0 14px 34px rgba(29,90,128,.12);margin-bottom:16px;text-align:center}
+    .today-card .label{font-size:.75rem;font-weight:800;letter-spacing:.12em;text-transform:uppercase;color:#8a6d2b;margin-bottom:8px}
+    .today-card .title{font-family:var(--font-display);font-size:1.4rem;color:#123a58;margin-bottom:4px}
+    .today-card .sub{color:#4a7291;font-size:.9rem}
+    .today-card .big-btn{display:inline-block;margin-top:12px;padding:12px 28px;border:2px solid #143f5f;border-radius:999px;background:#143f5f;color:#fff;font:inherit;font-weight:700;font-size:1rem;text-decoration:none}
+    .more-drawer{margin-top:20px}
+    .more-drawer summary{padding:14px 18px;border-radius:16px;background:rgba(255,255,255,.7);color:#123a58;font-weight:700;font-size:1rem;cursor:pointer;border:2px solid #fff}
+    .more-list{display:grid;gap:8px;margin-top:10px}
+    .more-list a{display:flex;align-items:center;gap:12px;padding:12px 16px;border-radius:14px;background:rgba(255,255,255,.7);text-decoration:none;color:#123a58;font-weight:700;font-size:1rem}
+    .more-list a .icon{font-size:1.3rem}
+  </style>
+</head>
+<body>
+  <div class="preview-banner">Layout D · Today view — one thing at a time, rest in a drawer. <a href="dyslexia-layouts.html">Back to chooser</a></div>
+  <header class="hero">
+    <h1>Our little universe</h1>
+    <p>Here's what's happening today.</p>
+  </header>
+  <div class="wrap">
+    <div class="today-card">
+      <div class="label">Today's focus</div>
+      <div class="title">Question night 💬</div>
+      <div class="sub">A shared room that opens when we're both ready</div>
+      <a class="big-btn" href="question-night.html">Open it →</a>
+    </div>
+    <div class="today-card">
+      <div class="label">Also today</div>
+      <div class="title">2 new notes ✉️</div>
+      <div class="sub">Messages waiting from Charlotte</div>
+      <a class="big-btn" href="messages.html">Read them →</a>
+    </div>
+    <details class="more-drawer">
+      <summary>More rooms (10)</summary>
+      <div class="more-list">
+        <a href="love.html"><span class="icon">🤍</span>Our love</a>
+        <a href="timeline.html"><span class="icon">🌅</span>Our timeline</a>
+        <a href="gallery.html"><span class="icon">📷</span>Photos &amp; videos</a>
+        <a href="calendar.html"><span class="icon">📅</span>Calendar</a>
+        <a href="tiktok.html"><span class="icon">🎵</span>TikTok plans</a>
+        <a href="play.html"><span class="icon">🎲</span>Play &amp; ask</a>
+        <a href="games.html"><span class="icon">🪙</span>Token games</a>
+        <a href="more-games.html"><span class="icon">🎮</span>More games</a>
+        <a href="apart.html"><span class="icon">🌙</span>Quiet days</a>
+        <a href="journal.html"><span class="icon">📖</span>Memory journal</a>
+      </div>
+    </details>
+  </div>
+</body>
+</html>

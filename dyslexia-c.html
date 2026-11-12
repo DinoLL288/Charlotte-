@@ -1,0 +1,53 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8"><meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Layout C · Sections with breathing room</title>
+  <link rel="stylesheet" href="theme.css">
+  <style>
+    body{margin:0;min-height:100vh;font-family:var(--font-body);background:linear-gradient(160deg,#c8edff,#a9dcf7 55%,#8ccfff);color:#10344f}
+    .preview-banner{position:sticky;top:0;z-index:50;padding:10px 16px;text-align:center;background:#143f5f;color:#fff;font-size:.85rem;font-weight:700}
+    .preview-banner a{color:#ecd7a0;margin-left:12px}
+    .hero{padding:50px 20px 20px;text-align:center;color:#fff;background:linear-gradient(160deg,rgba(13,44,68,.85),rgba(42,120,168,.85))}
+    .hero h1{margin:8px 0 4px;font-family:var(--font-display);font-size:clamp(2rem,6vw,2.8rem);font-weight:400}
+    .hero p{margin:0 auto;max-width:40ch;color:#eaf6ff;line-height:1.6;font-size:1.05rem}
+    .wrap{width:min(560px,calc(100% - 32px));margin:30px auto 60px}
+    .section{margin-bottom:32px}
+    .section-title{font-family:var(--font-display);font-size:1.4rem;color:#123a58;margin:0 0 16px;padding-bottom:8px;border-bottom:2px solid #c9a24a}
+    .row{display:flex;align-items:center;gap:14px;padding:16px 18px;margin-bottom:10px;border-radius:16px;background:rgba(255,255,255,.85);border:2px solid #fff;text-decoration:none;color:#123a58;transition:background .15s}
+    .row:hover{background:rgba(255,255,255,.95)}
+    .row .icon{font-size:1.6rem;width:32px;text-align:center}
+    .row .title{font-weight:700;font-size:1.05rem}
+    .row .arrow{margin-left:auto;color:#8a6d2b;font-size:1.1rem;opacity:.6}
+  </style>
+</head>
+<body>
+  <div class="preview-banner">Layout C · Sections with breathing room — 3 groups, generous spacing. <a href="dyslexia-layouts.html">Back to chooser</a></div>
+  <header class="hero">
+    <h1>Our little universe</h1>
+    <p>Three sections. Pick where to go.</p>
+  </header>
+  <div class="wrap">
+    <div class="section">
+      <h2 class="section-title">Us</h2>
+      <a class="row" href="love.html"><span class="icon">🤍</span><span class="title">Our love</span><span class="arrow">→</span></a>
+      <a class="row" href="messages.html"><span class="icon">✉️</span><span class="title">Notes</span><span class="arrow">→</span></a>
+      <a class="row" href="timeline.html"><span class="icon">🌅</span><span class="title">Our timeline</span><span class="arrow">→</span></a>
+      <a class="row" href="journal.html"><span class="icon">📖</span><span class="title">Memory journal</span><span class="arrow">→</span></a>
+    </div>
+    <div class="section">
+      <h2 class="section-title">Plans</h2>
+      <a class="row" href="calendar.html"><span class="icon">📅</span><span class="title">Calendar</span><span class="arrow">→</span></a>
+      <a class="row" href="gallery.html"><span class="icon">📷</span><span class="title">Photos &amp; videos</span><span class="arrow">→</span></a>
+      <a class="row" href="tiktok.html"><span class="icon">🎵</span><span class="title">TikTok plans</span><span class="arrow">→</span></a>
+    </div>
+    <div class="section">
+      <h2 class="section-title">Play &amp; care</h2>
+      <a class="row" href="games.html"><span class="icon">🪙</span><span class="title">Token games</span><span class="arrow">→</span></a>
+      <a class="row" href="more-games.html"><span class="icon">🎮</span><span class="title">More games</span><span class="arrow">→</span></a>
+      <a class="row" href="play.html"><span class="icon">🎲</span><span class="title">Play &amp; ask</span><span class="arrow">→</span></a>
+      <a class="row" href="apart.html"><span class="icon">🌙</span><span class="title">Quiet days</span><span class="arrow">→</span></a>
+    </div>
+  </div>
+</body>
+</html>

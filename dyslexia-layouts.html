@@ -1,0 +1,62 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8"><meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Dyslexia-friendly layouts · chooser</title>
+  <link rel="stylesheet" href="theme.css">
+  <style>
+    body{margin:0;min-height:100vh;font-family:var(--font-body);background:linear-gradient(160deg,#c8edff,#a9dcf7 55%,#8ccfff);color:#10344f;padding:40px 20px 60px}
+    .wrap{width:min(960px,100%);margin:0 auto}
+    h1{font-family:var(--font-display);color:#123a58;font-size:clamp(2rem,5vw,2.6rem);margin:0 0 6px}
+    .sub{color:#4a7291;max-width:64ch;line-height:1.6;margin:0 0 28px;font-size:1.05rem}
+    .grid{display:grid;grid-template-columns:repeat(2,1fr);gap:18px}
+    .opt{padding:22px 20px;border-radius:20px;background:rgba(255,255,255,.85);border:1px solid rgba(255,255,255,.9);box-shadow:0 14px 34px rgba(29,90,128,.12);text-decoration:none;color:#123a58;display:block;transition:transform .18s,box-shadow .18s}
+    .opt:hover{transform:translateY(-4px);box-shadow:0 22px 46px rgba(29,90,128,.18)}
+    .opt .code{font-size:.7rem;font-weight:800;letter-spacing:.16em;text-transform:uppercase;color:#8a6d2b;margin-bottom:6px}
+    .opt h2{margin:0 0 6px;font-family:var(--font-display);font-size:1.25rem}
+    .opt p{margin:0;color:#4a7291;font-size:.88rem;line-height:1.55}
+    .opt ul{margin:8px 0 0;padding-left:16px;color:#4a7291;font-size:.82rem;line-height:1.6}
+    .note{margin-top:24px;padding:16px 18px;border-radius:16px;background:rgba(255,255,255,.6);color:#4a7291;font-size:.88rem;line-height:1.6}
+    @media(max-width:600px){.grid{grid-template-columns:1fr}}
+  </style>
+</head>
+<body>
+  <div class="wrap">
+    <h1>Calm layouts for Charlotte</h1>
+    <p class="sub">Five layouts designed for dyslexia and ADHD — fewer items per view, bigger text, more space, clear structure. Browse each, then pick the one that feels best.</p>
+    <div class="grid">
+      <a class="opt" href="dyslexia-a.html">
+        <div class="code">Layout A</div>
+        <h2>One thing at a time</h2>
+        <p>Shows 1-2 items per screen. Swipe or scroll to see more. No overwhelm, no clutter.</p>
+        <ul><li>Single card focus</li><li>Large text (1.2rem+)</li><li>Clear next/prev buttons</li></ul>
+      </a>
+      <a class="opt" href="dyslexia-b.html">
+        <div class="code">Layout B</div>
+        <h2>Big buttons, big text</h2>
+        <p>Large tappable cards with icon + title only. No subtitles. 2 columns max.</p>
+        <ul><li>Minimal text per item</li><li>High contrast</li><li>Big touch targets (60px+)</li></ul>
+      </a>
+      <a class="opt" href="dyslexia-c.html">
+        <div class="code">Layout C</div>
+        <h2>Sections with breathing room</h2>
+        <p>Three groups, each with a big heading and generous spacing. 3-4 items per group.</p>
+        <ul><li>Clear section breaks</li><li>Lots of whitespace</li><li>Easy to scan</li></ul>
+      </a>
+      <a class="opt" href="dyslexia-d.html">
+        <div class="code">Layout D</div>
+        <h2>Today view</h2>
+        <p>Shows only what's relevant today. Everything else is in a "more" drawer.</p>
+        <ul><li>Progressive disclosure</li><li>One primary action</li><li>Quiet by default</li></ul>
+      </a>
+      <a class="opt" href="dyslexia-e.html">
+        <div class="code">Layout E</div>
+        <h2>List with icons</h2>
+        <p>Single column. Icon + title only. Clear separators. No grid to scan.</p>
+        <ul><li>Linear reading</li><li>One item per row</li><li>Consistent spacing</li></ul>
+      </a>
+    </div>
+    <div class="note">These are visual previews only. The hub page is untouched. Browse each and tell me which feels best for Charlotte.</div>
+  </div>
+</body>
+</html>
