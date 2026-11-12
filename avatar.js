@@ -95,6 +95,13 @@
   } catch (e) {}
   document.body.appendChild(darkToggle);
 
+  // Mount profile picture
+  if (document.readyState === 'loading') {
+    document.addEventListener('DOMContentLoaded', mount);
+  } else {
+    mount();
+  }
+
   const lastFetch = Number(localStorage.getItem(cacheKey + '-time') || 0);
   if (Date.now() - lastFetch >= 5 * 60 * 1000) {
     fetch('/api/profile?user=' + encodeURIComponent(user))
