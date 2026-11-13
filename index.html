@@ -467,9 +467,7 @@
         // Redirect to dyslexia layout pages
         const dyslexiaLayouts = ['dyslexia-a','dyslexia-b','dyslexia-c','dyslexia-d','dyslexia-e'];
         if (dyslexiaLayouts.includes(layout)) {
-          if (window.top === window.self) {
-            window.location.href = layout + '.html';
-          }
+          window.location.href = layout + '.html';
           return;
         }
         const calmHero = document.getElementById('hero-calm');
