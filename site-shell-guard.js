@@ -21,25 +21,27 @@
     const style = document.createElement('style');
     style.id = styleId;
     style.textContent = `
-      html[data-quiet-days="on"] { color-scheme: dark; --ink:#e8edf5; --ink-soft:#c0ccda; --ink-faint:#a5b2c2; --surface:#1b273a; --surface-soft:#253247; --line:#3a4659; --line-strong:#536176; --accent-soft:#34445a; --accent-ink:#d5e5f4; --gold-ink:#ead39a; --bg:#101a2b; }
-      html[data-quiet-days="on"] body { color:#e8edf5!important; background:#101a2b!important; background-image:radial-gradient(ellipse at 50% 0%,#26334a 0%,#101a2b 62%)!important; }
-      html[data-quiet-days="on"] body :is(h1,h2,h3,h4,h5,h6,strong,b,legend,.title,.range,.section-title,.section-heading,.group-title,.row-title,.calm-title) { color:#f1f3f7!important; }
-      html[data-quiet-days="on"] body :is(p,small,label,li,dt,dd,.subtitle,.intro,.hint,.form-hint,.meta,.status,.description,.row-sub,.calm-sub,.section-label) { color:#c0ccda!important; }
-      html[data-quiet-days="on"] body a:not(.button):not(.small):not(.mini):not(.primary) { color:#d5e5f4!important; }
-      html[data-quiet-days="on"] body :is(.panel,.card,.composer,.entry,.item,.person,.tool-card,.moment,.plan,.upload-card,.gallery-toolbar,.album-card,.modal-card,.td-current,.td-custom,.td-history,.td-rules,.prompt-card,.settings-group,.shared-account,.calendar-card,.month-card,.group-card,.door,.group,.section,.site-dialog,.calm-row,.hub-row,.event,.day,.empty,details.fold) { color:#e8edf5!important; background-color:#1b273a!important; background-image:none!important; border-color:#3a4659!important; box-shadow:0 12px 32px #050a1433!important; }
-      html[data-quiet-days="on"] body :is(.hub-row,.calm-row,.door-links a,.group-card a) { color:#e8edf5!important; }
-      html[data-quiet-days="on"] body :is(input,textarea,select,.site-dialog-input) { color:#eef2f7!important; background-color:#111c2c!important; border-color:#536176!important; }
-      html[data-quiet-days="on"] body :is(input,textarea,select)::placeholder { color:#a5b2c2!important; }
-      html[data-quiet-days="on"] body :is(button,.button,.small,.mini,.primary,.tab,.album-filter,.site-dialog-button,.door-links a) { color:#f4f6fa!important; background-color:#34445a!important; border-color:#617087!important; }
-      html[data-quiet-days="on"] body :is(.top-bar .button,.button.secondary,.button.ghost,.small, .mini) { color:#e5eaf1!important; background-color:#253247!important; }
-      html[data-quiet-days="on"] body :is(.chip,.badge,.event-badge,.today-tag) { color:#f1e2b9!important; background-color:#574b32!important; border-color:#756343!important; }
-      html[data-quiet-days="on"] body img,html[data-quiet-days="on"] body video,html[data-quiet-days="on"] body canvas { filter:brightness(.82) saturate(.82); }
-      #${bannerId} { position:fixed; z-index:2147483000; inset:0 0 auto; min-height:50px; display:flex; align-items:center; justify-content:center; gap:10px; padding:8px 16px; color:#f8f3e7; background:linear-gradient(100deg,#172238,#27344b 55%,#172238); border-bottom:1px solid #c4ab70; box-shadow:0 5px 22px #050a1466; font:700 14px/1.35 system-ui,-apple-system,"Segoe UI",sans-serif; text-align:center; }
-      #${bannerId} .quiet-days-global-moon { color:#f1d89d; font-size:19px; }
-      #${bannerId} .quiet-days-global-detail { color:#d2d9e3; font-weight:500; }
-      html[data-quiet-days="on"] body { padding-top:58px!important; }
-      html[data-quiet-days="on"] body .top-bar { top:66px!important; }
-      @media(max-width:520px) { #${bannerId} { min-height:54px; flex-wrap:wrap; gap:2px 8px; padding:7px 10px; font-size:12px; } html[data-quiet-days="on"] body { padding-top:62px!important; } html[data-quiet-days="on"] body .top-bar { top:70px!important; } }
+      /* Whole-site Quiet Days: a deliberate midnight palette, not a small tint. */
+      html[data-quiet-days="on"] { color-scheme:dark; --ink:#f0f3f8; --ink-soft:#d0d8e4; --ink-faint:#b5c0d0; --surface:#202b40; --surface-soft:#2a3850; --line:#53617a; --line-strong:#71809a; --accent-soft:#354661; --accent-ink:#e0e9f4; --gold-ink:#f2d89b; --bg:#111a2b; }
+      html[data-quiet-days="on"] body { padding-top:86px!important; color:#f0f3f8!important; background:#111a2b!important; background-image:radial-gradient(ellipse at 50% -12%,#45516d 0%,#202c43 38%,#111a2b 78%)!important; }
+      html[data-quiet-days="on"] body :is(h1,h2,h3,h4,h5,h6,strong,b,legend,.title,.range,.section-title,.section-heading,.group-title,.row-title,.calm-title) { color:#fff8e9!important; }
+      html[data-quiet-days="on"] body :is(p,small,label,li,dt,dd,.subtitle,.intro,.hint,.form-hint,.meta,.status,.description,.row-sub,.calm-sub,.section-label) { color:#d0d8e4!important; }
+      html[data-quiet-days="on"] body a:not(.button):not(.small):not(.mini):not(.primary) { color:#e4d3a7!important; }
+      html[data-quiet-days="on"] body :is(header,main,footer,section,article,aside,nav,form,details,dialog,[class*="card"],[class*="panel"],[class*="tile"],[class*="row"],[class*="item"],[class*="entry"],[class*="group"],[class*="door"],[class*="toolbar"],[class*="history"],[class*="person"],[class*="prompt"],[class*="plan"],[class*="moment"],[class*="section"]) { color:#f0f3f8!important; background-color:#202b40!important; background-image:none!important; border-color:#53617a!important; box-shadow:0 12px 34px #05091455!important; }
+      html[data-quiet-days="on"] body :is(header.hero,.hero,.hub-hero,.hero-doors,.gallery-hero) { color:#fff8e9!important; background:radial-gradient(ellipse at 50% 0%,#596581,#283650 58%,#1a263b)!important; }
+      html[data-quiet-days="on"] body :is(input,textarea,select,.site-dialog-input) { color:#f3f5f8!important; background-color:#121d30!important; border-color:#71809a!important; }
+      html[data-quiet-days="on"] body :is(input,textarea,select)::placeholder { color:#b5c0d0!important; }
+      html[data-quiet-days="on"] body :is(button,.button,.small,.mini,.primary,.tab,.album-filter,.site-dialog-button,.door-links a) { color:#fff8e9!important; background-color:#42516d!important; border-color:#8491a8!important; }
+      html[data-quiet-days="on"] body :is(.button.secondary,.button.ghost,.small,.mini,.top-bar .button) { color:#f0e2bd!important; background-color:#29364d!important; border-color:#71809a!important; }
+      html[data-quiet-days="on"] body :is(.chip,.badge,.event-badge,.today-tag) { color:#fff0c8!important; background-color:#655632!important; border-color:#a28b52!important; }
+      html[data-quiet-days="on"] body .hub-hero-photo::after { background:linear-gradient(180deg,#141c2caa,#141c2cdd)!important; }
+      html[data-quiet-days="on"] body img,html[data-quiet-days="on"] body video,html[data-quiet-days="on"] body canvas { filter:brightness(.88) saturate(.86); }
+      #${bannerId} { position:fixed; z-index:2147483000; inset:0 0 auto; min-height:72px; display:flex; align-items:center; justify-content:center; gap:13px; padding:12px 18px; color:#fff8e9; background:linear-gradient(100deg,#111a2b,#303d58 50%,#111a2b); border-bottom:2px solid #d5bd80; box-shadow:0 8px 32px #05091499; font:800 15px/1.35 system-ui,-apple-system,"Segoe UI",sans-serif; letter-spacing:.08em; text-align:center; }
+      #${bannerId} .quiet-days-global-moon { color:#f2d89b; font-size:26px; }
+      #${bannerId} .quiet-days-global-pill { padding:5px 9px; border:1px solid #d5bd80; border-radius:999px; color:#f2d89b; font-size:11px; letter-spacing:.12em; }
+      #${bannerId} .quiet-days-global-detail { color:#e0e5ed; font-weight:500; letter-spacing:0; }
+      html[data-quiet-days="on"] body .top-bar { top:94px!important; }
+      @media(max-width:600px) { html[data-quiet-days="on"] body { padding-top:92px!important; } #${bannerId} { min-height:82px; flex-wrap:wrap; gap:3px 8px; padding:8px 10px; font-size:12px; } #${bannerId} .quiet-days-global-moon { font-size:20px; } #${bannerId} .quiet-days-global-detail { flex-basis:100%; } html[data-quiet-days="on"] body .top-bar { top:102px!important; } }
       @media(prefers-reduced-motion:reduce) { #${bannerId} { scroll-behavior:auto; } }
     `;
     (document.head || document.documentElement).appendChild(style);
@@ -65,7 +67,7 @@
       banner.id = bannerId;
       banner.setAttribute('role', 'status');
       banner.setAttribute('aria-live', 'polite');
-      banner.innerHTML = '<span class="quiet-days-global-moon" aria-hidden="true">☾</span><span>QUIET DAYS ARE ON</span><span class="quiet-days-global-detail"></span>';
+      banner.innerHTML = '<span class="quiet-days-global-moon" aria-hidden="true">☾</span><span>QUIET DAYS MODE</span><span class="quiet-days-global-pill">ON</span><span class="quiet-days-global-detail"></span>';
       document.body.appendChild(banner);
     }
     const detail = banner.querySelector('.quiet-days-global-detail');
@@ -84,7 +86,7 @@
         : null;
       setQuietDays(active || null);
     } catch (error) {
-      // Keep the current visual state if the status service is briefly unavailable.
+      // Preserve the current look if status cannot be checked right now.
     }
   }
 
