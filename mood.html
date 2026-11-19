@@ -2,163 +2,62 @@
 <html lang="en">
 <head>
   <script src="site-shell-guard.js"></script>
-  <meta charset="UTF-8"><meta name="viewport" content="width=device-width, initial-scale=1.0"><title>Mood · How are we feeling?</title>
-  <script>if (!localStorage.getItem('charlotte-user')) location.href = 'login.html';</script>
-  <link rel="stylesheet" href="theme.css">
-  <link rel="stylesheet" href="site-bundle.css" data-site-polish="true" data-site-theme="true">
+  <meta charset="UTF-8"><meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover"><title>Mood · How are we feeling?</title>
+  <script>if(!localStorage.getItem('charlotte-user'))location.href='login.html';</script>
+  <link rel="stylesheet" href="theme.css"><link rel="stylesheet" href="site-bundle.css" data-site-polish="true" data-site-theme="true">
   <style>
-    .hero{padding:78px 20px 66px;text-align:center;color:#fff;background:linear-gradient(160deg,#0d2c44,#2a78a8)}.hero .eyebrow{color:var(--gold-soft)}.hero h1{margin:10px 0;font-size:clamp(2.2rem,7vw,3.5rem);font-weight:400}.hero p:last-child{max-width:54ch;margin:0 auto;color:#e6f3fc;line-height:1.6}.top-bar{position:absolute;top:16px;left:16px;z-index:2}.shell{width:min(720px,100%);margin:-30px auto 60px;padding:0 18px;position:relative}
-    .mood-log{padding:20px;border-radius:18px;background:rgba(255,255,255,.78);border:1px solid rgba(255,255,255,.9);margin-bottom:16px;box-shadow:0 8px 24px rgba(29,90,128,.1)}
-    .mood-log h3{margin:0 0 12px;font-family:var(--font-display);color:#123a58}
-    .mood-today{display:flex;gap:8px;flex-wrap:wrap;margin-bottom:12px}
-    .mood-btn{padding:10px 14px;border:1px solid #d5e3ec;border-radius:999px;background:#fff;font-size:1.3rem;cursor:pointer;transition:transform .15s,background .15s,border-color .15s}
-    .mood-btn:hover{transform:scale(1.1);background:#edf7fd}
-    .mood-btn.selected{background:#fff3d6;border-color:#c9a24a}
-    .mood-cal{display:grid;grid-template-columns:repeat(7,1fr);gap:4px;margin-top:12px}
-    .mood-day{aspect-ratio:1;border-radius:8px;display:grid;place-items:center;font-size:1.1rem;background:#f0f5fa;cursor:pointer;transition:transform .15s}
-    .mood-day:hover{transform:scale(1.1)}
-    .mood-day.empty{background:transparent;cursor:default}
-    .mood-day.today{border:2px solid #c9a24a}
-    .days-header{display:grid;grid-template-columns:repeat(7,1fr);gap:4px;margin-bottom:4px;text-align:center;font-size:.65rem;font-weight:700;color:#7b91a0;text-transform:uppercase}
-    .mood-insights{padding:20px;border-radius:18px;background:rgba(255,255,255,.78);border:1px solid rgba(255,255,255,.9);box-shadow:0 8px 24px rgba(29,90,128,.1)}
-    .mood-insights h3{margin:0 0 12px;font-family:var(--font-display);color:#123a58}
-    .insight{padding:10px 0;border-bottom:1px solid #e4edf2;font-size:.88rem;color:#4a7291;line-height:1.5}
-    .insight:last-child{border-bottom:0}
-    .insight strong{color:#123a58}
-    .status{min-height:1.4em;margin:12px 0 0;color:#73591f;font-weight:700}
-    @media(max-width:520px){.mood-today{justify-content:center}}
+    body{margin:0;min-height:100vh;font-family:var(--font-body);background:linear-gradient(160deg,#edf8ff,#badff5 100%);color:#123a58}.hero{padding:78px 20px 48px;text-align:center;color:#fff;background:linear-gradient(160deg,#0d2c44,#2a78a8)}.hero h1{margin:8px 0;font-size:clamp(2.2rem,8vw,3.5rem)}.hero p{margin:0 auto;max-width:48ch;opacity:.9}.shell{width:min(980px,calc(100% - 32px));margin:-28px auto 70px}.panel{padding:18px;border-radius:20px;background:rgba(255,255,255,.88);border:1px solid rgba(255,255,255,.95);box-shadow:0 10px 30px rgba(29,90,128,.12);margin-bottom:14px}.panel h2,.panel h3{font-family:var(--font-display);margin:0 0 12px}.top-bar{position:absolute}.button{padding:10px 16px;border-radius:999px;background:#123a58;color:#fff;text-decoration:none;font-weight:700;font-size:.9rem;border:0;cursor:pointer}.button.secondary{background:#edf4f8;color:#123a58}.mood-grid{display:grid;grid-template-columns:repeat(7,1fr);gap:8px}.mood-btn{min-height:68px;border:1px solid #d5e3ec;border-radius:16px;background:#fff;font-size:1.55rem;cursor:pointer;display:grid;place-items:center;gap:2px;transition:.15s}.mood-btn small{font-size:.68rem;color:#6a8292}.mood-btn:hover{transform:translateY(-2px);box-shadow:0 8px 18px rgba(52,127,163,.12)}.mood-btn.selected{background:#fff4d8;border-color:#c9a24a;box-shadow:0 0 0 2px #c9a24a55}.intensity{display:flex;align-items:center;gap:10px;margin:14px 0}.intensity input{flex:1}.note{width:100%;min-height:72px;resize:vertical;border:1px solid #d5e3ec;border-radius:12px;padding:11px;font:inherit;box-sizing:border-box}.status{min-height:1.4em;margin:8px 0 0;color:#73591f;font-weight:700}.calendar-top{display:flex;justify-content:space-between;align-items:center}.calendar-nav{display:flex;gap:6px}.calendar-nav .button{padding:8px 12px}.days-header,.mood-cal{display:grid;grid-template-columns:repeat(7,1fr);gap:5px}.days-header{text-align:center;font-size:.68rem;font-weight:800;color:#7b91a0;text-transform:uppercase;margin-bottom:5px}.mood-day{min-height:78px;border-radius:12px;background:#eff5f8;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:4px;cursor:pointer;border:1px solid transparent}.mood-day.empty{background:transparent;cursor:default}.mood-day.today{border-color:#c9a24a}.day-number{font-size:.7rem;color:#7891a1}.day-mood{font-size:1.25rem}.day-by{font-size:.62rem;color:#7891a1;text-align:center}.day-mood-text{font-size:.68rem}.stats{display:grid;grid-template-columns:repeat(4,1fr);gap:8px}.stat{border-radius:14px;background:#edf6fb;padding:12px;text-align:center}.stat strong{display:block;font-size:1.25rem;color:#123a58}.stat span{font-size:.72rem;color:#6a8292}.trend{display:grid;gap:7px}.trend-row{display:grid;grid-template-columns:90px 1fr 28px;align-items:center;gap:8px;font-size:.78rem}.trend-bar{height:8px;border-radius:999px;background:#dfedf5;overflow:hidden}.trend-bar i{display:block;height:100%;border-radius:999px;background:#73add2}.partner-grid{display:grid;grid-template-columns:1fr 1fr;gap:10px}.partner-card{border-radius:14px;background:#eff7fb;padding:12px}.partner-card strong{display:block;margin-bottom:5px}.partner-card span{font-size:.85rem;color:#5c7c93}.two-col{display:grid;grid-template-columns:1.15fr .85fr;gap:14px}@media(max-width:720px){.mood-grid{grid-template-columns:repeat(4,1fr)}.stats{grid-template-columns:repeat(2,1fr)}.two-col,.partner-grid{grid-template-columns:1fr}.mood-day{min-height:62px}.shell{width:calc(100% - 20px)}}
   </style>
 </head>
 <body>
-  <div class="top-bar"><a class="button" href="index.html">← Back to hub</a></div>
-  <header class="hero"><p class="eyebrow">How are we feeling?</p><h1>Mood tracker</h1><p>Log your mood each day. Over time, patterns emerge.</p></header>
+  <div class="top-bar"><a class="button secondary" href="index.html">← Back to hub</a></div>
+  <header class="hero"><p style="text-transform:uppercase;letter-spacing:.12em;font-size:.8rem">How are we feeling?</p><h1>Mood tracker</h1><p>A calmer way to notice how we are, without trying to fix anything straight away.</p></header>
   <main class="shell">
-    <div class="mood-log">
-      <h3>Today's mood</h3>
-      <div class="mood-today" id="moodToday">
-        <button class="mood-btn" data-mood="🥰">🥰</button>
-        <button class="mood-btn" data-mood="💛">💛</button>
-        <button class="mood-btn" data-mood="🌙">🌙</button>
-        <button class="mood-btn" data-mood="🤔">🤔</button>
-        <button class="mood-btn" data-mood="😴">😴</button>
-        <button class="mood-btn" data-mood="😤">😤</button>
-        <button class="mood-btn" data-mood="🎉">🎉</button>
+    <section class="panel">
+      <h2 id="logTitle">How are you feeling today?</h2>
+      <div class="mood-grid" id="moodChoices">
+        <button class="mood-btn" data-mood="🥰"><span>🥰</span><small>Loved</small></button><button class="mood-btn" data-mood="😊"><span>😊</span><small>Happy</small></button><button class="mood-btn" data-mood="💛"><span>💛</span><small>Calm</small></button><button class="mood-btn" data-mood="🌙"><span>🌙</span><small>Tired</small></button><button class="mood-btn" data-mood="🤔"><span>🤔</span><small>Unsure</small></button><button class="mood-btn" data-mood="😤"><span>😤</span><small>Stressed</small></button><button class="mood-btn" data-mood="😔"><span>😔</span><small>Low</small></button>
       </div>
-      <p style="color:#7b91a0;font-size:.85rem;margin:0;">Tap a mood to log it for today.</p>
-      <p class="status" id="moodStatus" role="status"></p>
+      <div class="intensity"><strong>Intensity</strong><input id="intensity" type="range" min="1" max="5" value="3" aria-label="Mood intensity"><strong id="intensityValue">3</strong></div>
+      <textarea class="note" id="moodNote" maxlength="300" placeholder="Optional note: what is behind this mood?"></textarea>
+      <div style="display:flex;align-items:center;gap:10px;margin-top:10px"><button class="button" id="saveMood" type="button">Save today</button><span class="status" id="moodStatus" role="status"></span></div>
+    </section>
+
+    <div class="two-col">
+      <section class="panel">
+        <div class="calendar-top"><h2 id="calMonth">Mood calendar</h2><div class="calendar-nav"><button class="button secondary" id="prevMonth" type="button">←</button><button class="button secondary" id="nextMonth" type="button">→</button></div></div>
+        <div class="days-header"><span>Sun</span><span>Mon</span><span>Tue</span><span>Wed</span><span>Thu</span><span>Fri</span><span>Sat</span></div>
+        <div class="mood-cal" id="moodCal"></div>
+      </section>
+      <aside>
+        <section class="panel"><h3>This month</h3><div class="stats" id="stats"></div></section>
+        <section class="panel"><h3>Partner check-in</h3><div class="partner-grid" id="partnerCheck"></div></section>
+      </aside>
     </div>
-    <div class="mood-log">
-      <h3 id="calMonth">November 2026</h3>
-      <div class="days-header"><span>S</span><span>M</span><span>T</span><span>W</span><span>T</span><span>F</span><span>S</span></div>
-      <div class="mood-cal" id="moodCal"></div>
-    </div>
-    <div class="mood-insights" id="insights" style="display:none">
-      <h3>Insights</h3>
-      <div id="insightsList"></div>
-    </div>
+
+    <section class="panel"><h3>30-day trend</h3><div class="trend" id="trend"></div></section>
   </main>
   <script src="dialog.js"></script><script src="avatar.js"></script>
   <script>
   (function(){
-    const user = localStorage.getItem('charlotte-user') || 'Unknown';
-    const moodToday = document.getElementById('moodToday');
-    const moodStatus = document.getElementById('moodStatus');
-    const moodCal = document.getElementById('moodCal');
-    const calMonth = document.getElementById('calMonth');
-    const insights = document.getElementById('insights');
-    const insightsList = document.getElementById('insightsList');
-    const moods = {};
-    let currentMonth = new Date();
-
-    function dateKey(d){ const y=d.getFullYear(); const m=String(d.getMonth()+1).padStart(2,'0'); const day=String(d.getDate()).padStart(2,'0'); return `${y}-${m}-${day}`; }
-
-    async function loadMoods() {
-      try {
-        const res = await fetch('/api/question-room?view=mood&user=' + encodeURIComponent(user), { cache: 'no-store' });
-        const json = await res.json();
-        if (json.moods) Object.assign(moods, json.moods);
-      } catch (e) { /* use empty */ }
-      renderCalendar();
-      renderInsights();
-    }
-
-    async function saveMood(date, mood) {
-      try {
-        const res = await fetch('/api/question-room', { method: 'POST', headers: { 'content-type': 'application/json' }, body: JSON.stringify({ action: 'mood', user, date, mood }) });
-        const json = await res.json();
-        if (!res.ok) throw new Error(json.error || 'Could not save mood');
-        if (json.moods) Object.assign(moods, json.moods);
-        moodStatus.textContent = 'Mood saved for today.';
-        renderCalendar();
-        renderInsights();
-      } catch (e) { moodStatus.textContent = e.message; }
-    }
-
-    moodToday.querySelectorAll('.mood-btn').forEach(btn => {
-      btn.addEventListener('click', () => {
-        moodToday.querySelectorAll('.mood-btn').forEach(b => b.classList.remove('selected'));
-        btn.classList.add('selected');
-        saveMood(dateKey(new Date()), btn.dataset.mood);
-      });
-    });
-
-    // Set today's mood if already logged
-    const todayKey = dateKey(new Date());
-    if (moods[todayKey]) {
-      moodToday.querySelectorAll('.mood-btn').forEach(b => {
-        if (b.dataset.mood === moods[todayKey]) b.classList.add('selected');
-      });
-    }
-
-    function renderCalendar() {
-      const year = currentMonth.getFullYear();
-      const month = currentMonth.getMonth();
-      calMonth.textContent = currentMonth.toLocaleDateString(undefined, { month: 'long', year: 'numeric' });
-      const daysInMonth = new Date(year, month + 1, 0).getDate();
-      const firstDay = new Date(year, month, 1).getDay();
-      const today = dateKey(new Date());
-      let html = '';
-      for (let i = 0; i < firstDay; i++) html += '<div class="mood-day empty"></div>';
-      for (let d = 1; d <= daysInMonth; d++) {
-        const key = `${year}-${String(month+1).padStart(2,'0')}-${String(d).padStart(2,'0')}`;
-        const mood = moods[key] || '';
-        const isToday = key === today;
-        html += `<div class="mood-day${isToday ? ' today' : ''}" data-date="${key}">${mood}</div>`;
-      }
-      moodCal.innerHTML = html;
-      moodCal.querySelectorAll('.mood-day:not(.empty)').forEach(day => {
-        day.addEventListener('click', () => {
-          const d = day.dataset.date;
-          if (d === todayKey) {
-            // Already handled by mood buttons
-          }
-        });
-      });
-    }
-
-    function renderInsights() {
-      const entries = Object.entries(moods);
-      if (entries.length < 3) { insights.style.display = 'none'; return; }
-      insights.style.display = 'block';
-      const moodCounts = {};
-      entries.forEach(([k, v]) => { moodCounts[v] = (moodCounts[v] || 0) + 1; });
-      const topMood = Object.entries(moodCounts).sort((a, b) => b[1] - a[1])[0];
-      const total = entries.length;
-      let streak = 0;
-      const sorted = entries.map(([k]) => k).sort().reverse();
-      for (let i = 0; i < sorted.length; i++) {
-        const expected = new Date(); expected.setDate(expected.getDate() - i);
-        if (sorted[i] === dateKey(expected)) streak++;
-        else break;
-      }
-      insightsList.innerHTML = `
-        <div class="insight"><strong>Most common mood:</strong> ${topMood[0]} (${topMood[1]} out of ${total} days)</div>
-        <div class="insight"><strong>Days logged:</strong> ${total}</div>
-        <div class="insight"><strong>Current streak:</strong> ${streak} day${streak !== 1 ? 's' : ''} in a row</div>
-      `;
-    }
-
-    loadMoods();
+    const user=localStorage.getItem('charlotte-user')||'Unknown';
+    const today=new Date();let current=new Date(today.getFullYear(),today.getMonth(),1);let entries={};let selectedMood='';
+    const moodChoices=document.getElementById('moodChoices'),cal=document.getElementById('moodCal'),monthLabel=document.getElementById('calMonth'),status=document.getElementById('moodStatus'),note=document.getElementById('moodNote'),intensity=document.getElementById('intensity');
+    const emojiLabels={'🥰':'Loved','😊':'Happy','💛':'Calm','🌙':'Tired','🤔':'Unsure','😤':'Stressed','😔':'Low'};
+    function pad(n){return String(n).padStart(2,'0')}function key(d){return `${d.getFullYear()}-${pad(d.getMonth()+1)}-${pad(d.getDate())}`}function todayKey(){return key(today)}
+    function normalizeEntry(value){if(!value)return null;if(typeof value==='string')return{mood:value,intensity:3,note:''};return{mood:value.mood||'',intensity:Number(value.intensity)||3,note:String(value.note||'')}}
+    async function load(){try{const r=await fetch('/api/question-room?view=mood&user='+encodeURIComponent(user),{cache:'no-store'}),j=await r.json();entries=j.entries||j.moods||{};}catch{}render();}
+    function personEntries(person){const source=entries[person]||{};return Object.fromEntries(Object.entries(source).map(([date,value])=>[date,normalizeEntry(value)]).filter(([,v])=>v&&v.mood));}
+    function myEntry(date=todayKey()){return normalizeEntry((entries[user]&&entries[user][date])||null)}
+    async function save(){if(!selectedMood){status.textContent='Choose a mood first.';return;}const button=document.getElementById('saveMood');button.disabled=true;status.textContent='Saving…';try{const r=await fetch('/api/question-room',{method:'POST',headers:{'content-type':'application/json'},body:JSON.stringify({action:'mood',user,date:todayKey(),mood:selectedMood,intensity:Number(intensity.value),note:note.value.trim()})});const j=await r.json();if(!r.ok)throw new Error(j.error||'Could not save mood');entries=j.entries||entries;if(j.moods&&(!j.entries||typeof j.entries!=='object')){entries[user]=j.moods;}status.textContent='Mood saved for today.';render();}catch(e){status.textContent=e.message||'Could not save mood';}finally{button.disabled=false;}}
+    moodChoices.addEventListener('click',e=>{const button=e.target.closest('.mood-btn');if(!button)return;selectedMood=button.dataset.mood;moodChoices.querySelectorAll('.mood-btn').forEach(b=>b.classList.toggle('selected',b===button));});intensity.addEventListener('input',()=>document.getElementById('intensityValue').textContent=intensity.value);document.getElementById('saveMood').addEventListener('click',save);
+    document.getElementById('prevMonth').addEventListener('click',()=>{current=new Date(current.getFullYear(),current.getMonth()-1,1);renderCalendar()});document.getElementById('nextMonth').addEventListener('click',()=>{current=new Date(current.getFullYear(),current.getMonth()+1,1);renderCalendar()});
+    function renderCalendar(){monthLabel.textContent=current.toLocaleDateString(undefined,{month:'long',year:'numeric'});cal.replaceChildren();const year=current.getFullYear(),month=current.getMonth(),first=new Date(year,month,1).getDay(),count=new Date(year,month+1,0).getDate();for(let i=0;i<first;i++){const blank=document.createElement('div');blank.className='mood-day empty';cal.appendChild(blank);}const mine=personEntries(user),other=personEntries(user==='Charlotte'?'Luke':'Charlotte');for(let day=1;day<=count;day++){const date=new Date(year,month,day),dateKey=key(date),a=mine[dateKey],b=other[dateKey],cell=document.createElement('div');cell.className='mood-day'+(dateKey===todayKey()?' today':'');const number=document.createElement('span');number.className='day-number';number.textContent=day;cell.appendChild(number);if(a||b){const moods=document.createElement('span');moods.className='day-mood';moods.textContent=(a?a.mood:'·')+(b?' '+b.mood:'');cell.appendChild(moods);if(a&&a.intensity>=4){const level=document.createElement('span');level.className='day-mood-text';level.textContent='strong';cell.appendChild(level);}if(a&&a.note){cell.title=a.note;} }cal.appendChild(cell);}}
+    function setSelected(entry){if(!entry)return;selectedMood=entry.mood;moodChoices.querySelectorAll('.mood-btn').forEach(b=>b.classList.toggle('selected',b.dataset.mood===entry.mood));intensity.value=entry.intensity||3;document.getElementById('intensityValue').textContent=intensity.value;note.value=entry.note||'';}
+    function renderStats(){const mine=personEntries(user);const start=new Date(today);start.setDate(start.getDate()-29);const recent=Object.entries(mine).filter(([date])=>new Date(date+'T12:00:00')>=start).sort(([a],[b])=>a.localeCompare(b));let streak=0;for(let i=0;i<400;i++){const date=new Date(today);date.setDate(today.getDate()-i);if(mine[key(date)])streak++;else if(i===0)continue;else break;}const counts={};recent.forEach(([,v])=>counts[v.mood]=(counts[v.mood]||0)+1);const top=Object.entries(counts).sort((a,b)=>b[1]-a[1])[0];const average=recent.length? (recent.reduce((sum,[,v])=>sum+(v.intensity||0),0)/recent.length).toFixed(1):'—';document.getElementById('stats').innerHTML=`<div class="stat"><strong>${recent.length}</strong><span>logged this month</span></div><div class="stat"><strong>${streak}</strong><span>day streak</span></div><div class="stat"><strong>${top?top[0]:'—'}</strong><span>most common</span></div><div class="stat"><strong>${average}</strong><span>avg. intensity</span></div>`;}
+    function renderPartner(){const otherName=user==='Charlotte'?'Luke':'Charlotte',mine=personEntries(user),other=personEntries(otherName),myToday=myEntry();const latest=Object.entries(other).sort(([a],[b])=>b.localeCompare(a))[0];document.getElementById('partnerCheck').innerHTML=`<div class="partner-card"><strong>You today</strong><span>${myToday?myToday.mood+' · '+emojiLabels[myToday.mood]+' · intensity '+myToday.intensity:'Not logged yet'}</span></div><div class="partner-card"><strong>${otherName}</strong><span>${latest?(latest[1].mood+' · '+emojiLabels[latest[1].mood]+' · '+latest[0]):'Not logged yet'}</span></div>`;}
+    function renderTrend(){const mine=personEntries(user),trend=document.getElementById('trend'),counts={};Object.values(mine).forEach(v=>counts[v.mood]=(counts[v.mood]||0)+1);const values=Object.entries(counts).sort((a,b)=>b[1]-a[1]).slice(0,6),max=Math.max(1,...values.map(v=>v[1]));trend.innerHTML=values.length?values.map(([mood,count])=>`<div class="trend-row"><span>${mood} ${emojiLabels[mood]||''}</span><div class="trend-bar"><i style="width:${Math.round(count/max*100)}%"></i></div><strong>${count}</strong></div>`).join(''):'<span style="color:#6a8292">Your 30-day trend will appear after a few check-ins.</span>';}
+    function render(){renderCalendar();renderStats();renderPartner();renderTrend();const mine=myEntry();if(mine)setSelected(mine);}load();
   })();
   </script>
 </body>
