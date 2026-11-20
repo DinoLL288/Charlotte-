@@ -500,7 +500,7 @@
       var detail = document.getElementById('euReminderDetail');
       var close = document.getElementById('euReminderClose');
       if (!banner || !detail || !close) return;
-      var target = new Date('2026-11-20T00:00:00');
+      var target = new Date('2026-11-27T00:00:00');
       var today = new Date();
       today.setHours(0, 0, 0, 0);
       var days = Math.ceil((target - today) / 86400000);
@@ -509,7 +509,7 @@
         ? 'Check whether eu.org approved your domain today.'
         : days === 1
           ? 'Check whether eu.org approved your domain tomorrow.'
-          : 'Check whether eu.org approved your domain in ' + days + ' days (around 20 Nov).';
+          : 'Check whether eu.org approved your domain in ' + days + ' days (around 27 Nov).';
       banner.hidden = false;
       close.addEventListener('click', function (e) {
         e.preventDefault();
