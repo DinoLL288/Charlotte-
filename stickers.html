@@ -7,39 +7,51 @@
   <link rel="stylesheet" href="assets/css/theme.css">
   <link rel="stylesheet" href="assets/css/site-bundle.css" data-site-polish="true" data-site-theme="true">
   <style>
-    .hero{padding:78px 20px 66px;text-align:center;color:#fff;background:linear-gradient(160deg,#0d2c44,#2a78a8)}.hero .eyebrow{color:var(--gold-soft)}.hero h1{margin:10px 0;font-size:clamp(2.2rem,7vw,3.5rem);font-weight:400}.hero p:last-child{max-width:54ch;margin:0 auto;color:#e6f3fc;line-height:1.6}.top-bar{position:absolute;top:16px;left:16px;z-index:2}.shell{width:min(780px,100%);margin:-30px auto 60px;padding:0 18px;position:relative}
-    .hub-area{position:relative;height:220px;border-radius:20px;background:rgba(255,255,255,.6);border:1px solid rgba(255,255,255,.9);margin-bottom:20px;overflow:hidden;box-shadow:0 8px 24px rgba(29,90,128,.1)}
-    .hub-area .sticker{position:absolute;font-size:2rem;cursor:grab;transition:transform .15s;filter:drop-shadow(0 2px 4px rgba(0,0,0,.15));user-select:none}
-    .hub-area .sticker:hover{transform:scale(1.15)}
-    .hub-area .sticker.placed{cursor:default}
-    .hub-area .hint{position:absolute;bottom:8px;left:50%;transform:translateX(-50%);color:#7b91a0;font-size:.75rem;pointer-events:none}
+    .hero{padding:78px 20px 66px;text-align:center;color:#fff;background:linear-gradient(160deg,#0d2c44,#2a78a8)}.hero .eyebrow{color:var(--gold-soft)}.hero h1{margin:10px 0;font-size:clamp(2.2rem,7vw,3.5rem);font-weight:400}.hero p:last-child{max-width:54ch;margin:0 auto;color:#e6f3fc;line-height:1.6}.top-bar{position:absolute;top:16px;left:16px;z-index:2}.shell{width:min(900px,100%);margin:-30px auto 60px;padding:0 18px;position:relative}
+    .sticker-canvas{position:relative;width:100%;min-height:70vh;border-radius:20px;background:rgba(255,255,255,.55);border:1px solid rgba(255,255,255,.9);margin-bottom:20px;overflow:visible;box-shadow:0 8px 24px rgba(29,90,128,.1)}
+    .sticker-canvas .hint{position:absolute;bottom:8px;left:50%;transform:translateX(-50%);color:#7b91a0;font-size:.75rem;pointer-events:none}
+    .sticker-canvas .placed{position:absolute;font-size:2rem;cursor:grab;user-select:none;filter:drop-shadow(0 2px 4px rgba(0,0,0,.18));transform:translate(-50%,-50%)}
+    .sticker-canvas .placed:hover{transform:translate(-50%,-50%) scale(1.12)}
+    .sticker-canvas .placed img{width:48px;height:48px;object-fit:contain;pointer-events:none}
     .collection{padding:20px;border-radius:18px;background:rgba(255,255,255,.78);border:1px solid rgba(255,255,255,.9);margin-bottom:16px;box-shadow:0 8px 24px rgba(29,90,128,.1)}
     .collection h3{margin:0 0 12px;font-family:var(--font-display);color:#123a58}
     .stickers{display:grid;grid-template-columns:repeat(6,1fr);gap:8px}
-    .sticker-slot{aspect-ratio:1;border-radius:12px;background:#f0f5fa;display:grid;place-items:center;font-size:1.5rem;cursor:pointer;transition:transform .15s,background .15s;border:2px dashed #c8dceb;position:relative}
+    .sticker-slot{aspect-ratio:1;border-radius:12px;background:#f0f5fa;display:grid;place-items:center;font-size:1.5rem;cursor:pointer;transition:transform .15s,background .15s;border:2px dashed #c8dceb;position:relative;overflow:hidden}
     .sticker-slot:hover{transform:scale(1.05);background:#e8f4fa}
     .sticker-slot.owned{border-style:solid;border-color:#c9a24a;background:#fff7df;cursor:grab}
+    .sticker-slot.imported{border-style:solid;border-color:#7aa8c4;background:#eaf4fb;cursor:grab}
     .sticker-slot.locked{opacity:.3;cursor:default;filter:grayscale(1)}
     .sticker-slot .lock{position:absolute;bottom:2px;right:4px;font-size:.6rem}
+    .sticker-slot img{width:100%;height:100%;object-fit:contain}
+    .import-row{display:flex;gap:8px;align-items:center;flex-wrap:wrap;margin-bottom:12px}
+    .import-row input[type=file]{display:none}
     .instructions{padding:14px;border-radius:12px;background:rgba(255,255,255,.6);color:#4a7291;font-size:.85rem;line-height:1.6;border-left:3px solid #c9a24a;margin-top:16px}
     .status{min-height:1.4em;margin:12px 0 0;color:#73591f;font-weight:700}
+    .placed-menu{position:fixed;z-index:9999;background:#fff;border:1px solid #c8dceb;border-radius:8px;padding:4px;box-shadow:0 4px 12px rgba(0,0,0,.15)}
+    .placed-menu button{display:block;width:100%;border:0;background:transparent;padding:6px 12px;text-align:left;cursor:pointer;border-radius:4px}
+    .placed-menu button:hover{background:#eaf4fb}
     @media(max-width:520px){.stickers{grid-template-columns:repeat(4,1fr)}}
   </style>
 </head>
 <body>
   <div class="top-bar"><a class="button" href="index.html">← Back to hub</a></div>
-  <header class="hero"><p class="eyebrow">Our collection</p><h1>Stickers</h1><p>Collect them, place them, discover hidden ones. Our hub grows with us.</p></header>
+  <header class="hero"><p class="eyebrow">Our collection</p><h1>Stickers</h1><p>Import WhatsApp stickers, drag them anywhere on the canvas. They stay where you put them, sync between us, and survive relogs.</p></header>
   <main class="shell">
-    <div class="hub-area" id="hubArea">
-      <div class="hint">Drag stickers from your collection onto this canvas</div>
+    <div class="sticker-canvas" id="stickerCanvas">
+      <div class="hint">Drag stickers from your collection onto this canvas · scroll to see more space</div>
     </div>
     <div class="collection">
-      <h3>Your collection (<span id="ownedCount">0</span>/12)</h3>
+      <h3>Your collection (<span id="ownedCount">0</span> earned · <span id="importedCount">0</span> imported)</h3>
+      <div class="import-row">
+        <label class="button" for="stickerFileInput">Import WhatsApp stickers</label>
+        <input id="stickerFileInput" type="file" accept="image/*" multiple>
+        <span style="font-size:.8rem;color:#4a7291">Pick .webp/.png sticker files. They're shared with each other.</span>
+      </div>
       <div class="stickers" id="stickerGrid"></div>
     </div>
     <p class="status" id="stickerStatus" role="status"></p>
     <div class="instructions">
-      <strong>How stickers work:</strong> Earn stickers by playing games, leaving notes, and reaching milestones. Some are hidden — explore the hub page to discover them. Drag owned stickers onto the canvas above to decorate it. Your placement is saved.
+      <strong>How stickers work:</strong> Earn stickers by playing games and exploring. Import WhatsApp sticker image files to add your own. Drag any owned/imported sticker onto the canvas above to place it anywhere. Drag a placed sticker to move it. Double-click a placed sticker to remove it. Placements auto-save and sync between us. They persist across relogs.
     </div>
   </main>
   <script src="assets/js/dialog.js"></script><script src="assets/js/avatar.js"></script>
@@ -60,96 +72,250 @@
       { id:'rainbow', icon:'🌈', name:'Rainbow', unlock:'Hidden — find it', hidden:true },
       { id:'question', icon:'❓', name:'Mystery', unlock:'Hidden — find it', hidden:true },
     ];
-    const hubArea = document.getElementById('hubArea');
+    const canvas = document.getElementById('stickerCanvas');
     const grid = document.getElementById('stickerGrid');
     const statusEl = document.getElementById('stickerStatus');
     const ownedCount = document.getElementById('ownedCount');
+    const importedCount = document.getElementById('importedCount');
+    const fileInput = document.getElementById('stickerFileInput');
     let owned = new Set();
-    let placements = [];
+    let imported = [];   // [{id,name,dataUrl}]
+    let placements = []; // [{id,stickerId,kind,x,y,...}]
+    let menuEl = null;
 
     async function load() {
       try {
         const res = await fetch('/api/question-room?view=stickers&user=' + encodeURIComponent(user), { cache: 'no-store' });
         const json = await res.json();
         owned = new Set(json.owned || []);
-        placements = json.placements || [];
-      } catch (e) { owned = new Set(['heart','star','moon']); }
+        imported = Array.isArray(json.stickers) ? json.stickers : [];
+        placements = Array.isArray(json.placements) ? json.placements : [];
+      } catch (e) { owned = new Set(['heart','star','moon']); imported = []; placements = []; }
       render();
+      adjustCanvas();
+    }
+
+    function findSticker(pl) {
+      if (pl.kind === 'image') return imported.find(s => s.id === pl.stickerId);
+      return STICKERS.find(s => s.id === pl.stickerId);
     }
 
     function render() {
-      // Render collection
-      grid.innerHTML = STICKERS.map(s => {
+      // Collection
+      const earnedHtml = STICKERS.map(s => {
         const isOwned = owned.has(s.id);
         const isHidden = s.hidden && !isOwned;
-        return `<div class="sticker-slot ${isOwned ? 'owned' : isHidden ? 'locked' : 'locked'}" data-id="${s.id}" draggable="${isOwned}" title="${isOwned ? s.name : s.unlock}">
-          ${isOwned ? s.icon : isHidden ? '?' : '🔒'}
+        return `<div class="sticker-slot ${isOwned ? 'owned' : 'locked'}" data-kind="emoji" data-id="${s.id}" draggable="${isOwned}" title="${isOwned ? s.name : s.unlock}">
+          ${isOwned ? s.icon : (isHidden ? '?' : '🔒')}
           ${!isOwned ? `<span class="lock">🔒</span>` : ''}
         </div>`;
       }).join('');
+      const importedHtml = imported.map(s => `
+        <div class="sticker-slot imported" data-kind="image" data-id="${s.id}" draggable="true" title="${escapeHtml(s.name)} (right-click to delete)">
+          <img src="${s.dataUrl}" alt="${escapeHtml(s.name)}">
+        </div>`).join('');
+      grid.innerHTML = earnedHtml + importedHtml;
       ownedCount.textContent = owned.size;
+      importedCount.textContent = imported.length;
 
-      // Render placed stickers on hub
-      hubArea.querySelectorAll('.sticker.placed').forEach(s => s.remove());
-      placements.forEach(p => {
-        const sticker = STICKERS.find(s => s.id === p.id);
-        if (!sticker) return;
+      // Placed stickers
+      canvas.querySelectorAll('.placed').forEach(el => el.remove());
+      placements.forEach(pl => {
+        const st = findSticker(pl);
+        if (!st) return;
         const el = document.createElement('div');
-        el.className = 'sticker placed';
-        el.textContent = sticker.icon;
-        el.style.left = p.x + 'px';
-        el.style.top = p.y + 'px';
-        hubArea.appendChild(el);
+        el.className = 'placed';
+        el.dataset.placementId = pl.id;
+        el.style.left = pl.x + 'px';
+        el.style.top = pl.y + 'px';
+        if (pl.kind === 'image' || imported.some(s=>s.id===pl.stickerId)) {
+          const img = document.createElement('img');
+          img.src = st.dataUrl;
+          img.alt = st.name || 'sticker';
+          el.appendChild(img);
+        } else {
+          el.textContent = st.icon;
+        }
+        el.draggable = true;
+        el.addEventListener('dragstart', e => {
+          e.dataTransfer.setData('text/plain', 'move:' + pl.id);
+          el.style.opacity = '.5';
+        });
+        el.addEventListener('dragend', e => { el.style.opacity = '1'; });
+        el.addEventListener('dblclick', async e => {
+          e.stopPropagation();
+          if (!await siteDialog.confirm('Remove this sticker?')) return;
+          await removePlacement(pl.id);
+        });
+        el.addEventListener('contextmenu', e => {
+          e.preventDefault();
+          showMenu(e.clientX, e.clientY, pl.id);
+        });
+        canvas.appendChild(el);
       });
 
       // Drag from collection
-      grid.querySelectorAll('.sticker-slot.owned').forEach(slot => {
+      grid.querySelectorAll('.sticker-slot[draggable="true"]').forEach(slot => {
         slot.addEventListener('dragstart', e => {
-          e.dataTransfer.setData('text/plain', slot.dataset.id);
+          e.dataTransfer.setData('text/plain', 'new:' + slot.dataset.kind + ':' + slot.dataset.id);
           slot.style.opacity = '.5';
         });
         slot.addEventListener('dragend', e => { slot.style.opacity = '1'; });
       });
+
+      // Delete imported sticker via right-click on slot
+      grid.querySelectorAll('.sticker-slot.imported').forEach(slot => {
+        slot.addEventListener('contextmenu', async e => {
+          e.preventDefault();
+          if (!await siteDialog.confirm('Delete this imported sticker from the library?')) return;
+          await deleteSticker(slot.dataset.id);
+        });
+      });
     }
 
-    // Drop on hub area
-    hubArea.addEventListener('dragover', e => e.preventDefault());
-    hubArea.addEventListener('drop', async e => {
-      e.preventDefault();
-      const id = e.dataTransfer.getData('text/plain');
-      if (!id || !owned.has(id)) return;
-      const r = hubArea.getBoundingClientRect();
-      const x = Math.max(0, Math.min(r.width - 40, e.clientX - r.left - 16));
-      const y = Math.max(0, Math.min(r.height - 40, e.clientY - r.top - 16));
-      placements.push({ id, x, y });
-      // Save to server
-      try {
-        await fetch('/api/question-room', { method: 'POST', headers: { 'content-type': 'application/json' }, body: JSON.stringify({ action: 'sticker-place', user, placement: { id, x, y } }) });
-      } catch (err) { /* ignore */ }
-      render();
-      statusEl.textContent = 'Sticker placed!';
-    });
+    function adjustCanvas() {
+      let maxY = 600;
+      placements.forEach(pl => { if (pl.y + 60 > maxY) maxY = pl.y + 60; });
+      canvas.style.minHeight = Math.max(600, maxY) + 'px';
+    }
 
-    // Click to unlock hidden stickers (easter egg)
-    hubArea.addEventListener('click', async e => {
-      const rect = hubArea.getBoundingClientRect();
-      const x = e.clientX - rect.left;
-      const y = e.clientY - rect.top;
-      // Check if clicking an empty area (hidden hotspot)
-      if (e.target === hubArea || e.target.classList.contains('hint')) {
-        // Random chance to discover a hidden sticker
-        const hidden = STICKERS.filter(s => s.hidden && !owned.has(s.id));
-        if (hidden.length && Math.random() < 0.3) {
-          const found = hidden[Math.floor(Math.random() * hidden.length)];
-          owned.add(found.id);
-          statusEl.textContent = `You found a hidden sticker: ${found.icon} ${found.name}!`;
-          try {
-            await fetch('/api/question-room', { method: 'POST', headers: { 'content-type': 'application/json' }, body: JSON.stringify({ action: 'sticker-unlock', user, stickerId: found.id }) });
-          } catch (err) { /* ignore */ }
-          render();
-        }
+    function showMenu(x, y, placementId) {
+      hideMenu();
+      menuEl = document.createElement('div');
+      menuEl.className = 'placed-menu';
+      menuEl.style.left = x + 'px';
+      menuEl.style.top = y + 'px';
+      const btn = document.createElement('button');
+      btn.textContent = 'Remove sticker';
+      btn.addEventListener('click', async () => { hideMenu(); if (await siteDialog.confirm('Remove this sticker?')) await removePlacement(placementId); });
+      menuEl.appendChild(btn);
+      document.body.appendChild(menuEl);
+      setTimeout(() => document.addEventListener('click', hideMenu, { once: true }), 0);
+    }
+    function hideMenu() { if (menuEl) { menuEl.remove(); menuEl = null; } }
+
+    canvas.addEventListener('dragover', e => e.preventDefault());
+    canvas.addEventListener('drop', async e => {
+      e.preventDefault();
+      const data = e.dataTransfer.getData('text/plain');
+      const r = canvas.getBoundingClientRect();
+      const x = Math.max(0, Math.min(r.width - 24, e.clientX - r.left));
+      const y = Math.max(0, Math.min(parseInt(canvas.style.minHeight) || 10000, e.clientY - r.top));
+      if (data.startsWith('move:')) {
+        const pid = data.slice(5);
+        await movePlacement(pid, x, y);
+      } else if (data.startsWith('new:')) {
+        const parts = data.split(':');
+        const kind = parts[1];
+        const sid = parts.slice(2).join(':');
+        await placeSticker(kind, sid, x, y);
       }
     });
+
+    async function placeSticker(kind, stickerId, x, y) {
+      try {
+        const res = await fetch('/api/question-room', { method: 'POST', headers: { 'content-type': 'application/json' }, body: JSON.stringify({ action: 'sticker-place', user, placement: { stickerId, kind: kind === 'image' ? 'image' : 'emoji', x, y } }) });
+        const json = await res.json();
+        if (!res.ok) throw new Error(json.error || 'Could not place');
+        placements.push({ id: json.placementId, user, stickerId, kind: kind === 'image' ? 'image' : 'emoji', x, y, at: new Date().toISOString() });
+        render(); adjustCanvas();
+        statusEl.textContent = 'Sticker placed!';
+      } catch (err) { statusEl.textContent = err.message; }
+    }
+
+    async function movePlacement(pid, x, y) {
+      const pl = placements.find(p => p.id === pid);
+      if (pl) { pl.x = x; pl.y = y; }
+      render(); adjustCanvas();
+      try {
+        await fetch('/api/question-room', { method: 'POST', headers: { 'content-type': 'application/json' }, body: JSON.stringify({ action: 'sticker-move', user, placementId: pid, x, y }) });
+      } catch (err) { /* ignore */ }
+    }
+
+    async function removePlacement(pid) {
+      placements = placements.filter(p => p.id !== pid);
+      render(); adjustCanvas();
+      try {
+        await fetch('/api/question-room', { method: 'POST', headers: { 'content-type': 'application/json' }, body: JSON.stringify({ action: 'sticker-remove', user, placementId: pid }) });
+      } catch (err) { /* ignore */ }
+      statusEl.textContent = 'Sticker removed.';
+    }
+
+    async function deleteSticker(sid) {
+      imported = imported.filter(s => s.id !== sid);
+      placements = placements.filter(p => !(p.kind === 'image' && p.stickerId === sid));
+      render(); adjustCanvas();
+      try {
+        await fetch('/api/question-room', { method: 'POST', headers: { 'content-type': 'application/json' }, body: JSON.stringify({ action: 'sticker-delete', user, stickerId: sid }) });
+      } catch (err) { /* ignore */ }
+      statusEl.textContent = 'Sticker deleted.';
+    }
+
+    // Import files
+    fileInput.addEventListener('change', async () => {
+      const files = Array.from(fileInput.files || []);
+      if (!files.length) return;
+      statusEl.textContent = `Importing ${files.length} sticker(s)…`;
+      for (const file of files) {
+        if (!file.type.startsWith('image/')) continue;
+        const dataUrl = await readFileAsDataUrl(file);
+        if (!dataUrl) continue;
+        const name = file.name.replace(/\.[^.]+$/, '') || 'Sticker';
+        try {
+          const res = await fetch('/api/question-room', { method: 'POST', headers: { 'content-type': 'application/json' }, body: JSON.stringify({ action: 'sticker-import', user, name, dataUrl }) });
+          const json = await res.json();
+          if (!res.ok) throw new Error(json.error || 'Import failed');
+          imported.push(json.sticker);
+          statusEl.textContent = `Imported ${json.sticker.name}`;
+        } catch (err) { statusEl.textContent = err.message; }
+      }
+      fileInput.value = '';
+      render();
+    });
+
+    function readFileAsDataUrl(file) {
+      return new Promise(resolve => {
+        const reader = new FileReader();
+        reader.onload = () => resolve(reader.result);
+        reader.onerror = () => resolve(null);
+        reader.readAsDataURL(file);
+      });
+    }
+
+    function escapeHtml(text) { const div = document.createElement('div'); div.textContent = text; return div.innerHTML; }
+
+    // Click to unlock hidden stickers (easter egg)
+    canvas.addEventListener('click', async e => {
+      if (e.target !== canvas && !e.target.classList.contains('hint')) return;
+      const hidden = STICKERS.filter(s => s.hidden && !owned.has(s.id));
+      if (hidden.length && Math.random() < 0.3) {
+        const found = hidden[Math.floor(Math.random() * hidden.length)];
+        owned.add(found.id);
+        statusEl.textContent = `You found a hidden sticker: ${found.icon} ${found.name}!`;
+        try {
+          await fetch('/api/question-room', { method: 'POST', headers: { 'content-type': 'application/json' }, body: JSON.stringify({ action: 'sticker-unlock', user, stickerId: found.id }) });
+        } catch (err) { /* ignore */ }
+        render();
+      }
+    });
+
+    // WebSocket for live sync
+    let socket = null, reconnectTimer = null, pingTimer = null;
+    function connect() {
+      clearTimeout(reconnectTimer);
+      const protocol = location.protocol === 'https:' ? 'wss:' : 'ws:';
+      socket = new WebSocket(`${protocol}//${location.host}/api/question-room?user=${encodeURIComponent(user)}&sessionDate=2000-01-03`);
+      socket.onopen = () => {
+        clearInterval(pingTimer);
+        pingTimer = setInterval(() => { if (socket?.readyState === WebSocket.OPEN) socket.send(JSON.stringify({ type: 'ping' })); }, 20000);
+      };
+      socket.onmessage = ev => {
+        let m; try { m = JSON.parse(ev.data); } catch { return; }
+        if (m.type === 'refresh') load();
+      };
+      socket.onclose = () => { clearInterval(pingTimer); reconnectTimer = setTimeout(connect, 2500); };
+    }
+    connect();
 
     load();
   })();

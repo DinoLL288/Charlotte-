@@ -270,6 +270,7 @@ export async function onRequestPost(context) {
         id: eventId,
         title,
         startTime: normalizeTime(event.startTime),
+        endTime: normalizeTime(event.endTime),
         time: String(event.time || '').trim(),
         author: String(event.author || 'Unknown')
       });
@@ -319,17 +320,37 @@ export async function onRequestPost(context) {
 
       eventId = old.id || newId();
 
-      list[index] = {
+      // Optional move to a new date.
+      let targetDate = date;
+      if (body.newDate) {
+        const nr = getValidDate(body.newDate);
+        if (!nr.valid) return jsonResponse(nr.error, 400);
+        targetDate = nr.date;
+      }
+
+      const updated = {
         ...old,
         id: eventId,
         title,
         startTime: normalizeTime(event.startTime),
+        endTime: normalizeTime(event.endTime),
         time: String(event.time || '').trim(),
         editedBy: String(event.author || 'Unknown'),
         editedAt: new Date().toISOString()
       };
 
-      message = `Edit calendar event: ${title}`;
+      if (targetDate !== date) {
+        list.splice(index, 1);
+        if (list.length === 0) delete events[date];
+        if (!Array.isArray(events[targetDate])) events[targetDate] = [];
+        events[targetDate].push(updated);
+      } else {
+        list[index] = updated;
+      }
+
+      message = targetDate !== date
+        ? `Move calendar event to ${targetDate}: ${title}`
+        : `Edit calendar event: ${title}`;
 
     // DELETE EVENT
     } else if (action === 'delete') {

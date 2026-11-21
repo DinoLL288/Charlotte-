@@ -242,6 +242,7 @@
     .call-history { display:grid; gap:5px; max-height:120px; overflow:auto; margin-top:10px; font-size:.78rem; }
     .call-history div { background:#eff8ff; border-radius:9px; padding:6px 8px; }
     .event.quiet-calendar-event { background:#f1edfa; color:#635080; border:1px solid #e1d8f1; cursor:default; }
+    .day.drag-over { background:rgba(40,115,166,.12); outline:2px dashed #2873a6; }
     .event.call-event { background:#fff0f4; color:#8a4561; }
     @media(max-width:700px) { .calendar-tools { grid-template-columns:1fr; } }
   </style>
@@ -304,7 +305,11 @@
       <div class="modal-hint" id="eventHint"></div>
       <div class="title-row">
         <input id="eventTitle" placeholder="Title">
-        <input id="eventStart" type="time" aria-label="Event time" title="Event time">
+        <input id="eventDate" type="date" aria-label="Event date" title="Event date">
+      </div>
+      <div class="title-row">
+        <input id="eventStart" type="time" aria-label="Start time" title="Start time">
+        <input id="eventEnd" type="time" aria-label="End time" title="End time">
       </div>
       <textarea id="eventTime" rows="2" placeholder="Details (optional)"></textarea>
       <div class="modal-actions">
@@ -332,6 +337,8 @@
     const modalTitle = document.getElementById('eventModalTitle');
     const eventHint = document.getElementById('eventHint');
     const eventStart = document.getElementById('eventStart');
+    const eventEnd = document.getElementById('eventEnd');
+    const eventDate = document.getElementById('eventDate');
     const eventDateLabel = document.getElementById('eventDateLabel');
     const todayBtn = document.getElementById('todayBtn');
     const nowLabel = document.getElementById('nowLabel');
@@ -389,7 +396,7 @@
     }
 
     // 'now' while the event is happening, 'soon' before it starts today, 'done' after it.
-    function eventStatus(dateKey, startTime) {
+    function eventStatus(dateKey, startTime, endTime) {
       const startMins = minutesOfDay(startTime);
       if (startMins === null) return '';
       const today = todayKey();
@@ -399,12 +406,15 @@
       const now = new Date();
       const nowMins = now.getHours() * 60 + now.getMinutes();
       if (nowMins < startMins) return 'soon';
-      if (nowMins < startMins + 90) return 'now';
+      let endMins = minutesOfDay(endTime);
+      if (endMins === null) endMins = startMins + 90;
+      if (endMins <= startMins) endMins = startMins + 60;
+      if (nowMins < endMins) return 'now';
       return 'done';
     }
 
-    function statusLabel(dateKey, startTime) {
-      const status = eventStatus(dateKey, startTime);
+    function statusLabel(dateKey, startTime, endTime) {
+      const status = eventStatus(dateKey, startTime, endTime);
       if (status === 'now') return 'Now';
       if (status === 'done') return dateKey === todayKey() ? 'Done' : '';
       if (status !== 'soon' || dateKey !== todayKey()) return '';
@@ -516,6 +526,36 @@
           e.stopPropagation();
           openAdd(dateKey);
         });
+        el.addEventListener('dragover', (e) => {
+          if (e.dataTransfer.types.includes('text/plain')) { e.preventDefault(); el.classList.add('drag-over'); }
+        });
+        el.addEventListener('dragleave', () => el.classList.remove('drag-over'));
+        el.addEventListener('drop', async (e) => {
+          e.preventDefault();
+          el.classList.remove('drag-over');
+          let payload;
+          try { payload = JSON.parse(e.dataTransfer.getData('text/plain')); } catch { return; }
+          if (!payload || !payload.date || !payload.id) return;
+          if (payload.date === dateKey) return;
+          // move event
+          try {
+            const res = await fetch('/api/calendar', { method:'POST', headers:{'content-type':'application/json'}, body: JSON.stringify({ action:'update', date: payload.date, index: payload.index, id: payload.id, newDate: dateKey, event: (events[payload.date]||[])[payload.index] || {} }) });
+            const json = await res.json();
+            if (!res.ok) throw new Error(json.error || 'Move failed');
+            // update local
+            const list = events[payload.date] || [];
+            const idx = list.findIndex(ev => ev && ev.id === payload.id);
+            if (idx >= 0) {
+              const ev = { ...list[idx] };
+              list.splice(idx,1);
+              if (list.length===0) delete events[payload.date];
+              if (!events[dateKey]) events[dateKey]=[];
+              events[dateKey].push(ev);
+            }
+            currentSha = json.sha || currentSha;
+            render(); refreshCallHistory();
+          } catch (err) { siteDialog.alert(err.message); }
+        });
 
         const specialEvents = (window.CHARLOTTE_LUKE_SPECIAL_DATES || []).filter(item => item.date === `${pad2(month + 1)}-${pad2(d)}`).map(item => ({
           title: `${item.icon} ${item.title}`, time: 'Every year · reminder', specialDate: true
@@ -526,10 +566,16 @@
           quietDay: true
         }));
         sortDayEvents([...(events[dateKey] || []), ...specialEvents, ...quietEvents]).forEach(({ event: ev, index }) => {
-          const status = eventStatus(dateKey, ev.startTime);
+          const status = eventStatus(dateKey, ev.startTime, ev.endTime);
           const evEl = document.createElement('div');
           evEl.className = 'event' + (status ? ' ' + status : '') + (ev.specialDate ? ' special-date' : '') + (ev.quietDay ? ' quiet-calendar-event' : '') + (ev.kind === 'whatsapp-call' ? ' call-event' : '');
-          evEl.title = ev.specialDate ? 'Repeats every year' : ev.quietDay ? 'From Quiet Days' : 'Click to edit';
+          evEl.title = ev.specialDate ? 'Repeats every year' : ev.quietDay ? 'From Quiet Days' : 'Click to edit · drag to move';
+          if (!ev.specialDate && !ev.quietDay) {
+            evEl.draggable = true;
+            evEl.dataset.evDate = dateKey;
+            evEl.dataset.evIndex = String(index);
+            evEl.dataset.evId = ev.id || '';
+          }
 
           const top = document.createElement('div');
           top.className = 'event-top';
@@ -539,7 +585,8 @@
           if (ev.startTime) {
             const clock = document.createElement('span');
             clock.className = 'event-clock';
-            clock.textContent = formatClock(ev.startTime);
+            const end = ev.endTime ? ' – ' + formatClock(ev.endTime) : '';
+            clock.textContent = formatClock(ev.startTime) + end;
             top.appendChild(clock);
           }
           evEl.appendChild(top);
@@ -551,7 +598,7 @@
             evEl.appendChild(details);
           }
 
-          const label = statusLabel(dateKey, ev.startTime);
+          const label = statusLabel(dateKey, ev.startTime, ev.endTime);
           if (label) {
             const badge = document.createElement('span');
             badge.className = 'event-badge';
@@ -572,6 +619,12 @@
             const savedIndex = (events[dateKey] || []).findIndex(saved => saved === ev || (saved.id && saved.id === ev.id));
             if (savedIndex >= 0) openEdit(dateKey, savedIndex);
           });
+          if (!ev.specialDate && !ev.quietDay) {
+            evEl.addEventListener('dragstart', (e) => {
+              e.dataTransfer.setData('text/plain', JSON.stringify({ date: dateKey, id: ev.id || '', index }));
+              e.dataTransfer.effectAllowed = 'move';
+            });
+          }
           el.appendChild(evEl);
         });
         daysGrid.appendChild(el);
@@ -670,7 +723,9 @@
       modalTitle.textContent = 'Add event';
       eventDateLabel.textContent = formatDayLabel(key);
       eventTitle.value = '';
+      eventDate.value = key;
       eventStart.value = '';
+      eventEnd.value = '';
       eventTime.value = '';
       deleteEvent.style.display = 'none';
       eventHint.classList.remove('visible');
@@ -685,7 +740,9 @@
       modalTitle.textContent = 'Edit event';
       eventDateLabel.textContent = formatDayLabel(key);
       eventTitle.value = ev.title || '';
+      eventDate.value = key;
       eventStart.value = ev.startTime || '';
+      eventEnd.value = ev.endTime || '';
       eventTime.value = ev.time || '';
 
       const isTikTok = ev.source === 'tiktok';
@@ -715,14 +772,15 @@
         return;
       }
       const author = localStorage.getItem('charlotte-user') || 'Unknown';
-      const event = { ...(editing?.event || {}), title, startTime: eventStart.value || '', time: eventTime.value.trim(), author, date: new Date().toLocaleString() };
+      const chosenDate = eventDate.value || selectedDate;
+      const event = { ...(editing?.event || {}), title, startTime: eventStart.value || '', endTime: eventEnd.value || '', time: eventTime.value.trim(), author, date: new Date().toLocaleString() };
       saveEvent.disabled = true;
       try {
         const target = editing ? { ...editing } : null;
         const isEdit = !!target;
-        const addDate = selectedDate;
+        const addDate = chosenDate;
         const payload = isEdit
-          ? { action: 'update', date: target.date, index: target.index, id: target.id, event }
+          ? { action: 'update', date: target.date, index: target.index, id: target.id, newDate: chosenDate, event }
           : { date: addDate, event };
 
         const res = await fetch('/api/calendar', {
@@ -735,9 +793,22 @@
         currentSha = json.sha || currentSha;
 
         if (isEdit) {
-          const list = events[target.date] || [];
-          if (list[target.index]) {
-            list[target.index] = { ...list[target.index], title, startTime: event.startTime, time: event.time, id: list[target.index].id || json.id, editedAt: new Date().toISOString() };
+          const oldDate = target.date;
+          if (chosenDate !== oldDate) {
+            const list = events[oldDate] || [];
+            const idx = list.findIndex(ev => ev && (ev.id === target.id));
+            if (idx >= 0) {
+              const ev = { ...list[idx], title, startTime: event.startTime, endTime: event.endTime, time: event.time, id: list[idx].id || json.id, editedAt: new Date().toISOString() };
+              list.splice(idx,1);
+              if (list.length === 0) delete events[oldDate];
+              if (!events[chosenDate]) events[chosenDate] = [];
+              events[chosenDate].push(ev);
+            }
+          } else {
+            const list = events[target.date] || [];
+            if (list[target.index]) {
+              list[target.index] = { ...list[target.index], title, startTime: event.startTime, endTime: event.endTime, time: event.time, id: list[target.index].id || json.id, editedAt: new Date().toISOString() };
+            }
           }
         } else {
           if (!events[addDate]) events[addDate] = [];

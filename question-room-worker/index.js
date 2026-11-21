@@ -516,8 +516,15 @@ export class QuestionNightRoom {
   async getStickerData(user) {
     const all = await this.ctx.storage.get('stickerData') || {};
     const owned = (all.owned && all.owned[user]) || [];
-    const placements = (all.placements || []).filter(p => p.user === user);
-    return { owned, placements };
+    const placements = Array.isArray(all.placements) ? all.placements : [];
+    // Imported WhatsApp stickers live under waSticker:* keys (shared library).
+    const stickerEntries = await this.ctx.storage.list({ prefix: 'waSticker:' });
+    const stickers = [];
+    for (const [key, value] of stickerEntries) {
+      if (value && value.id && value.dataUrl) stickers.push(value);
+    }
+    stickers.sort((a, b) => String(a.addedAt || '').localeCompare(String(b.addedAt || '')));
+    return { owned, stickers, placements };
   }
 
 
@@ -642,11 +649,12 @@ export class QuestionNightRoom {
         if (!['Charlotte', 'Luke'].includes(user)) return Response.json({ error: 'Choose a valid account' }, { status: 400 });
         const all = await this.ctx.storage.get('stickerData') || {};
         if (!all.placements) all.placements = [];
-        all.placements.push({ user, id: String(placement.id || '').slice(0, 30), x: Number(placement.x) || 0, y: Number(placement.y) || 0, at: new Date().toISOString() });
-        if (all.placements.length > 200) all.placements = all.placements.slice(-200);
+        const placementId = crypto.randomUUID();
+        all.placements.push({ id: placementId, user, stickerId: String(placement.stickerId || placement.id || '').slice(0, 60), kind: placement.kind === 'image' ? 'image' : 'emoji', x: Number(placement.x) || 0, y: Number(placement.y) || 0, at: new Date().toISOString() });
+        if (all.placements.length > 500) all.placements = all.placements.slice(-500);
         await this.ctx.storage.put('stickerData', all);
         await this.broadcastRefresh();
-        return Response.json({ ok: true });
+        return Response.json({ ok: true, placementId });
       }
       if (body.action === 'sticker-unlock') {
         const user = body.user;
@@ -659,6 +667,59 @@ export class QuestionNightRoom {
         await this.ctx.storage.put('stickerData', all);
         await this.broadcastRefresh();
         return Response.json({ ok: true, owned: all.owned[user] });
+      }
+      if (body.action === 'sticker-import') {
+        const user = body.user;
+        if (!['Charlotte', 'Luke'].includes(user)) return Response.json({ error: 'Choose a valid account' }, { status: 400 });
+        const name = String(body.name || 'Sticker').slice(0, 40).trim() || 'Sticker';
+        const dataUrl = String(body.dataUrl || '');
+        if (!/^data:image\/(png|jpeg|jpg|webp|gif|avif);base64,[A-Za-z0-9+/=]+$/.test(dataUrl)) {
+          return Response.json({ error: 'Import a valid image file.' }, { status: 400 });
+        }
+        if (dataUrl.length > 350000) {
+          return Response.json({ error: 'That sticker is too large. Please use a smaller image.' }, { status: 413 });
+        }
+        const existing = await this.ctx.storage.list({ prefix: 'waSticker:' });
+        if (existing.size >= 80) return Response.json({ error: 'Sticker library is full.' }, { status: 413 });
+        const id = crypto.randomUUID();
+        const sticker = { id, name, dataUrl, addedBy: user, addedAt: new Date().toISOString() };
+        await this.ctx.storage.put(`waSticker:${id}`, sticker);
+        await this.broadcastRefresh();
+        return Response.json({ ok: true, sticker });
+      }
+      if (body.action === 'sticker-delete') {
+        const user = body.user;
+        const stickerId = String(body.stickerId || '');
+        if (!['Charlotte', 'Luke'].includes(user) || !stickerId) return Response.json({ error: 'Choose a valid sticker' }, { status: 400 });
+        await this.ctx.storage.delete(`waSticker:${stickerId}`);
+        const all = await this.ctx.storage.get('stickerData') || {};
+        if (Array.isArray(all.placements)) all.placements = all.placements.filter(p => p.stickerId !== stickerId || p.kind !== 'image');
+        await this.ctx.storage.put('stickerData', all);
+        await this.broadcastRefresh();
+        return Response.json({ ok: true });
+      }
+      if (body.action === 'sticker-remove') {
+        const user = body.user;
+        const placementId = String(body.placementId || '');
+        if (!['Charlotte', 'Luke'].includes(user) || !placementId) return Response.json({ error: 'Choose a valid placement' }, { status: 400 });
+        const all = await this.ctx.storage.get('stickerData') || {};
+        if (Array.isArray(all.placements)) all.placements = all.placements.filter(p => p.id !== placementId);
+        await this.ctx.storage.put('stickerData', all);
+        await this.broadcastRefresh();
+        return Response.json({ ok: true });
+      }
+      if (body.action === 'sticker-move') {
+        const user = body.user;
+        const placementId = String(body.placementId || '');
+        if (!['Charlotte', 'Luke'].includes(user) || !placementId) return Response.json({ error: 'Choose a valid placement' }, { status: 400 });
+        const all = await this.ctx.storage.get('stickerData') || {};
+        if (Array.isArray(all.placements)) {
+          const p = all.placements.find(item => item.id === placementId);
+          if (p) { p.x = Number(body.x) || p.x; p.y = Number(body.y) || p.y; p.movedAt = new Date().toISOString(); }
+        }
+        await this.ctx.storage.put('stickerData', all);
+        await this.broadcastRefresh();
+        return Response.json({ ok: true });
       }
       if (body.action === 'mood') {
         const user = body.user;

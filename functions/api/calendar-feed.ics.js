@@ -57,8 +57,16 @@ export async function onRequestGet({ request, env }) {
         const uid = escapeIcs(event.id || `${date}-${title}`);
         if (/^\d{4}-\d{2}-\d{2}$/.test(date) && /^\d{2}:\d{2}$/.test(event.startTime || '')) {
           const [hour, minute] = event.startTime.split(':').map(Number);
-          const endMinutes = hour * 60 + minute + 60;
-          const endDate = new Date(date + 'T00:00:00Z'); endDate.setUTCMinutes(endMinutes);
+          const startTotal = hour * 60 + minute;
+          let endTotal;
+          if (/^\d{2}:\d{2}$/.test(event.endTime || '')) {
+            const [eh, em] = event.endTime.split(':').map(Number);
+            endTotal = eh * 60 + em;
+            if (endTotal <= startTotal) endTotal += 24 * 60;
+          } else {
+            endTotal = startTotal + 60;
+          }
+          const endDate = new Date(date + 'T00:00:00Z'); endDate.setUTCMinutes(endTotal);
           const endLocal = endDate.toISOString().slice(0, 10).replace(/-/g, '') + 'T' + endDate.toISOString().slice(11, 16).replace(':', '') + '00';
           const startLocal = date.replace(/-/g, '') + 'T' + event.startTime.replace(':', '') + '00';
           const stamp = new Date().toISOString().replace(/[-:]/g, '').replace(/\.\d{3}/, '');
