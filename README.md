@@ -7,17 +7,17 @@ A little site for Charlotte. Now split into a hub with multiple sections.
 ## Structure
 - `index.html` - Hub page to navigate between sections
 - `app-shell.html` - Persistent site frame for animated page transitions and shared music
-- `site-shell-guard.js`, `site-frame.js`, `site-shell.js` - Route pages through the persistent app shell
-- `theme.css` - The calm base design: colour, type and spacing tokens, plus shared components (see "Design and motion" below)
-- `site-polish.css` - Shared layer that brings every inner page onto the same header, surfaces, buttons and form controls
-- `motion.css`, `motion.js` - All animation for the site, in one place
+- `assets/js/site-shell-guard.js`, `assets/js/site-frame.js`, `assets/js/site-shell.js` - Route pages through the persistent app shell
+- `assets/css/theme.css` - The calm base design: colour, type and spacing tokens, plus shared components (see "Design and motion" below)
+- `assets/css/site-polish.css` - Shared layer that brings every inner page onto the same header, surfaces, buttons and form controls
+- `assets/css/motion.css`, `motion.js` - All animation for the site, in one place
 - `love.html` - The heart (draws itself once, tap for a little more) + photo memory
 - `messages.html`, `gallery.html`, `timeline.html` - Extra sections
-- `rules.html` - Shared rules & boundaries, saved to `rules/rules.json` via `/api/rules`
-- `avatar.js` - Shared top-right profile picture button that links to Settings
+- `rules.html` - Shared rules & boundaries, saved to `data/rules.json` via `/api/rules`
+- `assets/js/avatar.js` - Shared top-right profile picture button that links to Settings
 - `tiktok.html` - Save TikTok links and plan dance dates (dates auto-sync to the calendar)
 - `messages.html` - Notes we leave for each other
-- `functions/api/heart.js` - Saves shared keepsakes to `heart/heart.json` through the configured GitHub token
+- `functions/api/heart.js` - Saves shared keepsakes to `data/heart.json` through the configured GitHub token
 - `play.html` - Inside jokes, bingo, and clue hunts
 - `our-life.html` - Shared recipes, books and films, monthly awards, and projects
 - `question-night.html` - An anytime question room that reveals only when both people are online and ready
@@ -35,11 +35,11 @@ The site is deliberately low-stimulation, because busy screens are tiring. The i
 - **Floating buttons stay out of the way.** The online indicator shows briefly and then rests as a small dot (tap it to read it again). The reaction and music buttons are small and neutral, and slide away while scrolling.
 - **Nothing moves on its own.** Every animation runs once, when a page opens, when something new appears, or when you touch something. There are no looping animations anywhere (`document.getAnimations()` finds none).
 
-Everything is driven by tokens at the top of `theme.css` (colours, radii, shadows, type, easing), so the whole look can be re-tuned from one place. The accent follows the colour chosen in Settings.
+Everything is driven by tokens at the top of `assets/css/theme.css` (colours, radii, shadows, type, easing), so the whole look can be re-tuned from one place. The accent follows the colour chosen in Settings.
 
-Motion lives in `motion.css` and `motion.js`: page arrival, newly added items, scroll reveals (`class="reveal"`), press feedback, dialogs, month changes on the calendar, and the pointer glow on hub rows (`class="glow"`). It switches off completely when the device has "reduce motion" on, or when **Reduce animations and movement** is ticked in Settings.
+Motion lives in `assets/css/motion.css` and `motion.js`: page arrival, newly added items, scroll reveals (`class="reveal"`), press feedback, dialogs, month changes on the calendar, and the pointer glow on hub rows (`class="glow"`). It switches off completely when the device has "reduce motion" on, or when **Reduce animations and movement** is ticked in Settings.
 
-The "together for" timer shows days, hours and minutes and updates once a minute so nothing ticks while reading. To bring the ticking seconds back, set `SHOW_SECONDS = true` at the top of `together.js`.
+The "together for" timer shows days, hours and minutes and updates once a minute so nothing ticks while reading. To bring the ticking seconds back, set `SHOW_SECONDS = true` at the top of `assets/js/together.js`.
 
 ### Live question room and shared music
 

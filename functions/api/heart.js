@@ -23,7 +23,7 @@ async function read(env) {
   if (!repo) return { data: {}, sha: null };
   const headers = { Accept: 'application/vnd.github+json', 'User-Agent': 'charlotte-heart-pages' };
   if (token) headers.Authorization = `Bearer ${token}`;
-  const res = await fetch(`https://api.github.com/repos/${repo}/contents/heart/heart.json?ref=${encodeURIComponent(GITHUB_BRANCH)}`, { headers });
+  const res = await fetch(`https://api.github.com/repos/${repo}/contents/data/heart.json?ref=${encodeURIComponent(GITHUB_BRANCH)}`, { headers });
   if (res.status === 404) return { data: {}, sha: null };
   if (!res.ok) throw new Error(`Could not load shared memories (${res.status})`);
   const file = await res.json();
@@ -36,7 +36,7 @@ async function write(env, data, sha, message) {
   const headers = { Authorization: `Bearer ${token}`, Accept: 'application/vnd.github+json', 'User-Agent': 'charlotte-heart-pages' };
   const body = { message, content: encode(JSON.stringify(data, null, 2)), branch: GITHUB_BRANCH };
   if (sha) body.sha = sha;
-  const res = await fetch(`https://api.github.com/repos/${repo}/contents/heart/heart.json`, { method: 'PUT', headers, body: JSON.stringify(body) });
+  const res = await fetch(`https://api.github.com/repos/${repo}/contents/data/heart.json`, { method: 'PUT', headers, body: JSON.stringify(body) });
   const result = await res.json();
   if (!res.ok) throw new Error(result.message || 'Could not save this yet');
   return result.content.sha;

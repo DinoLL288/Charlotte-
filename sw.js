@@ -1,31 +1,31 @@
 // Service Worker for Charlotte & Luke
 // Strategy: stale-while-revalidate for static assets, network-first for API
 
-const CACHE_NAME = 'charlotte-v5';
+const CACHE_NAME = 'charlotte-v6';
 const OFFLINE_URL = '/offline.html';
 
 // Static assets to precache
 const PRECACHE_ASSETS = [
   '/',
   '/index.html',
-  '/theme.css',
-  '/site-polish.css',
-  '/site-theme.css',
-  '/motion.css',
-  '/avatar.js',
-  '/together.js',
-  '/dialog.js',
-  '/site-shell.js',
-  '/site-shell-guard.js',
-  '/site-frame.js',
-  '/site-theme.js',
-  '/site-reminders.js',
-  '/presence.js',
-  '/reactions.js',
-  '/motion.js',
-  '/surprises.js',
-  '/special-dates.js',
-  '/playful.js',
+  '/assets/css/theme.css',
+  '/assets/css/site-polish.css',
+  '/assets/css/site-theme.css',
+  '/assets/css/motion.css',
+  '/assets/js/avatar.js',
+  '/assets/js/together.js',
+  '/assets/js/dialog.js',
+  '/assets/js/site-shell.js',
+  '/assets/js/site-shell-guard.js',
+  '/assets/js/site-frame.js',
+  '/assets/js/site-theme.js',
+  '/assets/js/site-reminders.js',
+  '/assets/js/presence.js',
+  '/assets/js/reactions.js',
+  '/assets/js/motion.js',
+  '/assets/js/surprises.js',
+  '/assets/js/special-dates.js',
+  '/assets/js/playful.js',
 ];
 
 // Install: precache static assets

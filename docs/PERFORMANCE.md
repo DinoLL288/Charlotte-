@@ -50,8 +50,8 @@
 **Completed: 2026-11-11**
 
 ### 3.1 Image Optimization
-- [x] Convert holding-hands.jpg to WebP (361KB) and AVIF (277KB) via sharp
-- [x] Create mobile versions (holding-hands-mobile.webp: 143KB, .jpg: 166KB)
+- [x] Convert assets/images/holding-hands.jpg to WebP (361KB) and AVIF (277KB) via sharp
+- [x] Create mobile versions (assets/images/holding-hands-mobile.webp: 143KB, .jpg: 166KB)
 - [x] Update hero CSS to use image-set() with AVIF/WebP/JPG fallbacks
 - [x] Update preload link to AVIF
 - [x] Add loading="lazy" + decoding="async" to all <img> tags (7 files)

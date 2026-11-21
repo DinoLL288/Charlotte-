@@ -1,7 +1,7 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-  <script src="site-shell-guard.js"></script>
+  <script src="assets/js/site-shell-guard.js"></script>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
   <title>Charlotte &amp; Luke</title>
@@ -21,8 +21,8 @@
       }
     })();
   </script>
-  <link rel="stylesheet" href="site-bundle.css" data-site-polish="true" data-site-theme="true">
-  <link rel="preload" href="holding-hands.avif" as="image" type="image/avif" fetchpriority="high">
+  <link rel="stylesheet" href="assets/css/site-bundle.css" data-site-polish="true" data-site-theme="true">
+  <link rel="preload" href="assets/images/holding-hands.avif" as="image" type="image/avif" fetchpriority="high">
   <link rel="preconnect" href="https://ui-avatars.com" crossorigin>
   <link rel="preconnect" href="https://www.googleapis.com" crossorigin>
   <link rel="dns-prefetch" href="https://ui-avatars.com">
@@ -43,7 +43,7 @@
     .hub-hero-photo {
       position: absolute;
       inset: 0;
-      background: image-set(url("holding-hands.avif") type("image/avif"), url("holding-hands.webp") type("image/webp"), url("holding-hands.jpg") type("image/jpeg")) center 35% / cover no-repeat;
+      background: image-set(url("assets/images/holding-hands.avif") type("image/avif"), url("assets/images/holding-hands.webp") type("image/webp"), url("assets/images/holding-hands.jpg") type("image/jpeg")) center 35% / cover no-repeat;
     }
 
     .hub-hero-photo::after {
@@ -214,7 +214,7 @@
   @media (max-width: 480px) { .calm-row { padding: 14px 14px; } .calm-title { font-size: .95rem; } .calm-sub { font-size: .78rem; } }
 
   /* ---------- Three doors home (Option A) ---------- */
-  .hero-doors { padding: 72px 20px 36px; text-align: center; color: #fff; background: linear-gradient(180deg, rgba(18,40,58,.55), rgba(18,40,58,.82)), image-set(url("holding-hands.avif") type("image/avif"), url("holding-hands.webp") type("image/webp"), url("holding-hands.jpg") type("image/jpeg")) center 35% / cover no-repeat; }
+  .hero-doors { padding: 72px 20px 36px; text-align: center; color: #fff; background: linear-gradient(180deg, rgba(18,40,58,.55), rgba(18,40,58,.82)), image-set(url("assets/images/holding-hands.avif") type("image/avif"), url("assets/images/holding-hands.webp") type("image/webp"), url("assets/images/holding-hands.jpg") type("image/jpeg")) center 35% / cover no-repeat; }
   .hero-doors-inner { width: min(560px, 100%); margin: 0 auto; }
   .hero-doors h1 { margin: 10px 0 14px; font-size: clamp(2.2rem, 6vw, 3.6rem); font-weight: 400; }
   .hero-doors p { margin: 0 auto 18px; max-width: 44ch; color: #eaf6ff; line-height: 1.6; }
@@ -232,7 +232,7 @@
 
   [hidden] { display: none !important; }
   </style>
-  <script src="motion.js" defer></script>
+  <script src="assets/js/motion.js" defer></script>
 </head>
 
 <body>
@@ -522,8 +522,8 @@
       });
     })();
   </script>
-  <script src="together.js"></script>
-  <script src="avatar.js"></script>
+  <script src="assets/js/together.js"></script>
+  <script src="assets/js/avatar.js"></script>
   <script>
     // Dark mode toggle for hub page
     (function() {

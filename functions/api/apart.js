@@ -13,7 +13,7 @@ async function getApart(env) {
   };
   if (token) headers['Authorization'] = `Bearer ${token}`;
 
-  const res = await fetch(`https://api.github.com/repos/${repo}/contents/apart/apart.json?ref=${branch}`, { headers });
+  const res = await fetch(`https://api.github.com/repos/${repo}/contents/data/apart.json?ref=${branch}`, { headers });
   if (res.status === 404) return { entries: [], sha: null };
 
   const json = await res.json();
@@ -42,7 +42,7 @@ async function saveApart(env, entries, sha, message) {
 
   let currentSha = sha;
   if (!currentSha) {
-    const getRes = await fetch(`https://api.github.com/repos/${repo}/contents/apart/apart.json?ref=${branch}`, { headers });
+    const getRes = await fetch(`https://api.github.com/repos/${repo}/contents/data/apart.json?ref=${branch}`, { headers });
     if (getRes.status === 200) {
       const getJson = await getRes.json();
       currentSha = getJson.sha;
@@ -59,7 +59,7 @@ async function saveApart(env, entries, sha, message) {
   };
   if (currentSha) body.sha = currentSha;
 
-  const res = await fetch(`https://api.github.com/repos/${repo}/contents/apart/apart.json`, {
+  const res = await fetch(`https://api.github.com/repos/${repo}/contents/data/apart.json`, {
     method: 'PUT',
     headers,
     body: JSON.stringify(body)

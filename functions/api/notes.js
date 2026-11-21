@@ -12,7 +12,7 @@ async function getNotes(env) {
   };
   if (token) headers['Authorization'] = `Bearer ${token}`;
 
-  const res = await fetch(`https://api.github.com/repos/${repo}/contents/notes/notes.json?ref=${branch}`, { headers });
+  const res = await fetch(`https://api.github.com/repos/${repo}/contents/data/notes.json?ref=${branch}`, { headers });
   if (res.status === 404) return { notes: [], sha: null };
   const json = await res.json();
   try {
@@ -40,7 +40,7 @@ async function saveNotes(env, notes, sha, message) {
 
   let currentSha = sha;
   if (!currentSha) {
-    const getRes = await fetch(`https://api.github.com/repos/${repo}/contents/notes/notes.json?ref=${branch}`, { headers });
+    const getRes = await fetch(`https://api.github.com/repos/${repo}/contents/data/notes.json?ref=${branch}`, { headers });
     if (getRes.status === 200) {
       const getJson = await getRes.json();
       currentSha = getJson.sha;
@@ -57,7 +57,7 @@ async function saveNotes(env, notes, sha, message) {
   };
   if (currentSha) body.sha = currentSha;
 
-  const res = await fetch(`https://api.github.com/repos/${repo}/contents/notes/notes.json`, {
+  const res = await fetch(`https://api.github.com/repos/${repo}/contents/data/notes.json`, {
     method: 'PUT',
     headers,
     body: JSON.stringify(body)

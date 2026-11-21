@@ -1,7 +1,7 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-  <script src="site-shell-guard.js"></script>
+  <script src="assets/js/site-shell-guard.js"></script>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Settings</title>
@@ -66,8 +66,8 @@
     .settings-group{width:100%;display:grid;gap:12px;padding:15px;border:1px solid #e0ebf0;border-radius:18px;background:#fffefa}.settings-group h2{margin:0;text-align:left;color:#174866;font:700 1.12rem var(--font-display,Georgia,serif)}.setting-check input{flex:none}.settings-row input[type=time]{font-variant-numeric:tabular-nums}.card{width:min(520px,94vw);max-height:calc(100vh - 36px);overflow:auto;align-items:stretch;text-align:left;padding:24px}.card>h1,.card>.subtitle{text-align:center}.card>h1{margin:0}.card .avatar{align-self:center}.card>input[type=file]{align-self:center;max-width:100%}.card>.button{align-self:center}.top-bar{z-index:2}
     .shared-accounts-list{display:grid;gap:12px}.shared-account{display:grid;gap:9px;padding:12px;border:1px solid #dce9ef;border-radius:15px;background:#f6fafc}.shared-account-head{display:flex;align-items:center;justify-content:space-between;gap:8px}.shared-account-head strong{color:#174866}.shared-account .settings-row{font-size:.82rem}.shared-account input{width:100%;min-height:42px;padding:9px 11px;border:1px solid #c8dceb;border-radius:11px;background:#fffefa;color:#174866;font:inherit}.shared-account input:focus{outline:2px solid #8cc5df;outline-offset:1px}.shared-account-meta{margin:0;color:#728b9b;font-size:.76rem}.shared-account .remove-account{border:0;border-radius:999px;background:#fff0f1;color:#965564;padding:7px 11px;font:inherit;font-size:.78rem;font-weight:700;cursor:pointer}.shared-account-actions{display:flex;justify-content:center;gap:10px;flex-wrap:wrap}.shared-account-actions .button{align-self:auto}
   </style>
-  <link rel="stylesheet" href="theme.css">
-  <link rel="stylesheet" href="site-polish.css" data-site-polish="true"><link rel="stylesheet" href="site-theme.css" data-site-theme="true"><link rel="stylesheet" href="motion.css">
+  <link rel="stylesheet" href="assets/css/theme.css">
+  <link rel="stylesheet" href="assets/css/site-polish.css" data-site-polish="true"><link rel="stylesheet" href="assets/css/site-theme.css" data-site-theme="true"><link rel="stylesheet" href="assets/css/motion.css">
 </head>
 <body>
   <div class="top-bar">
@@ -84,7 +84,7 @@
       <p class="settings-help">Choose which calmer home page we open to. The calm list is the default; the three-doors layout groups everything into Us, Plans, and Care &amp; quiet.</p>
       <label class="settings-row" for="homeLayout">Home page layout<select id="homeLayout"><option value="calm">Calm list (default)</option><option value="doors">Three doors (Option A)</option><option value="dyslexia-a">Layout A · One thing at a time</option><option value="dyslexia-b">Layout B · Big buttons, big text</option><option value="dyslexia-c">Layout C · Sections with breathing room</option><option value="dyslexia-d">Layout D · Today view</option><option value="dyslexia-e">Layout E · List with icons</option></select></label>
       <div class="shared-account-actions">
-        <a class="button" href="design-option-a.html" target="_blank" rel="noopener">Preview Three doors</a>
+        <a class="button" href="prototypes/design-option-a.html" target="_blank" rel="noopener">Preview Three doors</a>
         <a class="button" href="index.html" target="_blank" rel="noopener">Preview Calm list</a>
       </div>
       <p class="settings-help">Save our settings after changing this so it follows us between devices.</p>
@@ -414,7 +414,7 @@ const playfulExtras = document.getElementById('playfulExtras');
       });
     });
   </script>
-  <script src="dialog.js"></script>
-  <script src="avatar.js"></script>
+  <script src="assets/js/dialog.js"></script>
+  <script src="assets/js/avatar.js"></script>
 </body>
 </html>

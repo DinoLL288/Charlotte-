@@ -46,8 +46,8 @@ export async function onRequestGet({ request, env }) {
     const verified = await roomRequest(env, { action: 'verify-calendar-feed-link', token });
     if (!verified.ok || !(await verified.json()).ok) return new Response('Not found', { status: 404 });
     const [calendar, apart] = await Promise.all([
-      readRepoFile(env, 'calendar/events.json', { events: {} }),
-      readRepoFile(env, 'apart/apart.json', { entries: [] })
+      readRepoFile(env, 'data/calendar-events.json', { events: {} }),
+      readRepoFile(env, 'data/apart.json', { entries: [] })
     ]);
     const lines = ['BEGIN:VCALENDAR', 'VERSION:2.0', 'PRODID:-//Project Lover Boy//Shared Calendar//EN', 'CALSCALE:GREGORIAN', 'METHOD:PUBLISH', 'REFRESH-INTERVAL;VALUE=DURATION:PT15M', 'X-PUBLISHED-TTL:PT15M', 'X-WR-CALNAME:Us'];
     for (const [date, items] of Object.entries(calendar.events || {})) {

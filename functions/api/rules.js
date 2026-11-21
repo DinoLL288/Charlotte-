@@ -1,4 +1,4 @@
-const FILE_PATH = 'rules/rules.json';
+const FILE_PATH = 'data/rules.json';
 const SECTIONS = ['rules', 'boundaries'];
 const LABELS = { rules: 'rule', boundaries: 'boundary' };
 const MAX_LENGTH = 500;

@@ -1,5 +1,5 @@
-const PLANS_PATH = 'tiktok/plans.json';
-const EVENTS_PATH = 'calendar/events.json';
+const PLANS_PATH = 'data/tiktok-plans.json';
+const EVENTS_PATH = 'data/calendar-events.json';
 
 function jsonResponse(data, status = 200) {
   return new Response(JSON.stringify(data), {

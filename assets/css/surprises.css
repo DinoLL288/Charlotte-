@@ -230,7 +230,7 @@
   place-items: center;
   font-size: 2.6rem;
   border-radius: 50%;
-  background: url('fidget-spinner.svg') center / contain no-repeat;
+  background: url('../images/fidget-spinner.svg') center / contain no-repeat;
   box-shadow: 0 10px 24px rgba(0,0,0,.22);
   cursor: grab;
   user-select: none;

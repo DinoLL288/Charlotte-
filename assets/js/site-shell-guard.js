@@ -186,7 +186,7 @@
   if (!document.querySelector('link[rel~="icon"]')) {
     const fav = document.createElement('link');
     fav.rel = 'icon';
-    fav.href = 'favicon.svg';
+    fav.href = '/assets/images/favicon.svg';
     fav.type = 'image/svg+xml';
     document.head.appendChild(fav);
   }

@@ -1,7 +1,7 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-  <script src="site-shell-guard.js"></script>
+  <script src="assets/js/site-shell-guard.js"></script>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <meta name="theme-color" content="#dfeaf0">
@@ -75,9 +75,9 @@
     @media(max-width:560px) { .top-bar { top:12px; left:12px; } .hero { padding:82px 18px 62px; } .form-row { grid-template-columns:1fr; gap:0; } .status-card { margin-top:-26px; } body.quiet-active .hero { padding-top:92px; } body.quiet-active .status-card { min-height:280px; } }
     @media(prefers-reduced-motion:reduce) { *,*::before,*::after { scroll-behavior:auto!important; transition:none!important; animation:none!important; } }
   </style>
-  <link rel="stylesheet" href="theme.css">
+  <link rel="stylesheet" href="assets/css/theme.css">
   <link rel="preconnect" href="https://ui-avatars.com" crossorigin>
-  <link rel="stylesheet" href="site-polish.css" data-site-polish="true"><link rel="stylesheet" href="site-theme.css" data-site-theme="true"><link rel="stylesheet" href="motion.css">
+  <link rel="stylesheet" href="assets/css/site-polish.css" data-site-polish="true"><link rel="stylesheet" href="assets/css/site-theme.css" data-site-theme="true"><link rel="stylesheet" href="assets/css/motion.css">
 </head>
 <body>
   <div class="top-bar"><a class="button" href="index.html">← Back to hub</a></div>
@@ -113,6 +113,6 @@
     form.addEventListener('submit',async e=>{e.preventDefault();const from=fromDate.value,until=untilDate.value;if(!from||!until){formStatus.textContent='Pick both days first';return}if(until<from){formStatus.textContent='The last day must be on or after the first';return}saveApart.disabled=true;formStatus.textContent='Saving…';try{await postApart({entry:{from,until,note:apartNote.value.trim(),author:currentUser},sha:currentSha});await loadProfilePic(currentUser);form.reset();fromDate.value=todayString();untilDate.value=todayString();formStatus.textContent='Saved 🤍';render()}catch(e){formStatus.textContent=e.message}finally{saveApart.disabled=false}});
     fromDate.value=todayString();untilDate.value=todayString();loadEntries();
   </script>
-  <script src="avatar.js"></script><script src="dialog.js"></script>
+  <script src="assets/js/avatar.js"></script><script src="assets/js/dialog.js"></script>
 </body>
 </html>

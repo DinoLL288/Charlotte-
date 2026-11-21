@@ -1,7 +1,7 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-  <script src="site-shell-guard.js"></script>
+  <script src="assets/js/site-shell-guard.js"></script>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Gallery</title>
@@ -165,8 +165,8 @@
     #googlePhotosStatus[data-tone="error"] { color: #b3261e; }
     #googlePhotosStatus[data-tone="success"] { color: #1c7a4a; }
   </style>
-  <link rel="stylesheet" href="theme.css">
-  <link rel="stylesheet" href="gallery-media.css">
+  <link rel="stylesheet" href="assets/css/theme.css">
+  <link rel="stylesheet" href="assets/css/gallery-media.css">
   <script src="https://accounts.google.com/gsi/client" async defer></script>
   <style>
     body{background:linear-gradient(160deg,#edf8ff 0%,#d9effc 48%,#fff7df 100%)}.gallery-hero{position:relative;overflow:hidden;padding:100px 20px 94px;text-align:center;color:#fff;background:radial-gradient(circle at 18% 12%,#ffffff35 0 4px,transparent 5px),radial-gradient(circle at 82% 25%,#ffffff30 0 7px,transparent 8px),linear-gradient(145deg,#173f5b,#3389b4 60%,#78bad7)}.gallery-hero:after{content:"✦  ·  ✧  ·  ✦";position:absolute;right:7%;bottom:18px;color:#f8e8bb;font-size:1.5rem;letter-spacing:.4rem;opacity:.85}.gallery-hero .eyebrow{margin:0;color:#f5dfa2;font-size:.76rem;font-weight:800;letter-spacing:.24em;text-transform:uppercase}.gallery-hero h1{margin:10px 0;font:400 clamp(2.8rem,8vw,5rem)/1 Georgia,serif;text-shadow:0 4px 22px #0a2b4166}.gallery-hero p:last-child{margin:0 auto;max-width:52ch;color:#eaf7ff;font-size:1.08rem;line-height:1.6}.screen{width:min(1120px,100%);padding:0 20px 70px;gap:18px}.upload-card{position:relative;margin-top:-48px;z-index:1;width:min(780px,100%);padding:25px;border:1px solid #fff;border-radius:28px;background:linear-gradient(145deg,#fffefa,#f4fbff);box-shadow:0 22px 55px #17486626;text-align:left;align-items:stretch}.upload-title{display:flex;align-items:center;gap:14px}.upload-icon{display:grid;place-items:center;width:54px;height:54px;flex:none;border-radius:18px;background:linear-gradient(145deg,#fff1c8,#ffe39a);font-size:1.6rem;box-shadow:inset 0 2px 0 #fff}.upload-title strong{display:block;color:#143f5f;font:700 1.3rem Georgia,serif}.upload-title span:last-child{display:block;margin-top:4px;color:#648198;font-size:.9rem}.folder-tools{display:flex;gap:10px;flex-wrap:wrap;align-items:center;justify-content:center}.folder-tools #folderCheckboxes{display:flex;gap:8px;flex-wrap:wrap;justify-content:center}.folder-tools #folderCheckboxes label{display:flex;align-items:center;gap:7px;padding:9px 14px!important;border:1px solid #d5e6ef;border-radius:999px!important;background:#fff!important;color:#315d78;box-shadow:0 5px 14px #184d6b12!important;font-weight:700}.folder-tools #folderCheckboxes input{accent-color:#3180a6}.folder-tools #newFolderInput{min-width:165px;padding:10px 14px;border:1px solid #c8dceb;border-radius:999px;background:#fff;font:inherit}.button{transition:transform .18s ease,box-shadow .18s ease}.button:hover{transform:translateY(-2px);box-shadow:0 11px 24px #347eac42}.upload-card form{align-items:stretch}.photo-drop{display:grid;place-items:center;gap:7px;min-height:112px;padding:18px;border:2px dashed #9ac5db;border-radius:20px;background:linear-gradient(145deg,#f4fbff,#fff9e7);color:#315d78;text-align:center;cursor:pointer}.photo-drop span:first-child{font-size:1.6rem}.photo-drop input{max-width:100%;font:inherit}.upload-card .button{align-self:center}.status{color:#315d78;font-weight:700;text-align:center}.screen #folderView{gap:14px!important}.screen #folderView>section{overflow:hidden;padding:10px;border:1px solid #ffffffc9;border-radius:25px;background:#ffffff75;box-shadow:0 12px 32px #1b5b7d14}.screen #folderView>section>button{padding:15px 19px!important;border:1px solid #d5e7ef!important;border-radius:18px!important;background:linear-gradient(120deg,#fff,#eff9fd)!important;color:#174866!important;font:700 1.05rem var(--font-body)!important;box-shadow:0 7px 18px #17486616!important;transition:transform .18s ease,box-shadow .18s ease}.screen #folderView>section>button:hover{transform:translateY(-2px);box-shadow:0 12px 24px #17486622!important}.grid{width:100%;grid-template-columns:repeat(auto-fill,minmax(min(100%,220px),1fr));gap:17px;padding:14px 5px 8px}.tile{min-height:180px;padding:7px;border:1px solid #fff;border-radius:22px;background:linear-gradient(145deg,#fff,#f1f9fd);box-shadow:0 10px 28px #153f5c24;transition:transform .22s ease,box-shadow .22s ease}.tile:nth-child(3n+1){transform:rotate(-1deg)}.tile:nth-child(3n){transform:rotate(1deg)}.tile:hover{z-index:1;transform:translateY(-5px) rotate(0)!important;box-shadow:0 18px 36px #153f5c35}.tile img{width:100%;height:260px;max-height:360px;object-fit:cover;border-radius:16px;background:#e8f4f9}.tile button{z-index:2!important;top:12px!important;right:12px!important;width:36px!important;height:36px!important;border:1px solid #ffffff!important;border-radius:50%!important;background:#fffefa!important;color:#235a77;font-size:1.2rem;font-weight:800;box-shadow:0 5px 15px #183f5d38!important}.lightbox{background:#0b2839eF;backdrop-filter:blur(10px)}.lightbox-img{border:7px solid #fffefa;border-radius:24px}.lightbox-info{padding:9px 18px 9px 9px;background:#fffefa;border:1px solid #f3e7c8}.lightbox-close{top:-48px;right:0;width:42px;height:42px;color:#174866;font-size:24px}.top-bar{position:fixed}.tile.empty{color:#557b93}
@@ -181,7 +181,7 @@
   <style>
     .album-filters[hidden]{display:none}.album-card{position:relative;display:flex;flex-direction:column;align-items:flex-start;gap:4px;overflow:hidden;padding:7px;border:1px solid #fff;border-radius:19px;color:#174866;background:#fffefa;text-align:left;box-shadow:0 8px 22px #17486617;cursor:pointer}.album-card img,.album-card-empty{width:100%;aspect-ratio:1.25;object-fit:cover;border-radius:13px;background:#e8f4f9}.album-card-empty{display:grid;place-items:center;font-size:2rem}.album-card strong{padding:4px 6px 0;font-size:.98rem}.album-card small{padding:0 6px 5px;color:#7790a0}.album-card-count{position:absolute;top:14px;right:14px;padding:6px 10px;border:1px solid #ffffffb0;border-radius:999px;color:#174866;background:#fffefaed;font-size:.75rem;font-weight:800}
   </style>
-  <link rel="stylesheet" href="site-polish.css" data-site-polish="true"><link rel="stylesheet" href="site-theme.css" data-site-theme="true"><link rel="stylesheet" href="motion.css">
+  <link rel="stylesheet" href="assets/css/site-polish.css" data-site-polish="true"><link rel="stylesheet" href="assets/css/site-theme.css" data-site-theme="true"><link rel="stylesheet" href="assets/css/motion.css">
 </head>
 <body>
   <div class="top-bar">
@@ -237,9 +237,9 @@
       </div>
     </div>
   </div>
-  <script src="gallery.js"></script>
-  <script src="avatar.js"></script>
-  <script src="dialog.js"></script>
-  <script src="gallery-videos.js"></script>
+  <script src="assets/js/gallery.js"></script>
+  <script src="assets/js/avatar.js"></script>
+  <script src="assets/js/dialog.js"></script>
+  <script src="assets/js/gallery-videos.js"></script>
 </body>
 </html>

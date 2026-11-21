@@ -135,7 +135,7 @@ async function getCalendar(context) {
   const headers = githubHeaders(token);
 
   const url =
-    `https://api.github.com/repos/${repo}/contents/calendar/events.json?ref=${encodeURIComponent(branch)}`;
+    `https://api.github.com/repos/${repo}/contents/data/calendar-events.json?ref=${encodeURIComponent(branch)}`;
 
   const response = await fetch(url, { headers });
 
@@ -161,7 +161,7 @@ async function getCalendar(context) {
   try {
     data = JSON.parse(decodeContent(json.content));
   } catch {
-    throw new Error('Could not parse calendar/events.json');
+    throw new Error('Could not parse data/calendar-events.json');
   }
 
   return {
@@ -393,7 +393,7 @@ export async function onRequestPost(context) {
     }
 
     const url =
-      `https://api.github.com/repos/${repo}/contents/calendar/events.json`;
+      `https://api.github.com/repos/${repo}/contents/data/calendar-events.json`;
 
     const response = await fetch(url, {
       method: 'PUT',

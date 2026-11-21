@@ -22,7 +22,7 @@ export async function onRequestGet(context) {
 
     // Try common extensions in parallel
     const results = await Promise.all(['jpg', 'jpeg', 'png', 'webp', 'gif'].map(async ext => {
-      const res = await fetch(`https://api.github.com/repos/${repo}/contents/profiles/${user}.${ext}?ref=${branch}`, { headers });
+      const res = await fetch(`https://api.github.com/repos/${repo}/contents/data/profiles/${user}.${ext}?ref=${branch}`, { headers });
       if (res.status !== 200) return null;
       const json = await res.json();
       return json?.download_url || null;
@@ -62,7 +62,7 @@ export async function onRequestPost(context) {
     const content = btoa(binary);
 
     const ext = file.name.split('.').pop() || 'jpg';
-    const filename = `profiles/${user}.${ext}`;
+    const filename = `data/profiles/${user}.${ext}`;
 
     const repo = env.GITHUB_REPO;
     const token = env.GITHUB_TOKEN;
@@ -85,10 +85,10 @@ export async function onRequestPost(context) {
     for (const oldExt of ['jpg', 'jpeg', 'png', 'webp', 'gif']) {
       if (oldExt === ext) continue;
       try {
-        const getOld = await fetch(`https://api.github.com/repos/${repo}/contents/profiles/${user}.${oldExt}?ref=${branch}`, { headers });
+        const getOld = await fetch(`https://api.github.com/repos/${repo}/contents/data/profiles/${user}.${oldExt}?ref=${branch}`, { headers });
         if (getOld.status === 200) {
           const oldJson = await getOld.json();
-          await fetch(`https://api.github.com/repos/${repo}/contents/profiles/${user}.${oldExt}`, {
+          await fetch(`https://api.github.com/repos/${repo}/contents/data/profiles/${user}.${oldExt}`, {
             method: 'DELETE',
             headers,
             body: JSON.stringify({ message: `Remove old profile pic for ${user}`, sha: oldJson.sha, branch })

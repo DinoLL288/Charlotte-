@@ -12,7 +12,7 @@ async function getTimeline(env) {
   };
   if (token) headers['Authorization'] = `Bearer ${token}`;
 
-  const res = await fetch(`https://api.github.com/repos/${repo}/contents/timeline/timeline.json?ref=${branch}`, { headers });
+  const res = await fetch(`https://api.github.com/repos/${repo}/contents/data/timeline.json?ref=${branch}`, { headers });
   if (res.status === 404) return { moments: [], sha: null };
 
   const json = await res.json();
@@ -41,7 +41,7 @@ async function saveTimeline(env, moments, sha, message) {
 
   let currentSha = sha;
   if (!currentSha) {
-    const getRes = await fetch(`https://api.github.com/repos/${repo}/contents/timeline/timeline.json?ref=${branch}`, { headers });
+    const getRes = await fetch(`https://api.github.com/repos/${repo}/contents/data/timeline.json?ref=${branch}`, { headers });
     if (getRes.status === 200) {
       const getJson = await getRes.json();
       currentSha = getJson.sha;
@@ -58,7 +58,7 @@ async function saveTimeline(env, moments, sha, message) {
   };
   if (currentSha) body.sha = currentSha;
 
-  const res = await fetch(`https://api.github.com/repos/${repo}/contents/timeline/timeline.json`, {
+  const res = await fetch(`https://api.github.com/repos/${repo}/contents/data/timeline.json`, {
     method: 'PUT',
     headers,
     body: JSON.stringify(body)

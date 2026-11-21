@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8"><meta name="viewport" content="width=device-width, initial-scale=1.0"><title>Our little safe</title>
   <script>if (!localStorage.getItem('charlotte-user')) location.href = 'login.html';</script>
-  <link rel="stylesheet" href="theme.css">
+  <link rel="stylesheet" href="assets/css/theme.css">
   <style>
     *{box-sizing:border-box}
     .hero{position:relative;overflow:hidden;padding:86px 20px 72px;text-align:center;color:#fff;background:radial-gradient(680px 340px at 16% 0%,#1d5f89 0%,rgba(29,95,137,0) 62%),radial-gradient(520px 300px at 86% 12%,#38799f 0%,rgba(56,121,159,0) 60%),linear-gradient(160deg,#0b263b,#2a78a8)}
@@ -89,7 +89,7 @@
     @media(max-width:560px){.hero{padding-top:94px}.entries{grid-template-columns:1fr}.safe-head{flex-direction:column}.toolbar .search{min-width:0;flex-basis:100%}.entry-form{padding:22px 18px}}
     @media(prefers-reduced-motion:reduce){.button,.button:hover{transition:none;transform:none}.toast{transition:none}}
   </style>
-  <link rel="stylesheet" href="site-polish.css" data-site-polish="true"><link rel="stylesheet" href="site-theme.css" data-site-theme="true"><link rel="stylesheet" href="motion.css">
+  <link rel="stylesheet" href="assets/css/site-polish.css" data-site-polish="true"><link rel="stylesheet" href="assets/css/site-theme.css" data-site-theme="true"><link rel="stylesheet" href="assets/css/motion.css">
 </head>
 <body>
   <div class="top-bar"><a class="button" href="index.html">← Back to hub</a></div>
@@ -214,6 +214,6 @@
 
   <div class="toast" id="toast" role="status" aria-live="polite"></div>
 
-  <script src="dialog.js"></script><script src="avatar.js"></script><script src="vault.js"></script>
+  <script src="assets/js/dialog.js"></script><script src="assets/js/avatar.js"></script><script src="assets/js/vault.js"></script>
 </body>
 </html>

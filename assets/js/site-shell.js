@@ -30,7 +30,7 @@
 
     const script = pageDocument.createElement('script');
     script.id = 'ui-bouncy-balls-script';
-    script.src = '/ui-bouncy-balls.js';
+    script.src = '/assets/js/ui-bouncy-balls.js';
     script.async = true;
 
     (pageDocument.head || pageDocument.documentElement).appendChild(script);
