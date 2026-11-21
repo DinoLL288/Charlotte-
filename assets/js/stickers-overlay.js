@@ -29,7 +29,7 @@
     #global-sticker-layer .gplaced:hover { transform:translate(-50%,-50%) scale(1.12); }
     #global-sticker-layer .gplaced img { width:48px; height:48px; object-fit:contain; pointer-events:none; }
     #sticker-palette-btn { position:fixed; left:16px; bottom:16px; z-index:999; width:52px; height:52px; border-radius:50%; border:0; background:#2a78a8; color:#fff; font-size:1.4rem; cursor:pointer; box-shadow:0 4px 14px rgba(0,0,0,.25); }
-    #sticker-palette { position:fixed; left:16px; bottom:76px; z-index:999; width:260px; max-height:60vh; overflow:auto; background:#fff; border:1px solid #c8dceb; border-radius:14px; padding:12px; box-shadow:0 8px 24px rgba(0,0,0,.2); display:none; }
+    #sticker-palette { position:fixed; z-index:999; z-index:999; width:260px; max-height:60vh; overflow:auto; background:#fff; border:1px solid #c8dceb; border-radius:14px; padding:12px; box-shadow:0 8px 24px rgba(0,0,0,.2); display:none; }
     #sticker-palette.open { display:block; }
     #sticker-palette h4 { margin:0 0 8px; color:#123a58; }
     #sticker-palette .pg { display:grid; grid-template-columns:repeat(5,1fr); gap:6px; }
@@ -178,15 +178,77 @@
     const btn = document.createElement('button');
     btn.id = 'sticker-palette-btn';
     btn.textContent = '🎨';
-    btn.title = 'Stickers';
+    btn.title = 'Drag to move · click to open stickers';
     document.body.appendChild(btn);
+
+    // Restore saved position
+    try {
+      const saved = JSON.parse(localStorage.getItem('sticker-btn-pos') || 'null');
+      if (saved && typeof saved.x === 'number') { btn.style.left = saved.x + 'px'; btn.style.top = saved.y + 'px'; btn.style.right = 'auto'; btn.style.bottom = 'auto'; }
+    } catch (e) {}
 
     const panel = document.createElement('div');
     panel.id = 'sticker-palette';
     panel.innerHTML = '<h4>Stickers</h4><div class="pg" id="pg"></div><div class="import-row"><label for="gfile">Import</label><input id="gfile" type="file" accept="image/*" multiple></div><div class="status" id="gstatus"></div>';
     document.body.appendChild(panel);
 
-    btn.addEventListener('click', () => panel.classList.toggle('open'));
+    // Draggable button
+    let dragging = false, moved = false, sx, sy, ox, oy;
+    btn.addEventListener('mousedown', e => {
+      dragging = true; moved = false; sx = e.clientX; sy = e.clientY;
+      const r = btn.getBoundingClientRect();
+      ox = r.left; oy = r.top;
+      btn.style.right = 'auto'; btn.style.bottom = 'auto';
+      btn.style.left = ox + 'px'; btn.style.top = oy + 'px';
+      e.preventDefault();
+    });
+    window.addEventListener('mousemove', e => {
+      if (!dragging) return;
+      const dx = e.clientX - sx, dy = e.clientY - sy;
+      if (Math.abs(dx) > 3 || Math.abs(dy) > 3) moved = true;
+      btn.style.left = (ox + dx) + 'px';
+      btn.style.top = (oy + dy) + 'px';
+      // move panel too if open
+      if (panel.classList.contains('open')) positionPanel();
+    });
+    window.addEventListener('mouseup', () => {
+      if (!dragging) return;
+      dragging = false;
+      if (moved) {
+        try { localStorage.setItem('sticker-btn-pos', JSON.stringify({ x: parseFloat(btn.style.left), y: parseFloat(btn.style.top) })); } catch (e) {}
+      }
+    });
+    // touch
+    btn.addEventListener('touchstart', e => {
+      const t = e.touches[0]; dragging = true; moved = false; sx = t.clientX; sy = t.clientY;
+      const r = btn.getBoundingClientRect(); ox = r.left; oy = r.top;
+      btn.style.right = 'auto'; btn.style.bottom = 'auto';
+      btn.style.left = ox + 'px'; btn.style.top = oy + 'px';
+    }, { passive: true });
+    window.addEventListener('touchmove', e => {
+      if (!dragging) return;
+      const t = e.touches[0]; const dx = t.clientX - sx, dy = t.clientY - sy;
+      if (Math.abs(dx) > 3 || Math.abs(dy) > 3) moved = true;
+      btn.style.left = (ox + dx) + 'px'; btn.style.top = (oy + dy) + 'px';
+      if (panel.classList.contains('open')) positionPanel();
+    }, { passive: true });
+    window.addEventListener('touchend', () => {
+      if (!dragging) return; dragging = false;
+      if (moved) { try { localStorage.setItem('sticker-btn-pos', JSON.stringify({ x: parseFloat(btn.style.left), y: parseFloat(btn.style.top) })); } catch (e) {} }
+    });
+
+    function positionPanel() {
+      const r = btn.getBoundingClientRect();
+      panel.style.left = r.left + 'px';
+      panel.style.top = (r.top - panel.offsetHeight - 8) + 'px';
+      panel.style.right = 'auto'; panel.style.bottom = 'auto';
+    }
+
+    btn.addEventListener('click', e => {
+      if (moved) { moved = false; return; }
+      panel.classList.toggle('open');
+      if (panel.classList.contains('open')) positionPanel();
+    });
 
     const pg = panel.querySelector('#pg');
     const statusEl = panel.querySelector('#gstatus');
