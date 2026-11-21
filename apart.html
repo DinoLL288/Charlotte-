@@ -49,27 +49,27 @@
     .empty { padding:28px; border:1px dashed #b9c9d3; border-radius:18px; text-align:center; color:var(--muted); }
     .empty strong { display:block; color:var(--ink); font:700 1.2rem Georgia,serif; }
 
-    /* Active quiet days feel calm and supportive, not dark or alarming. */
-    body.quiet-active { color:var(--ink); background:linear-gradient(180deg,#eef3f7,#f7f5f0 55%,#f1f4f1); }
-    body.quiet-active .hero { background:linear-gradient(145deg,#5f8fa8,#7ba8b8 55%,#93b8c2); }
-    body.quiet-active .hero::before { content:"✦     ·       ☾       ·     ✦"; display:block; margin:0 auto 15px; color:#f5e7b8; font-size:clamp(1rem,2.8vw,1.5rem); letter-spacing:.4em; opacity:.9; }
-    body.quiet-active .eyebrow { color:#f3e6c3; }
-    body.quiet-active .subtitle { color:#f0f6f8; }
-    body.quiet-active .status-card { min-height:320px; margin-top:-42px; padding:clamp(30px,7vw,54px); overflow:hidden; border:1px solid rgba(201,162,74,.4); border-radius:28px; background:radial-gradient(circle at 82% 18%,rgba(236,215,160,.35),transparent 28%),radial-gradient(circle at 12% 100%,rgba(196,219,232,.45),transparent 42%),linear-gradient(145deg,#fbf8f1,#f1f5f8 58%,#f6f3ee); box-shadow:0 24px 56px rgba(20,63,95,.16),inset 0 0 0 1px rgba(255,255,255,.7); }
-    body.quiet-active .status-card::after { content:"☾"; position:absolute; right:5%; top:-.18em; z-index:-1; color:#c9a24a; opacity:.12; font:400 clamp(8rem,24vw,14rem)/1 Georgia,serif; }
+    /* Active quiet days feel calm and supportive, not dark or alarming — but clearly noticeable. */
+    body.quiet-active { color:var(--ink); background:linear-gradient(180deg,#e4d9f2 0%,#edf2f7 45%,#f4f1ea 100%); }
+    body.quiet-active .hero { background:linear-gradient(145deg,#5a87a3,#6f9fb4 55%,#89b3bf); box-shadow:inset 0 -40px 80px rgba(255,255,255,.08); }
+    body.quiet-active .hero::before { content:"✦     ·       ☾       ·     ✦"; display:block; margin:0 auto 15px; color:#f7e9b8; font-size:clamp(1.05rem,3vw,1.6rem); letter-spacing:.45em; opacity:1; }
+    body.quiet-active .eyebrow { color:#f6e8c2; }
+    body.quiet-active .subtitle { color:#f3f8fa; }
+    body.quiet-active .status-card { min-height:320px; margin-top:-42px; padding:clamp(30px,7vw,54px); overflow:hidden; border:2px solid rgba(186,160,214,.55); border-radius:28px; background:radial-gradient(circle at 82% 18%,rgba(236,215,160,.38),transparent 28%),radial-gradient(circle at 12% 100%,rgba(200,214,235,.5),transparent 42%),linear-gradient(145deg,#faf7f1,#edf1f8 58%,#f3eef8); box-shadow:0 26px 60px rgba(90,70,130,.18),inset 0 0 0 1px rgba(255,255,255,.75); }
+    body.quiet-active .status-card::after { content:"☾"; position:absolute; right:5%; top:-.18em; z-index:-1; color:#b48ccf; opacity:.16; font:400 clamp(8rem,24vw,14rem)/1 Georgia,serif; }
     body.quiet-active .status-card h2 { max-width:18ch; color:#123a58; font-size:clamp(2rem,7vw,3.1rem); }
     body.quiet-active .status-card p:not(.eyebrow) { color:#3f637e; }
-    body.quiet-active .quiet-day-count { display:inline-flex; }
-    body.quiet-active .card:not(.status-card),body.quiet-active .entry { color:var(--ink); border-color:var(--line); background:var(--surface); box-shadow:0 12px 32px #24445c12; }
+    body.quiet-active .quiet-day-count { display:inline-flex; color:#4a3a6b; background:#e9e1f5; border-color:#cdbde3; box-shadow:0 4px 14px rgba(122,95,163,.12); }
+    body.quiet-active .card:not(.status-card),body.quiet-active .entry { color:var(--ink); border-color:#d9d2e6; background:#fffdf9; box-shadow:0 12px 32px rgba(90,70,130,.1); }
     body.quiet-active .composer h2,body.quiet-active .section-head h2,body.quiet-active .range,body.quiet-active .empty strong { color:var(--ink); }
     body.quiet-active .form-hint,body.quiet-active label,body.quiet-active .section-head span,body.quiet-active .status,body.quiet-active .entry-meta { color:var(--muted); }
-    body.quiet-active input { color:#21374a; border-color:#cbd9e2; background:#fff; }
-    body.quiet-active .entry.is-active { border-color:#d8c999; background:#fffdf7; }
-    body.quiet-active .entry-meta { border-color:var(--line); }
+    body.quiet-active input { color:#21374a; border-color:#cdc4df; background:#fff; }
+    body.quiet-active .entry.is-active { border-color:#cdbde3; background:#f7f3fb; }
+    body.quiet-active .entry-meta { border-color:#e2dced; }
     body.quiet-active .chip { color:#425c6e; background:#e8eef2; }
-    body.quiet-active .chip.is-active { color:#59471f; background:#eee2c3; }
+    body.quiet-active .chip.is-active { color:#4a3a6b; background:#e9e1f5; border:1px solid #d6c9ea; }
     body.quiet-active .chip.is-upcoming { color:#315d73; background:#dceef6; }
-    body.quiet-active .empty { color:var(--muted); border-color:#b9c9d3; background:#fff; }
+    body.quiet-active .empty { color:var(--muted); border-color:#cfc4e2; background:#fdfbff; }
     body.quiet-active .delete-entry { color:#62502e; background:#f2eee5; }
     body.quiet-active .top-bar .button { color:#fff; border:0; background:#294d67; }
     @media(max-width:560px) { .top-bar { top:12px; left:12px; } .hero { padding:82px 18px 62px; } .form-row { grid-template-columns:1fr; gap:0; } .status-card { margin-top:-26px; } body.quiet-active .hero { padding-top:92px; } body.quiet-active .status-card { min-height:280px; } }

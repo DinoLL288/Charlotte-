@@ -21,15 +21,15 @@
     const style = document.createElement('style');
     style.id = styleId;
     style.textContent = `
-      /* Whole-site Quiet Days: a calm, gentle indication — never dark or alarming. */
+      /* Whole-site Quiet Days: a calm, gentle indication — clearly noticeable, never dark or alarming. */
       html[data-quiet-days="on"] { color-scheme: light; }
-      html[data-quiet-days="on"] body { padding-top:86px!important; background:linear-gradient(180deg,#eef3f7,#f5f3f8 50%,#f7f5f0)!important; }
-      #${bannerId} { position:fixed; z-index:2147483000; inset:0 0 auto; min-height:72px; display:flex; align-items:center; justify-content:center; gap:13px; padding:12px 18px; color:#4c3d6b; background:linear-gradient(100deg,#f3eefa,#ece6f6 50%,#f3eefa); border-bottom:1px solid #ddd4ea; box-shadow:0 6px 24px rgba(76,61,107,.12); font:700 15px/1.35 system-ui,-apple-system,"Segoe UI",sans-serif; letter-spacing:.04em; text-align:center; }
-      #${bannerId} .quiet-days-global-moon { color:#8b7aa8; font-size:24px; }
-      #${bannerId} .quiet-days-global-pill { padding:4px 10px; border:1px solid #d5cce6; border-radius:999px; color:#5a4a78; background:#fff; font-size:11px; letter-spacing:.08em; font-weight:800; }
-      #${bannerId} .quiet-days-global-detail { color:#5f527a; font-weight:500; letter-spacing:0; }
-      html[data-quiet-days="on"] body .top-bar { top:94px!important; }
-      @media(max-width:600px) { html[data-quiet-days="on"] body { padding-top:92px!important; } #${bannerId} { min-height:82px; flex-wrap:wrap; gap:3px 8px; padding:8px 10px; font-size:12px; } #${bannerId} .quiet-days-global-moon { font-size:20px; } #${bannerId} .quiet-days-global-detail { flex-basis:100%; } html[data-quiet-days="on"] body .top-bar { top:102px!important; } }
+      html[data-quiet-days="on"] body { padding-top:92px!important; background:linear-gradient(180deg,#e4d9f2 0%,#ecf0f7 42%,#f4f1ea 100%)!important; }
+      #${bannerId} { position:fixed; z-index:2147483000; inset:0 0 auto; min-height:78px; display:flex; align-items:center; justify-content:center; gap:14px; padding:14px 20px; color:#3f305c; background:linear-gradient(100deg,#ede4f7,#e3d7f1 45%,#e9e1f5 100%); border-bottom:3px solid #c7b4df; box-shadow:0 10px 28px rgba(90,70,130,.18); font:700 16px/1.35 system-ui,-apple-system,"Segoe UI",sans-serif; letter-spacing:.04em; text-align:center; }
+      #${bannerId} .quiet-days-global-moon { color:#7a5fa3; font-size:30px; filter:drop-shadow(0 2px 6px rgba(122,95,163,.25)); }
+      #${bannerId} .quiet-days-global-pill { padding:5px 12px; border:1px solid #7a5fa3; border-radius:999px; color:#fff; background:#7a5fa3; font-size:11px; letter-spacing:.1em; font-weight:800; }
+      #${bannerId} .quiet-days-global-detail { color:#4e3f66; font-weight:600; letter-spacing:0; }
+      html[data-quiet-days="on"] body .top-bar { top:100px!important; }
+      @media(max-width:600px) { html[data-quiet-days="on"] body { padding-top:100px!important; } #${bannerId} { min-height:90px; flex-wrap:wrap; gap:4px 10px; padding:10px 12px; font-size:13px; } #${bannerId} .quiet-days-global-moon { font-size:24px; } #${bannerId} .quiet-days-global-detail { flex-basis:100%; } html[data-quiet-days="on"] body .top-bar { top:110px!important; } }
       @media(prefers-reduced-motion:reduce) { #${bannerId} { scroll-behavior:auto; } }
     `;
     (document.head || document.documentElement).appendChild(style);
