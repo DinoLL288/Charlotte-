@@ -79,8 +79,9 @@
     const importedCount = document.getElementById('importedCount');
     const fileInput = document.getElementById('stickerFileInput');
     let owned = new Set();
-    let imported = [];   // [{id,name,dataUrl}]
-    let placements = []; // [{id,stickerId,kind,x,y,...}]
+    let imported = [];
+    let placements = [];
+    let selectedPid = null;
     let menuEl = null;
 
     async function load() {
@@ -123,6 +124,7 @@
       placements.forEach(pl => {
         const st = findSticker(pl);
         if (!st) return;
+        const sz = pl.size || 1;
         const el = document.createElement('div');
         el.className = 'placed';
         el.dataset.placementId = pl.id;
@@ -132,9 +134,12 @@
           const img = document.createElement('img');
           img.src = st.dataUrl;
           img.alt = st.name || 'sticker';
+          img.style.width = (48*sz) + 'px';
+          img.style.height = (48*sz) + 'px';
           el.appendChild(img);
         } else {
           el.textContent = st.icon;
+          el.style.fontSize = (2*sz) + 'rem';
         }
         el.draggable = true;
         el.addEventListener('dragstart', e => {
@@ -142,9 +147,10 @@
           el.style.opacity = '.5';
         });
         el.addEventListener('dragend', e => { el.style.opacity = '1'; });
+        el.addEventListener('click', e => { e.stopPropagation(); selectPlacement(pl.id); });
         el.addEventListener('dblclick', async e => {
           e.stopPropagation();
-          if (!await siteDialog.confirm('Remove this sticker?')) return;
+          if (!confirm('Remove this sticker?')) return;
           await removePlacement(pl.id);
         });
         el.addEventListener('contextmenu', e => {
@@ -152,6 +158,39 @@
           showMenu(e.clientX, e.clientY, pl.id);
         });
         canvas.appendChild(el);
+
+        if (pl.id === selectedPid) {
+          const handle = document.createElement('div');
+          handle.style.cssText = 'position:absolute;right:-6px;bottom:-6px;width:14px;height:14px;background:#2a78a8;border:2px solid #fff;border-radius:50%;cursor:nwse-resize;box-shadow:0 2px 6px rgba(0,0,0,.3);';
+          el.style.outline = '2px dashed #2a78a8';
+          el.appendChild(handle);
+          let resizing = false, startX, startY, startSize;
+          handle.addEventListener('mousedown', e => {
+            e.stopPropagation(); e.preventDefault();
+            resizing = true;
+            startX = e.clientX; startY = e.clientY;
+            startSize = pl.size || 1;
+            function onMove(ev) {
+              const dx = ev.clientX - startX, dy = ev.clientY - startY;
+              const newSize = Math.max(0.4, Math.min(4, startSize + (dx+dy)/120));
+              pl.size = newSize;
+              if (pl.kind === 'image' || imported.some(s=>s.id===pl.stickerId)) {
+                const img = el.querySelector('img');
+                if (img) { img.style.width = (48*newSize)+'px'; img.style.height = (48*newSize)+'px'; }
+              } else {
+                el.style.fontSize = (2*newSize) + 'rem';
+              }
+            }
+            function onUp() {
+              resizing = false;
+              window.removeEventListener('mousemove', onMove);
+              window.removeEventListener('mouseup', onUp);
+              saveResize(pl.id, pl.size);
+            }
+            window.addEventListener('mousemove', onMove);
+            window.addEventListener('mouseup', onUp);
+          });
+        }
       });
 
       // Drag from collection
@@ -232,6 +271,15 @@
       } catch (err) { /* ignore */ }
     }
 
+    function selectPlacement(pid) {
+      selectedPid = (selectedPid === pid) ? null : pid;
+      render();
+    }
+    async function saveResize(pid, size) {
+      try {
+        await fetch('/api/question-room', { method: 'POST', headers: { 'content-type': 'application/json' }, body: JSON.stringify({ action: 'sticker-move', user, placementId: pid, x: (placements.find(p=>p.id===pid)||{}).x || 0, y: (placements.find(p=>p.id===pid)||{}).y || 0, size }) });
+      } catch (e) { /* ignore */ }
+    }
     async function removePlacement(pid) {
       placements = placements.filter(p => p.id !== pid);
       render(); adjustCanvas();
@@ -286,6 +334,7 @@
 
     // Click to unlock hidden stickers (easter egg)
     canvas.addEventListener('click', async e => {
+      if (e.target === canvas || e.target.classList.contains('hint')) { if (selectedPid) { selectedPid = null; render(); } }
       if (e.target !== canvas && !e.target.classList.contains('hint')) return;
       const hidden = STICKERS.filter(s => s.hidden && !owned.has(s.id));
       if (hidden.length && Math.random() < 0.3) {

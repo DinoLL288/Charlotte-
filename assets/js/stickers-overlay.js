@@ -28,8 +28,8 @@
     #global-sticker-layer .gplaced { position:absolute; font-size:2rem; cursor:grab; user-select:none; filter:drop-shadow(0 2px 4px rgba(0,0,0,.18)); transform:translate(-50%,-50%); pointer-events:auto; }
     #global-sticker-layer .gplaced:hover { transform:translate(-50%,-50%) scale(1.12); }
     #global-sticker-layer .gplaced img { width:48px; height:48px; object-fit:contain; pointer-events:none; }
-    #sticker-palette-btn { position:fixed; right:16px; bottom:16px; z-index:999; width:52px; height:52px; border-radius:50%; border:0; background:#2a78a8; color:#fff; font-size:1.4rem; cursor:pointer; box-shadow:0 4px 14px rgba(0,0,0,.25); }
-    #sticker-palette { position:fixed; right:16px; bottom:76px; z-index:999; width:260px; max-height:60vh; overflow:auto; background:#fff; border:1px solid #c8dceb; border-radius:14px; padding:12px; box-shadow:0 8px 24px rgba(0,0,0,.2); display:none; }
+    #sticker-palette-btn { position:fixed; left:16px; bottom:16px; z-index:999; width:52px; height:52px; border-radius:50%; border:0; background:#2a78a8; color:#fff; font-size:1.4rem; cursor:pointer; box-shadow:0 4px 14px rgba(0,0,0,.25); }
+    #sticker-palette { position:fixed; left:16px; bottom:76px; z-index:999; width:260px; max-height:60vh; overflow:auto; background:#fff; border:1px solid #c8dceb; border-radius:14px; padding:12px; box-shadow:0 8px 24px rgba(0,0,0,.2); display:none; }
     #sticker-palette.open { display:block; }
     #sticker-palette h4 { margin:0 0 8px; color:#123a58; }
     #sticker-palette .pg { display:grid; grid-template-columns:repeat(5,1fr); gap:6px; }
@@ -47,6 +47,7 @@
   let owned = new Set();
   let imported = [];
   let placements = [];
+  let selectedOverlayPid = null;
 
   function ensureLayer() {
     let layer = document.getElementById('global-sticker-layer');
@@ -83,6 +84,7 @@
     placements.forEach(pl => {
       const st = findSticker(pl);
       if (!st) return;
+      const sz = pl.size || 1;
       const el = document.createElement('div');
       el.className = 'gplaced';
       el.style.left = pl.x + 'px';
@@ -92,9 +94,12 @@
         const img = document.createElement('img');
         img.src = st.dataUrl;
         img.alt = st.name || 'sticker';
+        img.style.width = (48*sz) + 'px';
+        img.style.height = (48*sz) + 'px';
         el.appendChild(img);
       } else {
         el.textContent = st.icon;
+        el.style.fontSize = (2*sz) + 'rem';
       }
       el.draggable = true;
       el.addEventListener('dragstart', e => {
@@ -111,6 +116,23 @@
         e.preventDefault();
         if (confirm('Remove this sticker?')) await removePlacement(pl.id);
       });
+      el.addEventListener('click', e => { e.stopPropagation(); selectOverlay(pl.id); });
+      if (pl.id === selectedOverlayPid) {
+        el.style.outline = '2px dashed #2a78a8';
+        const handle = document.createElement('div');
+        handle.style.cssText = 'position:absolute;right:-6px;bottom:-6px;width:14px;height:14px;background:#2a78a8;border:2px solid #fff;border-radius:50%;cursor:nwse-resize;box-shadow:0 2px 6px rgba(0,0,0,.3);pointer-events:auto;';
+        el.appendChild(handle);
+        let resizing=false, sx, sy, ss;
+        handle.addEventListener('mousedown', e => {
+          e.stopPropagation(); e.preventDefault();
+          resizing=true; sx=e.clientX; sy=e.clientY; ss=pl.size||1;
+          function onMove(ev){ if(!resizing) return; const dx=ev.clientX-sx, dy=ev.clientY-sy; const ns=Math.max(0.4,Math.min(4, ss+(dx+dy)/120)); pl.size=ns;
+            const img=el.querySelector('img'); if(img){img.style.width=(48*ns)+'px';img.style.height=(48*ns)+'px';} else { el.style.fontSize=(2*ns)+'rem'; }
+          }
+          function onUp(){ resizing=false; window.removeEventListener('mousemove',onMove); window.removeEventListener('mouseup',onUp); saveOverlayResize(pl.id, pl.size, pl.x, pl.y); }
+          window.addEventListener('mousemove',onMove); window.addEventListener('mouseup',onUp);
+        });
+      }
       layer.appendChild(el);
     });
   }
@@ -134,6 +156,15 @@
     } catch (e) { /* ignore */ }
   }
 
+  function selectOverlay(pid) {
+    selectedOverlayPid = (selectedOverlayPid === pid) ? null : pid;
+    render();
+  }
+  async function saveOverlayResize(pid, size, x, y) {
+    try {
+      await fetch('/api/question-room', { method: 'POST', headers: { 'content-type': 'application/json' }, body: JSON.stringify({ action: 'sticker-move', user, placementId: pid, x, y, size }) });
+    } catch (e) { /* ignore */ }
+  }
   async function removePlacement(pid) {
     placements = placements.filter(p => p.id !== pid);
     render();
@@ -264,6 +295,7 @@
     socket.onclose = () => { clearInterval(pingTimer); reconnectTimer = setTimeout(connect, 2500); };
   }
 
+  document.addEventListener('click', e => { if (selectedOverlayPid && (e.target === document.body || e.target.id === 'global-sticker-layer')) { selectedOverlayPid = null; render(); } });
   function init() {
     ensureLayer();
     buildPalette();

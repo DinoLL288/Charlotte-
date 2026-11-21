@@ -230,6 +230,19 @@
     sp.setAttribute('aria-label', 'Movable fidget spinner');
     document.body.appendChild(sp);
 
+    // Load shared fidget position
+    if (user) {
+      fetch('/api/question-room?view=playful-state', { cache: 'no-store' })
+        .then(r => r.json())
+        .then(data => {
+          const f = data && data.fidget;
+          if (f && typeof f.x === 'number' && typeof f.y === 'number') {
+            sp.style.right = 'auto'; sp.style.bottom = 'auto';
+            sp.style.left = f.x + 'px'; sp.style.top = f.y + 'px';
+          }
+        }).catch(() => {});
+    }
+
     let dragging = false;
     let moved = false;
     let startX = 0, startY = 0, origX = 0, origY = 0;
@@ -266,6 +279,12 @@
         void sp.offsetWidth;
         sp.classList.add('spin');
         setTimeout(function () { sp.classList.remove('spin'); }, 650);
+      } else if (user) {
+        const r = sp.getBoundingClientRect();
+        fetch('/api/question-room', {
+          method: 'POST', headers: { 'content-type': 'application/json' },
+          body: JSON.stringify({ action: 'playful-fidget', user, x: r.left, y: r.top })
+        }).catch(() => {});
       }
     });
 
@@ -303,6 +322,12 @@
         void sp.offsetWidth;
         sp.classList.add('spin');
         setTimeout(function () { sp.classList.remove('spin'); }, 650);
+      } else if (user) {
+        const r = sp.getBoundingClientRect();
+        fetch('/api/question-room', {
+          method: 'POST', headers: { 'content-type': 'application/json' },
+          body: JSON.stringify({ action: 'playful-fidget', user, x: r.left, y: r.top })
+        }).catch(() => {});
       }
     });
   }
@@ -475,4 +500,30 @@
   window.addEventListener('storage', function (event) {
     if (key && event.key === key) sync();
   });
+  // Live sync for fidget spinner position
+  if (user) {
+    const protocol = location.protocol === 'https:' ? 'wss:' : 'ws:';
+    let socket = null, timer = null;
+    function open() {
+      socket = new WebSocket(`${protocol}//${location.host}/api/question-room?user=${encodeURIComponent(user)}&sessionDate=2000-01-06`);
+      socket.onopen = () => { timer = setInterval(() => { if (socket && socket.readyState === WebSocket.OPEN) socket.send(JSON.stringify({ type: 'ping' })); }, 20000); };
+      socket.onmessage = ev => {
+        let m; try { m = JSON.parse(ev.data); } catch { return; }
+        if (m.type === 'refresh') {
+          fetch('/api/question-room?view=playful-state', { cache: 'no-store' })
+            .then(r => r.json())
+            .then(data => {
+              const f = data && data.fidget;
+              const sp = document.getElementById('fidgetSpinner');
+              if (f && sp && typeof f.x === 'number') {
+                sp.style.right = 'auto'; sp.style.bottom = 'auto';
+                sp.style.left = f.x + 'px'; sp.style.top = f.y + 'px';
+              }
+            }).catch(() => {});
+        }
+      };
+      socket.onclose = () => { clearInterval(timer); setTimeout(open, 3000); };
+    }
+    open();
+  }
 })();

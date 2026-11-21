@@ -732,6 +732,21 @@
   refreshObstacles();
   updateHud();
 
+  // Live sync: reload state when another user changes it.
+  (function connectSync() {
+    const user = localStorage.getItem('charlotte-user');
+    if (!user) return;
+    const protocol = location.protocol === 'https:' ? 'wss:' : 'ws:';
+    let socket = null, timer = null;
+    function open() {
+      socket = new WebSocket(`${protocol}//${location.host}/api/question-room?user=${encodeURIComponent(user)}&sessionDate=2000-01-05`);
+      socket.onopen = () => { timer = setInterval(() => { if (socket && socket.readyState === WebSocket.OPEN) socket.send(JSON.stringify({ type: 'ping' })); }, 20000); };
+      socket.onmessage = ev => { let m; try { m = JSON.parse(ev.data); } catch { return; } if (m.type === 'refresh') { loadState().then(() => { try { updateHud(); } catch (e) {} }).catch(()=>{}); } };
+      socket.onclose = () => { clearInterval(timer); setTimeout(open, 3000); };
+    }
+    open();
+  })();
+
   window.uiBouncyBalls = {
     refresh: refreshObstacles,
     pause() {

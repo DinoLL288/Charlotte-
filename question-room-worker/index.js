@@ -502,7 +502,8 @@ export class QuestionNightRoom {
     const state = await this.ctx.storage.get('playfulState') || {};
     return {
       tokens: { Charlotte: 0, Luke: 0, ...(state.tokens || {}) },
-      finds: Array.isArray(state.finds) ? state.finds : []
+      finds: Array.isArray(state.finds) ? state.finds : [],
+      fidget: state.fidget && typeof state.fidget === 'object' ? { x: Number(state.fidget.x) || 0, y: Number(state.fidget.y) || 0, size: Number(state.fidget.size) || 1 } : null
     };
   }
   async getMoodData() {
@@ -650,7 +651,7 @@ export class QuestionNightRoom {
         const all = await this.ctx.storage.get('stickerData') || {};
         if (!all.placements) all.placements = [];
         const placementId = crypto.randomUUID();
-        all.placements.push({ id: placementId, user, stickerId: String(placement.stickerId || placement.id || '').slice(0, 60), kind: placement.kind === 'image' ? 'image' : 'emoji', page: String(placement.page || 'stickers').slice(0, 60), x: Number(placement.x) || 0, y: Number(placement.y) || 0, at: new Date().toISOString() });
+        all.placements.push({ id: placementId, user, stickerId: String(placement.stickerId || placement.id || '').slice(0, 60), kind: placement.kind === 'image' ? 'image' : 'emoji', page: String(placement.page || 'stickers').slice(0, 60), size: Math.max(0.4, Math.min(4, Number(placement.size) || 1)), x: Number(placement.x) || 0, y: Number(placement.y) || 0, at: new Date().toISOString() });
         if (all.placements.length > 500) all.placements = all.placements.slice(-500);
         await this.ctx.storage.put('stickerData', all);
         await this.broadcastRefresh();
@@ -715,7 +716,7 @@ export class QuestionNightRoom {
         const all = await this.ctx.storage.get('stickerData') || {};
         if (Array.isArray(all.placements)) {
           const p = all.placements.find(item => item.id === placementId);
-          if (p) { p.x = Number(body.x) || p.x; p.y = Number(body.y) || p.y; p.movedAt = new Date().toISOString(); }
+          if (p) { p.x = Number(body.x) || p.x; p.y = Number(body.y) || p.y; if (body.size !== undefined) p.size = Math.max(0.4, Math.min(4, Number(body.size) || p.size || 1)); p.movedAt = new Date().toISOString(); }
         }
         await this.ctx.storage.put('stickerData', all);
         await this.broadcastRefresh();
@@ -745,6 +746,15 @@ export class QuestionNightRoom {
         await this.ctx.storage.put('playfulState', state);
         await this.broadcastRefresh();
         return Response.json({ ok: true, state });
+      }
+      if (body.action === 'playful-fidget') {
+        const user = body.user;
+        if (!['Charlotte', 'Luke'].includes(user)) return Response.json({ error: 'Choose a valid account' }, { status: 400 });
+        const state = await this.getPlayfulState();
+        state.fidget = { x: Number(body.x) || 0, y: Number(body.y) || 0, size: Math.max(0.5, Math.min(4, Number(body.size) || 1)), user, at: new Date().toISOString() };
+        await this.ctx.storage.put('playfulState', state);
+        await this.broadcastRefresh();
+        return Response.json({ ok: true, fidget: state.fidget });
       }
       if (body.action === 'playful-spend') {
         const user = body.user;
