@@ -731,10 +731,30 @@ export class QuestionNightRoom {
         if (!['Charlotte', 'Luke'].includes(user) || !/^\d{4}-\d{2}-\d{2}$/.test(date) || !mood) return Response.json({ error: 'Choose a valid date and mood.' }, { status: 400 });
         const all = await this.ctx.storage.get('moodData') || {};
         if (!all[user]) all[user] = {};
-        all[user][date] = { mood, intensity, note };
+        if (!Array.isArray(all[user][date])) {
+          // migrate single object -> array
+          if (all[user][date] && typeof all[user][date] === 'object') all[user][date] = [all[user][date]];
+          else all[user][date] = [];
+        }
+        all[user][date].push({ id: crypto.randomUUID(), mood, intensity, note, time: new Date().toISOString() });
+        if (all[user][date].length > 20) all[user][date] = all[user][date].slice(-20);
         await this.ctx.storage.put('moodData', all);
         await this.broadcastRefresh();
         return Response.json({ ok: true, entries: all, moods: all[user] });
+      }
+      if (body.action === 'mood-delete') {
+        const user = body.user;
+        const date = String(body.date || '').slice(0, 10);
+        const id = String(body.id || '');
+        if (!['Charlotte', 'Luke'].includes(user) || !/^\d{4}-\d{2}-\d{2}$/.test(date) || !id) return Response.json({ error: 'Choose a valid entry.' }, { status: 400 });
+        const all = await this.ctx.storage.get('moodData') || {};
+        if (all[user] && Array.isArray(all[user][date])) {
+          all[user][date] = all[user][date].filter(e => e.id !== id);
+          if (all[user][date].length === 0) delete all[user][date];
+        }
+        await this.ctx.storage.put('moodData', all);
+        await this.broadcastRefresh();
+        return Response.json({ ok: true, entries: all, moods: (all[user] || {}) });
       }
       if (body.action === 'playful-find') {
         const user = body.user;
