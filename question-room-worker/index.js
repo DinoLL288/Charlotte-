@@ -510,7 +510,7 @@ export class QuestionNightRoom {
     const all = await this.ctx.storage.get('moodData') || {};
     const result = {};
     for (const u of ['Charlotte', 'Luke']) {
-      if (all[u]) Object.assign(result, all[u]);
+      result[u] = (all && all[u] && typeof all[u] === 'object') ? all[u] : {};
     }
     return { moods: result };
   }
@@ -725,14 +725,16 @@ export class QuestionNightRoom {
       if (body.action === 'mood') {
         const user = body.user;
         const date = String(body.date || '').slice(0, 10);
-        const mood = String(body.mood || '').slice(0, 4);
+        const mood = String(body.mood || '').slice(0, 8);
+        const intensity = Math.max(1, Math.min(5, Number(body.intensity) || 3));
+        const note = String(body.note || '').slice(0, 300);
         if (!['Charlotte', 'Luke'].includes(user) || !/^\d{4}-\d{2}-\d{2}$/.test(date) || !mood) return Response.json({ error: 'Choose a valid date and mood.' }, { status: 400 });
         const all = await this.ctx.storage.get('moodData') || {};
         if (!all[user]) all[user] = {};
-        all[user][date] = mood;
+        all[user][date] = { mood, intensity, note };
         await this.ctx.storage.put('moodData', all);
         await this.broadcastRefresh();
-        return Response.json({ ok: true, moods: all[user] });
+        return Response.json({ ok: true, entries: all, moods: all[user] });
       }
       if (body.action === 'playful-find') {
         const user = body.user;
