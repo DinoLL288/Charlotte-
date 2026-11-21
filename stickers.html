@@ -214,7 +214,7 @@
 
     async function placeSticker(kind, stickerId, x, y) {
       try {
-        const res = await fetch('/api/question-room', { method: 'POST', headers: { 'content-type': 'application/json' }, body: JSON.stringify({ action: 'sticker-place', user, placement: { stickerId, kind: kind === 'image' ? 'image' : 'emoji', x, y } }) });
+        const res = await fetch('/api/question-room', { method: 'POST', headers: { 'content-type': 'application/json' }, body: JSON.stringify({ action: 'sticker-place', user, placement: { stickerId, kind: kind === 'image' ? 'image' : 'emoji', page: 'stickers', x, y } }) });
         const json = await res.json();
         if (!res.ok) throw new Error(json.error || 'Could not place');
         placements.push({ id: json.placementId, user, stickerId, kind: kind === 'image' ? 'image' : 'emoji', x, y, at: new Date().toISOString() });

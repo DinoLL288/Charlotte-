@@ -42,5 +42,6 @@
     document.addEventListener('click',async e=>{const remove=e.target.closest('[data-remove]');if(remove&&await siteDialog.confirm('Remove this item?',{title:'Let this one go?'}))await post({action:'delete',type:remove.dataset.remove,id:remove.dataset.id});const progress=e.target.closest('[data-progress]');if(progress)await post({action:'update',type:'projects',id:progress.dataset.progress,progress:Number(progress.dataset.value)});});
     fetch('/api/heart').then(async r=>{const j=await r.json();if(!r.ok)throw new Error(j.error||'Could not load');Object.assign(data,j.data||{});render();}).catch(e=>{status.textContent=e.message;render();});
   </script>
+<script src="assets/js/stickers-overlay.js"></script>
 </body>
 </html>

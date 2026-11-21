@@ -650,7 +650,7 @@ export class QuestionNightRoom {
         const all = await this.ctx.storage.get('stickerData') || {};
         if (!all.placements) all.placements = [];
         const placementId = crypto.randomUUID();
-        all.placements.push({ id: placementId, user, stickerId: String(placement.stickerId || placement.id || '').slice(0, 60), kind: placement.kind === 'image' ? 'image' : 'emoji', x: Number(placement.x) || 0, y: Number(placement.y) || 0, at: new Date().toISOString() });
+        all.placements.push({ id: placementId, user, stickerId: String(placement.stickerId || placement.id || '').slice(0, 60), kind: placement.kind === 'image' ? 'image' : 'emoji', page: String(placement.page || 'stickers').slice(0, 60), x: Number(placement.x) || 0, y: Number(placement.y) || 0, at: new Date().toISOString() });
         if (all.placements.length > 500) all.placements = all.placements.slice(-500);
         await this.ctx.storage.put('stickerData', all);
         await this.broadcastRefresh();
