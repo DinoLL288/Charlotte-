@@ -1,7 +1,7 @@
 // Service Worker for Charlotte & Luke
 // Strategy: stale-while-revalidate for static assets, network-first for API
 
-const CACHE_NAME = 'charlotte-v3';
+const CACHE_NAME = 'charlotte-v4';
 const OFFLINE_URL = '/offline.html';
 
 // Static assets to precache
