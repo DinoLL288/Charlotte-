@@ -180,7 +180,10 @@
         "time": "",
         "author": "Luke",
         "date": "20/11/2026, 08:43:42",
-        "id": "e25996f5-cb3e-42fe-96e8-5ec6e174f2ef"
+        "id": "e25996f5-cb3e-42fe-96e8-5ec6e174f2ef",
+        "endTime": "21:00",
+        "editedBy": "Luke",
+        "editedAt": "2026-11-22T13:46:02.994Z"
       }
     ],
     "2026-12-03": [
