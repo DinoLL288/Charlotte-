@@ -123,6 +123,19 @@
         "author": "Luke",
         "date": "13/11/2026, 06:06:09",
         "id": "1dbd476c-2e94-4d47-8e36-d8b6ad447aea"
+      },
+      {
+        "title": "WhatsApp video call",
+        "kind": "whatsapp-call",
+        "callType": "video",
+        "durationMinutes": 1092,
+        "initiatedBy": "Luke",
+        "startTime": "22:44",
+        "time": "",
+        "author": "Luke",
+        "date": "2026-11-22T09:39:52.557Z",
+        "id": "8cdd9534-db37-454a-903b-7c0934803078",
+        "endTime": ""
       }
     ],
     "2026-11-23": [
