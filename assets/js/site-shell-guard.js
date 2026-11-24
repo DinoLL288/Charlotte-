@@ -1,3 +1,24 @@
+// Preview-only login bypass — never applies on the live site.
+// Cloudflare Pages preview deployments do not get the production login
+// secrets (GALLERY_SESSION_SECRET / GALLERY_INTERNAL_SECRET / login
+// passwords), so /api/auth/login always answers 503 "Secure login has not
+// been configured yet." on preview. On preview hostnames only — any
+// *.pages.dev hostname EXCEPT the live charlotte-3ts.pages.dev — sign in
+// locally as Luke so the preview hub can be reviewed without a password.
+// This only sets the client-side localStorage flag the pages check; it
+// does not issue a server session, touch the login API, or change anything
+// on main / the live site.
+(function () {
+  try {
+    var host = location.hostname || '';
+    var isPreview = host !== 'charlotte-3ts.pages.dev' && host.endsWith('.pages.dev');
+    window.__charlottePreviewBypass = isPreview;
+    if (isPreview && !localStorage.getItem('charlotte-user')) {
+      localStorage.setItem('charlotte-user', 'Luke');
+    }
+  } catch (error) { /* Keep the site working if storage is unavailable. */ }
+})();
+
 (function () {
   const styleId = 'quiet-days-global-style';
   const bannerId = 'quiet-days-global-banner';

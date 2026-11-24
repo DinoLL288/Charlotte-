@@ -285,7 +285,7 @@
     refreshPromise = (async () => {
     const response = await fetch('/api/gallery', { cache: 'no-store', credentials: 'same-origin' });
     const result = await response.json();
-    if (response.status === 401) { localStorage.removeItem('charlotte-user'); location.href = 'login.html'; return; }
+    if (response.status === 401) { if (window.__charlottePreviewBypass) throw new Error('Our photos are not available on this preview — the preview has no login configured.'); localStorage.removeItem('charlotte-user'); location.href = 'login.html'; return; }
     if (!response.ok) throw new Error(result.error || 'Could not load our photos.');
     let videoResponse = null;
     let videoResult = {};
@@ -472,7 +472,7 @@
   });
   fetch('/api/auth/session', { cache: 'no-store', credentials: 'same-origin' }).then(async response => {
     const session = await response.json();
-    if (!response.ok) { localStorage.removeItem('charlotte-user'); location.href = 'login.html'; return; }
+    if (!response.ok) { if (window.__charlottePreviewBypass) { status.textContent = 'Our photos are not available on this preview — the preview has no login configured.'; return; } localStorage.removeItem('charlotte-user'); location.href = 'login.html'; return; }
     user = session.user;
     if (localStorage.getItem('charlotte-user') !== user) localStorage.setItem('charlotte-user', user);
     await loadLibrary();
