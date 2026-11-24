@@ -22,7 +22,8 @@
     })();
   </script>
   <link rel="stylesheet" href="assets/css/site-bundle.css" data-site-polish="true" data-site-theme="true">
-  <link rel="preload" href="assets/images/holding-hands.avif" as="image" type="image/avif" fetchpriority="high">
+  <link rel="preload" href="assets/images/holding-hands.avif" as="image" type="image/avif" media="(min-width: 701px)" fetchpriority="high">
+  <link rel="preload" href="assets/images/holding-hands-mobile.webp" as="image" type="image/webp" media="(max-width: 700px)" fetchpriority="high">
   <link rel="preconnect" href="https://ui-avatars.com" crossorigin>
   <link rel="preconnect" href="https://www.googleapis.com" crossorigin>
   <link rel="dns-prefetch" href="https://ui-avatars.com">
@@ -44,6 +45,11 @@
       position: absolute;
       inset: 0;
       background: image-set(url("assets/images/holding-hands.avif") type("image/avif"), url("assets/images/holding-hands.webp") type("image/webp"), url("assets/images/holding-hands.jpg") type("image/jpeg")) center 35% / cover no-repeat;
+    }
+
+    @media (max-width: 700px) {
+      .hub-hero-photo { background-image: image-set(url("assets/images/holding-hands-mobile.webp") type("image/webp"), url("assets/images/holding-hands-mobile.jpg") type("image/jpeg")); }
+      .hero-doors { background: linear-gradient(180deg, rgba(18,40,58,.55), rgba(18,40,58,.82)), image-set(url("assets/images/holding-hands-mobile.webp") type("image/webp"), url("assets/images/holding-hands-mobile.jpg") type("image/jpeg")) center 35% / cover no-repeat; }
     }
 
     .hub-hero-photo::after {
