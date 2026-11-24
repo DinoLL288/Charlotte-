@@ -549,6 +549,7 @@ export class QuestionNightRoom {
   async getBouncyBallsState(user) {
     const all = await this.ctx.storage.get('bouncyBallsState') || {};
     const s = all[user] || {};
+    const shopIds = ['trails', 'theme-sunset', 'theme-ocean', 'gravity-moon', 'shape-star', 'shape-heart'];
     return {
       tokens: Math.max(0, Number(s.tokens) || 0),
       spawnBatch: Math.max(1, Math.min(12, Number(s.spawnBatch) || 1)),
@@ -556,12 +557,18 @@ export class QuestionNightRoom {
       collected: Math.max(0, Number(s.collected) || 0),
       wave: Math.max(1, Number(s.wave) || 1),
       waveRemaining: Math.max(0, Math.min(40, Number(s.waveRemaining) || 40)),
-      pile: Array.isArray(s.pile) ? s.pile.slice(0, 80) : []
+      pile: Array.isArray(s.pile) ? s.pile.slice(0, 80) : [],
+      theme: ['classic', 'sunset', 'ocean'].includes(s.theme) ? s.theme : 'classic',
+      trails: s.trails === true,
+      gravity: ['earth', 'moon'].includes(s.gravity) ? s.gravity : 'earth',
+      shape: ['round', 'star', 'heart'].includes(s.shape) ? s.shape : 'round',
+      unlocks: Array.isArray(s.unlocks) ? s.unlocks.filter(id => shopIds.includes(id)) : []
     };
   }
 
   async saveBouncyBallsState(user, state) {
     const all = await this.ctx.storage.get('bouncyBallsState') || {};
+    const shopIds = ['trails', 'theme-sunset', 'theme-ocean', 'gravity-moon', 'shape-star', 'shape-heart'];
     all[user] = {
       tokens: Math.max(0, Number(state.tokens) || 0),
       spawnBatch: Math.max(1, Math.min(12, Number(state.spawnBatch) || 1)),
@@ -569,9 +576,22 @@ export class QuestionNightRoom {
       collected: Math.max(0, Number(state.collected) || 0),
       wave: Math.max(1, Number(state.wave) || 1),
       waveRemaining: Math.max(0, Math.min(40, Number(state.waveRemaining) || 40)),
-      pile: Array.isArray(state.pile) ? state.pile.slice(0, 80) : []
+      pile: Array.isArray(state.pile) ? state.pile.slice(0, 80) : [],
+      theme: ['classic', 'sunset', 'ocean'].includes(state.theme) ? state.theme : 'classic',
+      trails: state.trails === true,
+      gravity: ['earth', 'moon'].includes(state.gravity) ? state.gravity : 'earth',
+      shape: ['round', 'star', 'heart'].includes(state.shape) ? state.shape : 'round',
+      unlocks: Array.isArray(state.unlocks) ? state.unlocks.filter(id => shopIds.includes(id)) : []
     };
     await this.ctx.storage.put('bouncyBallsState', all);
+  }
+
+  // Secrets puzzle progress: which discovery ids this user has found.
+  // (The secrets page calls GET view=discoveries and POST action=discover;
+  // both were missing, so progress was never actually saved server-side.)
+  async getDiscoveryData(user) {
+    const found = (await this.ctx.storage.get('discoveries:' + user)) || [];
+    return { found: Array.isArray(found) ? found : [] };
   }
 
   async getLoveTasks() {
@@ -721,6 +741,29 @@ export class QuestionNightRoom {
         await this.ctx.storage.put('stickerData', all);
         await this.broadcastRefresh();
         return Response.json({ ok: true });
+      }
+      if (body.action === 'sticker-clear-page') {
+        const user = body.user;
+        const page = String(body.page || '').slice(0, 60);
+        if (!['Charlotte', 'Luke'].includes(user) || !page) return Response.json({ error: 'Choose a valid page.' }, { status: 400 });
+        const all = await this.ctx.storage.get('stickerData') || {};
+        if (Array.isArray(all.placements)) all.placements = all.placements.filter(p => (p.page || 'stickers') !== page);
+        await this.ctx.storage.put('stickerData', all);
+        await this.broadcastRefresh();
+        return Response.json({ ok: true });
+      }
+      if (body.action === 'discover') {
+        const user = body.user;
+        const id = String(body.id || '').slice(0, 30);
+        if (!['Charlotte', 'Luke'].includes(user) || !id) return Response.json({ error: 'Choose a valid discovery.' }, { status: 400 });
+        const key = 'discoveries:' + user;
+        const found = (await this.ctx.storage.get(key)) || [];
+        if (Array.isArray(found) && !found.includes(id)) {
+          found.push(id);
+          await this.ctx.storage.put(key, found.slice(0, 100));
+        }
+        await this.broadcastRefresh();
+        return Response.json({ ok: true, found: Array.isArray(found) ? found : [] });
       }
       if (body.action === 'mood') {
         const user = body.user;

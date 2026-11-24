@@ -13,7 +13,7 @@
     if (!document.querySelector('link[data-surprises]')) {
       const link = document.createElement('link');
       link.rel = 'stylesheet';
-      link.href = 'surprises.css';
+      link.href = '/assets/css/surprises.css';
       link.dataset.surprises = 'true';
       document.head.appendChild(link);
     }

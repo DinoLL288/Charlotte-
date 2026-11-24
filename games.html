@@ -7,19 +7,29 @@
   <link rel="stylesheet" href="assets/css/theme.css">
   <style>
     .hero{padding:78px 20px 66px;text-align:center;color:#fff;background:linear-gradient(160deg,#0d2c44,#2a78a8)}.hero .eyebrow{color:var(--gold-soft)}.hero h1{margin:10px 0;font-size:clamp(2.2rem,7vw,3.5rem);font-weight:400}.hero p:last-child{max-width:54ch;margin:0 auto;color:#e6f3fc;line-height:1.6}.top-bar{position:absolute;top:16px;left:16px;z-index:2}.shell{width:min(920px,100%);margin:-30px auto 60px;padding:0 18px;position:relative}.tabs{display:flex;gap:8px;overflow:auto;padding:10px;border-radius:18px;background:rgba(255,255,255,.93);box-shadow:0 14px 36px #143f5f22}.tab{flex:none;border:0;border-radius:999px;padding:10px 15px;color:#315d78;background:transparent;font:inherit;font-weight:700;cursor:pointer}.tab[aria-selected=true]{color:#fff;background:#143f5f}.panel{display:none;margin-top:18px;padding:clamp(20px,4vw,32px);border:1px solid white;border-radius:24px;background:rgba(255,253,247,.97);box-shadow:0 20px 50px #143f5f22}.panel.active{display:block}.panel h2{margin:0;color:#123a58;font-size:1.6rem}.intro{margin:8px 0 18px;color:#5c7c93;line-height:1.55}.token-bar{display:flex;align-items:center;gap:10px;padding:10px 14px;border-radius:14px;background:#fff7df;border:1px solid #e9d9b4;color:#73591f;font-weight:700;margin-bottom:14px}.game-area{position:relative;min-height:280px;padding:16px;border:1px dashed #c3d8e4;border-radius:16px;background:#fbfdfe;overflow:hidden}.btn{border:1px solid #143f5f;border-radius:999px;padding:10px 18px;color:#fff;background:#143f5f;font:inherit;font-weight:700;cursor:pointer}.btn:disabled{opacity:.5;cursor:wait}.btn.secondary{color:#315d78;background:#eef7fb;border-color:#cddfe8}.status{min-height:1.4em;margin:12px 0 0;color:#73591f;font-weight:700}.hearts-field{position:relative;height:320px;overflow:hidden}.heart{position:absolute;font-size:1.6rem;cursor:pointer;user-select:none;transition:transform .1s}.heart:hover{transform:scale(1.2)}.mole-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:10px;max-width:360px;margin:0 auto}.hole{height:90px;border-radius:50%;background:radial-gradient(circle at 50% 80%,#c8dceb,#eaf4fa);display:grid;place-items:center;font-size:2rem;cursor:pointer;overflow:hidden;position:relative}.mole{display:none}.hole.active .mole{display:block;animation:pop .2s ease}.@keyframes pop{from{transform:scale(0)}to{transform:scale(1)}}.reaction-area{position:relative;height:320px;background:#f0f8ff;border-radius:16px}.target{position:absolute;width:50px;height:50px;border-radius:50%;background:#143f5f;color:#fff;display:grid;place-items:center;font-size:1.4rem;cursor:pointer;box-shadow:0 4px 12px #143f5f55}.simon-grid{display:grid;grid-template-columns:repeat(2,1fr);gap:10px;max-width:280px;margin:0 auto}.simon-btn{height:80px;border-radius:16px;border:3px solid #fff;cursor:pointer;opacity:.6;transition:opacity .15s,transform .1s}.simon-btn.lit{opacity:1;transform:scale(1.05)}.simon-btn[data-color="0"]{background:#e74c3c}.simon-btn[data-color="1"]{background:#3498db}.simon-btn[data-color="2"]{background:#2ecc71}.simon-btn[data-color="3"]{background:#f1c40f}.memory-grid{display:grid;grid-template-columns:repeat(4,1fr);gap:8px;max-width:360px;margin:0 auto}.mem-card{height:70px;border-radius:12px;background:#143f5f;color:#fff;display:grid;place-items:center;font-size:1.6rem;cursor:pointer;transition:transform .2s}.mem-card.flipped{background:#fff;color:#143f5f;border:2px solid #143f5f}.mem-card.matched{background:#d4edda;color:#155724;border:2px solid #28a745;pointer-events:none}@media(max-width:520px){.mole-grid{gap:6px}.hole{height:70px}.memory-grid{gap:6px}.mem-card{height:55px;font-size:1.3rem}}
-  </style>
+  .token-bar{flex-wrap:wrap}.btn{margin:4px}.stars-field{position:relative;height:300px;overflow:hidden} .star{position:absolute;font-size:1.6rem;cursor:pointer;user-select:none} .hole .mole{display:none} .color-btns{display:grid;grid-template-columns:repeat(2,1fr);gap:10px;max-width:300px;margin:0 auto} .color-btn{padding:16px;border-radius:12px;border:2px solid #fff;font-weight:700;font-size:1.1rem;cursor:pointer;color:#fff} .rps-btns{display:flex;gap:10px;justify-content:center;flex-wrap:wrap} .rps-btn{font-size:2.5rem;padding:12px 18px;border:2px solid #d5e3ec;border-radius:16px;background:#fff;cursor:pointer} .ttt-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:6px;max-width:240px;margin:0 auto} .ttt-cell{height:70px;border-radius:10px;background:#143f5f;color:#fff;font-size:2rem;font-weight:700;cursor:pointer;display:grid;place-items:center;border:2px solid #fff} .ttt-cell.taken{cursor:default;opacity:.8} .scramble-word{font-size:2rem;letter-spacing:.3rem;font-weight:700;color:#123a58;text-align:center;margin:16px 0} .math-problem{font-size:2.5rem;font-weight:700;color:#123a58;text-align:center;margin:16px 0} .dice-area{text-align:center;font-size:3rem;margin:16px 0} .guess-input{padding:10px 14px;border:1px solid #c8dceb;border-radius:12px;font-size:1.1rem;width:120px;text-align:center} .nh-area{position:relative;height:300px;background:#f0f8ff;border-radius:16px;overflow:hidden} .nh-heart{position:absolute;font-size:2rem;transition:none} .nh-pipe{position:absolute;width:40px;background:#27ae60;border-radius:4px} .canvas-game{display:block;margin:0 auto;border-radius:12px;background:#87ceeb} .ttt-grid{max-width:200px} .ttt-cell{height:55px;font-size:1.6rem}</style>
 </head>
 <body>
   <div class="top-bar"><a class="button" href="index.html">← Back to hub</a></div>
-  <header class="hero"><p class="eyebrow">Play &amp; earn</p><h1>Token games</h1><p>Five little games. Every token you earn here powers up the fidget balls on the hub page — more tokens, more balls per spawn.</p></header>
+  <header class="hero"><p class="eyebrow">Play &amp; earn</p><h1>Games</h1><p>All fifteen games in one place. Every token you earn here powers up the fidget balls on the hub page — more tokens, more balls per spawn.</p></header>
   <main class="shell">
-    <div class="token-bar">🪙 Tokens: <span id="tokenCount">0</span> &nbsp;|&nbsp; <a href="more-games.html" style="color:#73591f;text-decoration:underline">10 more games</a> &nbsp;|&nbsp; <a href="color-tap.html" style="color:#73591f;text-decoration:underline">🎨 Color Tap</a> &nbsp;|&nbsp; <a href="index.html" style="color:#73591f;text-decoration:underline">Back to hub (fidget balls)</a></div>
+    <div class="token-bar">🪙 Tokens: <span id="tokenCount">0</span> &nbsp;|&nbsp; <a href="color-tap.html" style="color:#73591f;text-decoration:underline">🎨 Color Tap</a> &nbsp;|&nbsp; <a href="bubble-pop.html" style="color:#73591f;text-decoration:underline">🫧 Bubble Pop</a> &nbsp;|&nbsp; <a href="play.html" style="color:#73591f;text-decoration:underline">🎲 Truth or dare</a> &nbsp;|&nbsp; <a href="index.html" style="color:#73591f;text-decoration:underline">Back to hub (fidget balls)</a></div>
     <div class="tabs" role="tablist">
       <button class="tab" role="tab" aria-selected="true" data-tab="catch">Catch hearts</button>
       <button class="tab" role="tab" aria-selected="false" data-tab="memory">Memory match</button>
       <button class="tab" role="tab" aria-selected="false" data-tab="whack">Whack-a-heart</button>
       <button class="tab" role="tab" aria-selected="false" data-tab="reaction">Reaction tap</button>
       <button class="tab" role="tab" aria-selected="false" data-tab="simon">Simon says</button>
+      <button class="tab" role="tab" aria-selected="false" data-tab="stars">Catch stars</button>
+            <button class="tab" role="tab" aria-selected="false" data-tab="color">Color tap</button>
+            <button class="tab" role="tab" aria-selected="false" data-tab="guess">Number guess</button>
+            <button class="tab" role="tab" aria-selected="false" data-tab="rps">Rock paper scissors</button>
+            <button class="tab" role="tab" aria-selected="false" data-tab="ttt">Tic-tac-toe</button>
+            <button class="tab" role="tab" aria-selected="false" data-tab="dice">Dice roll</button>
+            <button class="tab" role="tab" aria-selected="false" data-tab="scramble">Word scramble</button>
+            <button class="tab" role="tab" aria-selected="false" data-tab="math">Math blitz</button>
+            <button class="tab" role="tab" aria-selected="false" data-tab="flappy">Flappy heart</button>
+            <button class="tab" role="tab" aria-selected="false" data-tab="whackstar">Whack-a-star</button>
     </div>
 
     <!-- Catch hearts -->
@@ -66,6 +76,125 @@
       <div class="status" id="simonStatus">Tap Start to play.</div>
       <button class="btn" id="simonStart">Start</button>
     </section>
+<!-- 1. Catch the Stars -->
+    <section class="panel" id="panel-stars">
+      <h2>Catch the stars ⭐</h2>
+      <p class="intro">Tap falling stars before they hit the ground. 3 misses = game over. Each catch = 1 token.</p>
+      <div class="game-area"><div class="stars-field" id="starsField"></div></div>
+      <div class="status" id="starsStatus">Tap Start to play.</div>
+      <button class="btn" id="starsStart">Start</button>
+    </section>
+
+    <!-- 2. Color Tap -->
+    <section class="panel" id="panel-color">
+      <h2>Color tap 🎨</h2>
+      <p class="intro">A color word appears in a different color. Tap the button matching the WORD (not the color). 10 rounds. 1 token per correct. <a href="color-tap.html" style="color:#73591f;text-decoration:underline;font-weight:700;">Play on its own page →</a></p>
+      <div class="game-area">
+        <div id="colorWord" style="font-size:2.5rem;font-weight:700;text-align:center;margin:20px 0;">Ready?</div>
+        <div class="color-btns" id="colorBtns"></div>
+      </div>
+      <div class="status" id="colorStatus">Tap Start to play.</div>
+      <button class="btn" id="colorStart">Start</button>
+    </section>
+
+    <!-- 3. Number Guess -->
+    <section class="panel" id="panel-guess">
+      <h2>Number guess 🔢</h2>
+      <p class="intro">I pick a number 1–100. You guess. I'll say higher or lower. Win in 7 tries or fewer = 3 tokens.</p>
+      <div class="game-area">
+        <div id="guessHint" style="font-size:1.2rem;text-align:center;margin:16px 0;color:#123a58;font-weight:700;">Tap Start to play.</div>
+        <div style="text-align:center;margin:12px 0;">
+          <input type="number" class="guess-input" id="guessInput" min="1" max="100" placeholder="?">
+          <button class="btn" id="guessSubmit">Guess</button>
+        </div>
+        <div id="guessHistory" style="text-align:center;color:#5c7c93;font-size:.9rem;margin-top:8px;"></div>
+      </div>
+      <div class="status" id="guessStatus"></div>
+      <button class="btn secondary" id="guessStart">New game</button>
+    </section>
+
+    <!-- 4. Rock Paper Scissors -->
+    <section class="panel" id="panel-rps">
+      <h2>Rock paper scissors ✊✋✌️</h2>
+      <p class="intro">Pick your move. Win = 1 token. Best of 5 rounds.</p>
+      <div class="game-area">
+        <div style="text-align:center;font-size:1.2rem;margin:12px 0;" id="rpsResult">Tap a move to start!</div>
+        <div class="rps-btns">
+          <button class="rps-btn" data-move="rock">✊</button>
+          <button class="rps-btn" data-move="paper">✋</button>
+          <button class="rps-btn" data-move="scissors">✌️</button>
+        </div>
+        <div style="text-align:center;margin-top:12px;color:#5c7c93;" id="rpsScore">You: 0  vs  Computer: 0</div>
+      </div>
+      <div class="status" id="rpsStatus"></div>
+    </section>
+
+    <!-- 5. Tic-Tac-Toe -->
+    <section class="panel" id="panel-ttt">
+      <h2>Tic-tac-toe ❌⭕</h2>
+      <p class="intro">You are ❌, computer is ⭕. Win = 3 tokens, tie = 1 token.</p>
+      <div class="game-area">
+        <div class="ttt-grid" id="tttGrid"></div>
+      </div>
+      <div class="status" id="tttStatus">Tap Start to play.</div>
+      <button class="btn" id="tttStart">Start / Reset</button>
+    </section>
+
+    <!-- 6. Dice Roll -->
+    <section class="panel" id="panel-dice">
+      <h2>Dice roll 🎲</h2>
+      <p class="intro">Roll 2 dice. If the sum is 7 or 11, you earn 2 tokens! 10 rolls per round.</p>
+      <div class="game-area">
+        <div class="dice-area" id="diceArea">🎲 🎲</div>
+        <div style="text-align:center;" id="diceResult"></div>
+      </div>
+      <div class="status" id="diceStatus">Tap Roll to play.</div>
+      <button class="btn" id="diceRoll">Roll dice</button>
+    </section>
+
+    <!-- 7. Word Scramble -->
+    <section class="panel" id="panel-scramble">
+      <h2>Word scramble 🔤</h2>
+      <p class="intro">Unscramble the word. 5 words per round. 1 token per correct answer.</p>
+      <div class="game-area">
+        <div class="scramble-word" id="scrambleWord">READY?</div>
+        <div style="text-align:center;"><input type="text" class="guess-input" id="scrambleInput" placeholder="type here" style="width:180px;"></div>
+        <div style="text-align:center;margin-top:8px;"><button class="btn" id="scrambleSubmit">Check</button></div>
+      </div>
+      <div class="status" id="scrambleStatus">Tap Start to play.</div>
+      <button class="btn secondary" id="scrambleStart">Start</button>
+    </section>
+
+    <!-- 8. Math Blitz -->
+    <section class="panel" id="panel-math">
+      <h2>Math blitz ➕</h2>
+      <p class="intro">Solve 10 addition/subtraction problems. 1 token per correct, 2 if you're fast (under 3s).</p>
+      <div class="game-area">
+        <div class="math-problem" id="mathProblem">Ready?</div>
+        <div style="text-align:center;"><input type="number" class="guess-input" id="mathInput" placeholder="?"></div>
+        <div style="text-align:center;margin-top:8px;"><button class="btn" id="mathSubmit">Check</button></div>
+      </div>
+      <div class="status" id="mathStatus">Tap Start to play.</div>
+      <button class="btn secondary" id="mathStart">Start</button>
+    </section>
+
+    <!-- 9. Flappy Heart -->
+    <section class="panel" id="panel-flappy">
+      <h2>Flappy heart 💕</h2>
+      <p class="intro">Tap to fly. Avoid the pipes. Each pipe passed = 1 token.</p>
+      <div class="game-area" style="padding:0;"><canvas id="flappyCanvas" width="360" height="300" class="canvas-game"></canvas></div>
+      <div class="status" id="flappyStatus">Tap Start, then tap/click to fly.</div>
+      <button class="btn" id="flappyStart">Start</button>
+    </section>
+
+    <!-- 10. Whack-a-Star -->
+    <section class="panel" id="panel-whackstar">
+      <h2>Whack-a-star ⭐</h2>
+      <p class="intro">Stars pop up in 9 holes. Tap them fast! 30 seconds. Each whack = 1 token.</p>
+      <div class="game-area"><div class="mole-grid" id="starGrid"></div></div>
+      <div class="status" id="whackstarStatus">Tap Start to play.</div>
+      <button class="btn" id="whackstarStart">Start</button>
+    </section>
   </main>
   <script src="assets/js/dialog.js"></script><script src="assets/js/avatar.js"></script>
   <script>
@@ -100,6 +229,34 @@
         .catch(()=>{});
     }
     loadTokens();
+    let socket = null, reconnectTimer = null;
+    function connectWS() {
+      if (socket && socket.readyState === WebSocket.OPEN) return;
+      const protocol = location.protocol === 'https:' ? 'wss:' : 'ws:';
+      socket = new WebSocket(protocol + '//' + location.host + '/api/question-room?user=' + encodeURIComponent(user) + '&sessionDate=2000-01-01');
+      socket.onmessage = function(event) {
+        try {
+          const msg = JSON.parse(event.data);
+          if (msg.type === 'game-move' || msg.type === 'game-reset') {
+            window.dispatchEvent(new CustomEvent('gamemove', { detail: msg }));
+          }
+        } catch(e) {}
+      };
+      socket.onclose = function() { reconnectTimer = setTimeout(connectWS, 3000); };
+    }
+    connectWS();
+    function sendGameMove(game, move) {
+      if (socket && socket.readyState === WebSocket.OPEN) {
+        socket.send(JSON.stringify({ type: 'game-move', game, move }));
+      }
+    }
+    function sendGameReset(game) {
+      if (socket && socket.readyState === WebSocket.OPEN) {
+        socket.send(JSON.stringify({ type: 'game-reset', game }));
+      }
+    }
+    window.__sendGameMove = sendGameMove;
+    window.__sendGameReset = sendGameReset;
     // Flush pending tokens when leaving the page
     window.addEventListener('beforeunload', flushTokens);
 
@@ -370,6 +527,595 @@
       });
     })();
 
+    // ===== 1. CATCH THE STARS =====
+    (function(){
+      const field = document.getElementById('starsField');
+      const status = document.getElementById('starsStatus');
+      const startBtn = document.getElementById('starsStart');
+      let running=false, score=0, misses=0, stars=[], spawnTimer=null;
+      function spawnStar(){
+        const s = document.createElement('div');
+        s.className='star'; s.textContent='⭐';
+        s.style.left = Math.random()*90+'%';
+        s.style.top = '-30px';
+        field.appendChild(s);
+        stars.push({el:s, y:-30, speed: 1.5+Math.random()*2});
+        s.addEventListener('click',()=>catchStar(s));
+      }
+      function catchStar(s){
+        const idx = stars.findIndex(x=>x.el===s);
+        if(idx<0) return;
+        stars.splice(idx,1); s.remove();
+        score++; addTokens(1);
+        status.textContent = `Score: ${score}  Misses: ${misses}/3`;
+      }
+      function tick(){
+        for(let i=stars.length-1;i>=0;i--){
+          const st = stars[i];
+          st.y += st.speed;
+          st.el.style.top = st.y+'px';
+          if(st.y > field.offsetHeight){
+            stars.splice(i,1); st.el.remove();
+            misses++;
+            status.textContent = `Score: ${score}  Misses: ${misses}/3`;
+            if(misses>=3){ endGame(); return; }
+          }
+        }
+        if(running) requestAnimationFrame(tick);
+      }
+      function endGame(){ running=false; clearInterval(spawnTimer); status.textContent=`Game over! ${score} stars = ${score} tokens. Tap Start to play again.`; startBtn.disabled=false; }
+      startBtn.addEventListener('click',()=>{
+        stars.forEach(s=>s.el.remove()); stars=[];
+        score=0; misses=0;
+        status.textContent='Catch the stars!';
+        startBtn.disabled=true; running=true;
+        spawnTimer=setInterval(()=>{ if(running) spawnStar(); }, 900);
+        requestAnimationFrame(tick);
+      });
+    })();
+
+    // ===== 2. COLOR TAP (with 2-player mode) =====
+    (function(){
+      const colors = [{name:'RED',color:'#e74c3c'},{name:'BLUE',color:'#3498db'},{name:'GREEN',color:'#2ecc71'},{name:'YELLOW',color:'#f1c40f'}];
+      const wordEl = document.getElementById('colorWord');
+      const btnsEl = document.getElementById('colorBtns');
+      const status = document.getElementById('colorStatus');
+      const startBtn = document.getElementById('colorStart');
+      const modeDiv = document.createElement('div');
+      modeDiv.style.cssText = 'text-align:center;margin-bottom:10px;';
+      modeDiv.innerHTML = '<button class="btn secondary" id="colorModeBtn" style="font-size:.85rem;padding:6px 14px;">Mode: Solo</button>';
+      wordEl.parentElement.insertBefore(modeDiv, wordEl);
+      const modeBtn = document.getElementById('colorModeBtn');
+      let round=0, score=0, total=10, playing=false, multiplayer=false;
+      let seed=0, questions=[], oppScore=0, finished=false;
+      const user = localStorage.getItem('charlotte-user')||'Unknown';
+      const otherUser = user === 'Luke' ? 'Charlotte' : 'Luke';
+      // seeded RNG
+      function seededRandom(s){ let x = Math.sin(s++) * 10000; return x - Math.floor(x); }
+      function generateQuestions(s){
+        const qs = [];
+        for(let i=0;i<total;i++){
+          const wi = Math.floor(seededRandom(s+i*2)*colors.length);
+          const di = Math.floor(seededRandom(s+i*2+1)*colors.length);
+          qs.push({word:colors[wi].name, display:colors[di].color, answer:colors[wi].name});
+        }
+        return qs;
+      }
+      colors.forEach(c=>{
+        const b=document.createElement('button');
+        b.className='color-btn'; b.style.background=c.color; b.textContent=c.name;
+        b.addEventListener('click',()=>answer(c.name));
+        btnsEl.appendChild(b);
+      });
+      function showQuestion(){
+        if(round>=total){ endGame(); return; }
+        const q = questions[round];
+        wordEl.textContent = q.word;
+        wordEl.style.color = q.display;
+        wordEl.dataset.answer = q.answer;
+        status.textContent = `Round ${round+1}/${total}  Score: ${score}` + (multiplayer ? '  Opp: ' + oppScore : '');
+      }
+      function answer(name){
+        if(!playing) return;
+        if(name===wordEl.dataset.answer){ score++; if(!multiplayer) addTokens(1); }
+        round++;
+        if(multiplayer){
+          window.__sendGameMove('color', {round: round, correct: name===wordEl.dataset.answer, score: score});
+        }
+        showQuestion();
+      }
+      function endGame(){
+        playing=false;
+        if(multiplayer){
+          status.textContent = `Done! You: ${score}/${total}. Waiting for ${otherUser}...`;
+          window.__sendGameMove('color', {finished: true, score: score});
+        } else {
+          status.textContent = `Done! ${score}/${total} correct = ${score} tokens. Tap Start to play again.`;
+        }
+        startBtn.disabled=false;
+      }
+      window.addEventListener('gamemove', function(e){
+        const msg = e.detail;
+        if(msg.game !== 'color' || msg.user === user) return;
+        if(msg.type === 'game-reset'){ playing=false; status.textContent = 'New game starting...'; return; }
+        if(msg.move && msg.move.finished){
+          oppScore = msg.move.score;
+          // Determine winner
+          if(score > oppScore){ addTokens(3); status.textContent = `You win! ${score} vs ${oppScore}. +3 tokens`; }
+          else if(score < oppScore){ status.textContent = `${otherUser} wins ${oppScore}-${score}.`; }
+          else { addTokens(1); status.textContent = `Tie! ${score}-${oppScore}. +1 token`; }
+        } else if(msg.move && msg.move.round !== undefined){
+          // opponent answered a round
+          if(msg.move.correct) oppScore = msg.move.score;
+        }
+      });
+      modeBtn.addEventListener('click',()=>{
+        multiplayer = !multiplayer;
+        modeBtn.textContent = multiplayer ? 'Mode: 2 Players' : 'Mode: Solo';
+        playing=false; startBtn.disabled=false;
+        status.textContent = multiplayer ? 'Both players tap Start to begin.' : 'Tap Start to play.';
+      });
+      startBtn.addEventListener('click',()=>{
+        round=0; score=0; oppScore=0; finished=false;
+        if(multiplayer){
+          seed = Math.floor(Math.random()*100000);
+          questions = generateQuestions(seed);
+          playing=true; startBtn.disabled=true;
+          status.textContent = 'Waiting for ' + otherUser + ' to start...';
+          window.__sendGameMove('color', {start: true, seed: seed});
+          showQuestion();
+        } else {
+          seed = Math.floor(Math.random()*100000);
+          questions = generateQuestions(seed);
+          playing=true; startBtn.disabled=true;
+          showQuestion();
+        }
+      });
+      // Listen for opponent's game start
+      window.addEventListener('gamemove', function(e){
+        const msg = e.detail;
+        if(msg.game !== 'color' || msg.user === user) return;
+        if(msg.move && msg.move.start){
+          if(!playing){
+            seed = msg.move.seed;
+            questions = generateQuestions(seed);
+            playing=true; startBtn.disabled=true;
+            round=0; score=0; oppScore=0;
+            showQuestion();
+          }
+        }
+      });
+    })();
+
+    // ===== 3. NUMBER GUESS =====
+    (function(){
+      const hint = document.getElementById('guessHint');
+      const input = document.getElementById('guessInput');
+      const submitBtn = document.getElementById('guessSubmit');
+      const history = document.getElementById('guessHistory');
+      const status = document.getElementById('guessStatus');
+      const startBtn = document.getElementById('guessStart');
+      let target=0, guesses=0, maxGuesses=7, playing=false, historyText='';
+      function newGame(){ target=Math.floor(Math.random()*100)+1; guesses=0; historyText=''; playing=true; hint.textContent='I picked a number 1–100. Guess!'; history.textContent=''; status.textContent=''; input.value=''; input.disabled=false; submitBtn.disabled=false; }
+      function guess(){
+        if(!playing) return;
+        const g = parseInt(input.value,10);
+        if(isNaN(g)||g<1||g>100){ status.textContent='Enter a number 1–100.'; return; }
+        guesses++;
+        if(g===target){ playing=false; const tokens = guesses<=7?3:1; addTokens(tokens); hint.textContent=`🎉 Correct! ${target} in ${guesses} guesses. +${tokens} tokens`; status.textContent=`You win! +${tokens} tokens`; input.disabled=true; submitBtn.disabled=true; }
+        else if(guesses>=maxGuesses){ playing=false; hint.textContent=`Game over! The number was ${target}.`; status.textContent='Try again!'; input.disabled=true; submitBtn.disabled=true; }
+        else { hint.textContent = g<target ? 'Higher! ↑' : 'Lower! ↓'; historyText += g+' '; history.textContent='Guesses: '+historyText; }
+        input.value=''; input.focus();
+      }
+      submitBtn.addEventListener('click', guess);
+      input.addEventListener('keydown', e=>{ if(e.key==='Enter') guess(); });
+      startBtn.addEventListener('click', newGame);
+      newGame();
+    })();
+
+    // ===== 4. ROCK PAPER SCISSORS (with 2-player mode) =====
+    (function(){
+      const result = document.getElementById('rpsResult');
+      const scoreEl = document.getElementById('rpsScore');
+      const status = document.getElementById('rpsStatus');
+      const moves = {rock:'✊',paper:'✋',scissors:'✌️'};
+      const beats = {rock:'scissors',paper:'rock',scissors:'paper'};
+      const modeDiv = document.createElement('div');
+      modeDiv.style.cssText = 'text-align:center;margin-bottom:10px;';
+      modeDiv.innerHTML = '<button class="btn secondary" id="rpsModeBtn" style="font-size:.85rem;padding:6px 14px;">Mode: vs Computer</button>';
+      result.parentElement.insertBefore(modeDiv, result);
+      const modeBtn = document.getElementById('rpsModeBtn');
+
+      const user = localStorage.getItem('charlotte-user')||'Unknown';
+      const otherUser = user === 'Luke' ? 'Charlotte' : 'Luke';
+      let multiplayer = false;
+      let you=0, comp=0, round=0, maxRounds=5;
+      let myMove = null, oppMove = null, waitingForOpp = false;
+
+      function resetRound(){
+        myMove = null; oppMove = null; waitingForOpp = false;
+        result.textContent = multiplayer ? 'Pick your move (hidden). Waiting for both...' : 'Tap a move to start!';
+      }
+
+      function resolveRound(){
+        if(!myMove || !oppMove) return;
+        round++;
+        const yourMove = myMove, compMove = oppMove;
+        if(yourMove===compMove){ result.textContent = 'You: ' + moves[yourMove] + ' vs ' + moves[compMove] + ' — Tie!'; }
+        else if(beats[yourMove]===compMove){ you++; addTokens(1); result.textContent = 'You: ' + moves[yourMove] + ' vs ' + moves[compMove] + ' — You win! +1 token'; }
+        else { comp++; result.textContent = 'You: ' + moves[yourMove] + ' vs ' + moves[compMove] + ' — ' + otherUser + ' wins!'; }
+        scoreEl.textContent = 'You: ' + you + '  vs  ' + (multiplayer ? otherUser : 'Computer') + ': ' + comp + '  (Round ' + round + '/' + maxRounds + ')';
+        myMove = null; oppMove = null;
+        if(round>=maxRounds){ status.textContent = you>comp ? 'You won the match! ' + you + '-' + comp : you<comp ? (multiplayer?otherUser:'Computer') + ' won ' + comp + '-' + you : 'Tie ' + you + '-' + comp; round=0; you=0; comp=0; setTimeout(function(){ resetRound(); scoreEl.textContent = 'You: 0  vs  ' + (multiplayer?otherUser:'Computer') + ': 0'; status.textContent = ''; }, 2500); }
+        else { status.textContent = multiplayer ? 'Both picked! Next round...' : ''; setTimeout(resetRound, 1500); }
+      }
+
+      document.querySelectorAll('.rps-btn').forEach(function(btn){
+        btn.addEventListener('click', function(){
+          const yourMove = btn.dataset.move;
+          if(multiplayer){
+            if(myMove) return; // already picked
+            myMove = yourMove;
+            result.textContent = 'You picked ' + moves[yourMove] + ' (hidden). Waiting for ' + otherUser + '...';
+            window.__sendGameMove('rps', { move: yourMove });
+            // check if opponent already picked
+            if(oppMove) resolveRound();
+          } else {
+            const compMove = ['rock','paper','scissors'][Math.floor(Math.random()*3)];
+            round++;
+            if(yourMove===compMove){ result.textContent = 'You: ' + moves[yourMove] + ' vs ' + moves[compMove] + ' — Tie!'; }
+            else if(beats[yourMove]===compMove){ you++; addTokens(1); result.textContent = 'You: ' + moves[yourMove] + ' vs ' + moves[compMove] + ' — You win! +1 token'; }
+            else { comp++; result.textContent = 'You: ' + moves[yourMove] + ' vs ' + moves[compMove] + ' — Computer wins!'; }
+            scoreEl.textContent = 'You: ' + you + '  vs  Computer: ' + comp + '  (Round ' + round + '/' + maxRounds + ')';
+            if(round>=maxRounds){ status.textContent = you>comp ? 'You won the match!' : you<comp ? 'Computer won' : 'Tie'; round=0; you=0; comp=0; setTimeout(function(){ result.textContent='Tap a move to start!'; scoreEl.textContent='You: 0  vs  Computer: 0'; status.textContent=''; }, 2000); }
+          }
+        });
+      });
+
+      window.addEventListener('gamemove', function(e){
+        const msg = e.detail;
+        if(msg.game !== 'rps' || msg.user === user) return;
+        if(msg.type === 'game-reset'){ resetRound(); round=0; you=0; comp=0; scoreEl.textContent = 'You: 0  vs  ' + otherUser + ': 0'; status.textContent = ''; return; }
+        if(msg.move && msg.move.move){
+          oppMove = msg.move.move;
+          if(myMove) resolveRound();
+          else { result.textContent = otherUser + ' picked (hidden). Your turn!'; }
+        }
+      });
+
+      modeBtn.addEventListener('click', function(){
+        multiplayer = !multiplayer;
+        modeBtn.textContent = multiplayer ? 'Mode: 2 Players' : 'Mode: vs Computer';
+        round=0; you=0; comp=0;
+        resetRound();
+        scoreEl.textContent = 'You: 0  vs  ' + (multiplayer ? otherUser : 'Computer') + ': 0';
+        status.textContent = '';
+        if(multiplayer) window.__sendGameReset('rps');
+      });
+
+      resetRound();
+    })();
+
+    // ===== 5. TIC-TAC-TOE (with 2-player mode) =====
+    (function(){
+      const grid = document.getElementById('tttGrid');
+      const status = document.getElementById('tttStatus');
+      const startBtn = document.getElementById('tttStart');
+      const modeDiv = document.createElement('div');
+      modeDiv.style.cssText = 'text-align:center;margin-bottom:10px;';
+      modeDiv.innerHTML = '<button class="btn secondary" id="tttModeBtn" style="font-size:.85rem;padding:6px 14px;">Mode: vs Computer</button>';
+      grid.parentElement.insertBefore(modeDiv, grid);
+      const modeBtn = document.getElementById('tttModeBtn');
+      let board=[], playing=false, multiplayer=false;
+      const user = localStorage.getItem('charlotte-user')||'Unknown';
+      const otherUser = user === 'Luke' ? 'Charlotte' : 'Luke';
+      function build(){ grid.innerHTML=''; board=Array(9).fill(null); playing=true;
+        if(multiplayer){ status.textContent = (user==='Luke') ? 'Your turn (X)' : 'Waiting for ' + otherUser + '...'; }
+        else { status.textContent = 'Your turn (X)'; }
+        for(let i=0;i<9;i++){ const c=document.createElement('div'); c.className='ttt-cell'; c.dataset.i=i; c.addEventListener('click',()=>move(i)); grid.appendChild(c); }
+      }
+      function checkWin(b, p){ const wins=[[0,1,2],[3,4,5],[6,7,8],[0,3,6],[1,4,7],[2,5,8],[0,4,8],[2,4,6]]; return wins.some(w=>w.every(i=>b[i]===p)); }
+      function renderBoard(){ grid.querySelectorAll('.ttt-cell').forEach((c,i)=>{ c.textContent=board[i]||''; if(board[i]) c.classList.add('taken'); }); }
+      function move(i){
+        if(!playing||board[i]) return;
+        const myTurn = multiplayer ? (user==='Luke' ? board.filter(x=>x==='X').length===board.filter(x=>x==='O').length : board.filter(x=>x==='O').length < board.filter(x=>x==='X').length) : true;
+        if(multiplayer && !myTurn){ status.textContent = 'Wait for ' + otherUser + "'s move..."; return; }
+        const sym = multiplayer ? (user==='Luke' ? 'X' : 'O') : 'X';
+        // In single player, human is always X
+        const humanSym = multiplayer ? (user==='Luke' ? 'X' : 'O') : 'X';
+        const isMyMove = !multiplayer || (humanSym==='X' ? board.filter(x=>x==='X').length===board.filter(x=>x==='O').length : board.filter(x=>x==='O').length < board.filter(x=>x==='X').length);
+        if(multiplayer && !isMyMove){ status.textContent = 'Wait for ' + otherUser + "'s move..."; return; }
+        board[i] = humanSym;
+        renderBoard();
+        if(checkWin(board,humanSym)){ playing=false; addTokens(3); status.textContent='You win! +3 tokens'; if(multiplayer) window.__sendGameMove('ttt',{cell:i,symbol:humanSym}); return; }
+        if(board.every(c=>c)){ playing=false; addTokens(1); status.textContent='Tie! +1 token'; if(multiplayer) window.__sendGameMove('ttt',{cell:i,symbol:humanSym}); return; }
+        if(multiplayer){
+          window.__sendGameMove('ttt',{cell:i,symbol:humanSym});
+          status.textContent = 'Waiting for ' + otherUser + '...';
+        } else {
+          let moveIdx = findBestMove();
+          board[moveIdx]='O'; renderBoard();
+          if(checkWin(board,'O')){ playing=false; status.textContent='Computer wins! Try again.'; return; }
+          if(board.every(c=>c)){ playing=false; addTokens(1); status.textContent='Tie! +1 token'; }
+        }
+      }
+      function findBestMove(){
+        for(let i=0;i<9;i++){ if(!board[i]){ board[i]='O'; if(checkWin(board,'O')){ board[i]=null; return i; } board[i]=null; } }
+        for(let i=0;i<9;i++){ if(!board[i]){ board[i]='X'; if(checkWin(board,'X')){ board[i]=null; return i; } board[i]=null; } }
+        if(!board[4]) return 4;
+        const corners=[0,2,6,8].filter(i=>!board[i]);
+        if(corners.length) return corners[Math.floor(Math.random()*corners.length)];
+        const sides=[1,3,5,7].filter(i=>!board[i]);
+        return sides[Math.floor(Math.random()*sides.length)];
+      }
+      window.addEventListener('gamemove', function(e){
+        const msg = e.detail;
+        if(msg.game !== 'ttt' || msg.user === (localStorage.getItem('charlotte-user')||'Unknown')) return;
+        if(msg.type === 'game-reset'){ build(); return; }
+        if(!playing) return;
+        const cell = msg.move.cell;
+        const sym = msg.move.symbol === 'X' ? 'O' : 'X';
+        if(cell !== undefined && !board[cell]){
+          board[cell] = sym === 'X' ? 'O' : 'X';
+          // The opponent's symbol is the opposite of ours
+          const oppSym = (localStorage.getItem('charlotte-user')||'Unknown') === 'Luke' ? 'O' : 'X';
+          board[cell] = oppSym;
+          renderBoard();
+          const oppName = (localStorage.getItem('charlotte-user')||'Unknown') === 'Luke' ? 'Charlotte' : 'Luke';
+          if(checkWin(board, oppSym)){ playing=false; status.textContent = oppName + ' wins!'; return; }
+          if(board.every(c=>c)){ playing=false; addTokens(1); status.textContent='Tie! +1 token'; return; }
+          status.textContent = 'Your turn (' + (oppSym==='X' ? 'O' : 'X') + ')';
+        }
+      });
+      modeBtn.addEventListener('click',()=>{
+        multiplayer = !multiplayer;
+        modeBtn.textContent = multiplayer ? 'Mode: 2 Players' : 'Mode: vs Computer';
+        build();
+        if(multiplayer) window.__sendGameReset('ttt');
+      });
+      startBtn.addEventListener('click', ()=>{ build(); if(multiplayer) window.__sendGameReset('ttt'); });
+      build();
+    })();
+
+    // ===== 6. DICE ROLL =====
+    (function(){
+      const area = document.getElementById('diceArea');
+      const result = document.getElementById('diceResult');
+      const status = document.getElementById('diceStatus');
+      const rollBtn = document.getElementById('diceRoll');
+      const faces = ['⚀','⚁','⚂','⚃','⚄','⚅'];
+      let rolls=0, maxRolls=10;
+      rollBtn.addEventListener('click',()=>{
+        if(rolls>=maxRolls){ rolls=0; result.textContent=''; status.textContent='New round! Roll again.'; }
+        const d1=Math.floor(Math.random()*6)+1;
+        const d2=Math.floor(Math.random()*6)+1;
+        const sum=d1+d2;
+        area.textContent = faces[d1-1]+' '+faces[d2-1];
+        rolls++;
+        if(sum===7||sum===11){ addTokens(2); result.textContent=`Sum: ${sum} — Lucky! +2 tokens`; }
+        else { result.textContent=`Sum: ${sum}`; }
+        status.textContent = `Roll ${rolls}/${maxRolls}`;
+        if(rolls>=maxRolls){ status.textContent += ' — Round over! Tap Roll for a new round.'; }
+      });
+    })();
+
+    // ===== 7. WORD SCRAMBLE =====
+    (function(){
+      const words = ['HEART','LOVE','HAPPY','SMILE','DREAM','MUSIC','LIGHT','STARS','PEACE','BRAVE'];
+      const wordEl = document.getElementById('scrambleWord');
+      const input = document.getElementById('scrambleInput');
+      const status = document.getElementById('scrambleStatus');
+      const startBtn = document.getElementById('scrambleStart');
+      const submitBtn = document.getElementById('scrambleSubmit');
+      let idx=0, score=0, playing=false, currentWord='';
+      function scramble(w){ return w.split('').sort(()=>Math.random()-0.5).join(''); }
+      function nextWord(){
+        if(idx>=5){ playing=false; status.textContent=`Done! ${score}/5 correct = ${score} tokens. Tap Start for more.`; startBtn.disabled=false; return; }
+        currentWord = words[Math.floor(Math.random()*words.length)];
+        wordEl.textContent = scramble(currentWord);
+        input.value=''; input.disabled=false; submitBtn.disabled=false;
+        status.textContent = `Word ${idx+1}/5`;
+        input.focus();
+      }
+      function check(){
+        if(!playing) return;
+        const guess = input.value.trim().toUpperCase();
+        if(guess===currentWord){ score++; addTokens(1); status.textContent=`Correct! +1 token. Score: ${score}`; }
+        else { status.textContent=`Nope, it was ${currentWord}. Score: ${score}`; }
+        idx++; input.disabled=true; submitBtn.disabled=true;
+        setTimeout(()=>nextWord(), 1200);
+      }
+      submitBtn.addEventListener('click', check);
+      input.addEventListener('keydown', e=>{ if(e.key==='Enter') check(); });
+      startBtn.addEventListener('click',()=>{ idx=0; score=0; playing=true; startBtn.disabled=true; nextWord(); });
+    })();
+
+    // ===== 8. MATH BLITZ (with 2-player mode) =====
+    (function(){
+      const problem = document.getElementById('mathProblem');
+      const input = document.getElementById('mathInput');
+      const status = document.getElementById('mathStatus');
+      const startBtn = document.getElementById('mathStart');
+      const submitBtn = document.getElementById('mathSubmit');
+      const modeDiv = document.createElement('div');
+      modeDiv.style.cssText = 'text-align:center;margin-bottom:10px;';
+      modeDiv.innerHTML = '<button class="btn secondary" id="mathModeBtn" style="font-size:.85rem;padding:6px 14px;">Mode: Solo</button>';
+      problem.parentElement.insertBefore(modeDiv, problem);
+      const modeBtn = document.getElementById('mathModeBtn');
+      let q=0, score=0, playing=false, answer=0, startTime=0;
+      let multiplayer=false, seed=0, questions=[], oppScore=0;
+      const user = localStorage.getItem('charlotte-user')||'Unknown';
+      const otherUser = user === 'Luke' ? 'Charlotte' : 'Luke';
+      function seededRandom(s){ let x = Math.sin(s++) * 10000; return x - Math.floor(x); }
+      function generateQuestions(s){
+        const qs = [];
+        for(let i=0;i<10;i++){
+          const a = Math.floor(seededRandom(s+i*3)*20)+1;
+          const b = Math.floor(seededRandom(s+i*3+1)*20)+1;
+          const isAdd = seededRandom(s+i*3+2) > 0.5;
+          if(isAdd){ qs.push({text: a+' + '+b+' = ?', answer: a+b}); }
+          else { const big=Math.max(a,b), small=Math.min(a,b); qs.push({text: big+' - '+small+' = ?', answer: big-small}); }
+        }
+        return qs;
+      }
+      function nextQ(){
+        if(q>=10){ playing=false; 
+          if(multiplayer){ status.textContent = `Done! You: ${score}/10. Waiting for ${otherUser}...`; window.__sendGameMove('math', {finished:true, score:score}); }
+          else { status.textContent = `Done! ${score}/10 correct = ${score} tokens. Tap Start for more.`; }
+          startBtn.disabled=false; return; }
+        q++;
+        const qq = questions[q-1];
+        answer = qq.answer;
+        problem.textContent = qq.text;
+        input.value=''; input.disabled=false; submitBtn.disabled=false;
+        status.textContent = `Question ${q}/10  Score: ${score}` + (multiplayer ? '  Opp: ' + oppScore : '');
+        startTime = Date.now();
+        input.focus();
+      }
+      function check(){
+        if(!playing) return;
+        const g = parseInt(input.value,10);
+        if(isNaN(g)){ status.textContent='Enter a number.'; return; }
+        const elapsed = (Date.now()-startTime)/1000;
+        if(g===answer){ const tok = elapsed<3?2:1; score++; if(!multiplayer) addTokens(tok); status.textContent = `Correct! +${tok} token${tok>1?'s':''}. Score: ${score}`; }
+        else { status.textContent = `Wrong, answer was ${answer}. Score: ${score}`; }
+        if(multiplayer) window.__sendGameMove('math', {round:q, correct: g===answer, score:score});
+        input.disabled=true; submitBtn.disabled=true;
+        setTimeout(()=>nextQ(), 1000);
+      }
+      submitBtn.addEventListener('click', check);
+      input.addEventListener('keydown', e=>{ if(e.key==='Enter') check(); });
+      modeBtn.addEventListener('click',()=>{
+        multiplayer = !multiplayer;
+        modeBtn.textContent = multiplayer ? 'Mode: 2 Players' : 'Mode: Solo';
+        playing=false; startBtn.disabled=false;
+        status.textContent = multiplayer ? 'Both players tap Start to begin.' : 'Tap Start to play.';
+      });
+      startBtn.addEventListener('click',()=>{
+        q=0; score=0; oppScore=0;
+        if(multiplayer){
+          seed = Math.floor(Math.random()*100000);
+          questions = generateQuestions(seed);
+          playing=true; startBtn.disabled=true;
+          status.textContent = 'Waiting for ' + otherUser + ' to start...';
+          window.__sendGameMove('math', {start:true, seed:seed});
+          nextQ();
+        } else {
+          seed = Math.floor(Math.random()*100000);
+          questions = generateQuestions(seed);
+          playing=true; startBtn.disabled=true;
+          nextQ();
+        }
+      });
+      window.addEventListener('gamemove', function(e){
+        const msg = e.detail;
+        if(msg.game !== 'math' || msg.user === user) return;
+        if(msg.type === 'game-reset'){ playing=false; status.textContent = 'New game starting...'; return; }
+        if(msg.move && msg.move.start){
+          if(!playing){
+            seed = msg.move.seed;
+            questions = generateQuestions(seed);
+            playing=true; startBtn.disabled=true;
+            q=0; score=0; oppScore=0;
+            nextQ();
+          }
+        }
+        if(msg.move && msg.move.round !== undefined){
+          if(msg.move.correct) oppScore = msg.move.score;
+        }
+        if(msg.move && msg.move.finished){
+          oppScore = msg.move.score;
+          if(score > oppScore){ addTokens(3); status.textContent = `You win! ${score} vs ${oppScore}. +3 tokens`; }
+          else if(score < oppScore){ status.textContent = `${otherUser} wins ${oppScore}-${score}.`; }
+          else { addTokens(1); status.textContent = `Tie! ${score}-${oppScore}. +1 token`; }
+        }
+      });
+    })();
+
+    // ===== 9. FLAPPY HEART =====
+    (function(){
+      const canvas = document.getElementById('flappyCanvas');
+      const ctx = canvas.getContext('2d');
+      const status = document.getElementById('flappyStatus');
+      const startBtn = document.getElementById('flappyStart');
+      let running=false, score=0, bird={y:150,vy:0}, pipes=[], frame=0;
+      const GRAVITY=0.4, FLAP=-7, PIPE_GAP=100, PIPE_W=40, PIPE_SPEED=2;
+      function reset(){ bird={y:150,vy:0}; pipes=[]; frame=0; score=0; }
+      function update(){
+        bird.vy += GRAVITY;
+        bird.y += bird.vy;
+        if(bird.y < 0) bird.y=0;
+        if(bird.y > canvas.height-20){ endGame(); return; }
+        // spawn pipes
+        if(frame%90===0){
+          const gapY = 60+Math.random()*(canvas.height-PIPE_GAP-120);
+          pipes.push({x:canvas.width, gapY, scored:false});
+        }
+        for(let i=pipes.length-1;i>=0;i--){
+          const p=pipes[i];
+          p.x -= PIPE_SPEED;
+          // collision
+          if(bird.x+16 > p.x && bird.x-16 < p.x+PIPE_W){
+            if(bird.y-16 < p.gapY || bird.y+16 > p.gapY+PIPE_GAP){ endGame(); return; }
+          }
+          if(!p.scored && p.x+PIPE_W < bird.x){ p.scored=true; score++; addTokens(1); status.textContent=`Pipes: ${score}`; }
+          if(p.x < -PIPE_W) pipes.splice(i,1);
+        }
+        frame++;
+      }
+      function draw(){
+        ctx.fillStyle='#87ceeb'; ctx.fillRect(0,0,canvas.width,canvas.height);
+        // ground
+        ctx.fillStyle='#8b6914'; ctx.fillRect(0,canvas.height-20,canvas.width,20);
+        // pipes
+        ctx.fillStyle='#27ae60';
+        pipes.forEach(p=>{
+          ctx.fillRect(p.x,0,PIPE_W,p.gapY);
+          ctx.fillRect(p.x,p.gapY+PIPE_GAP,PIPE_W,canvas.height-p.gapY-PIPE_GAP-20);
+        });
+        // bird
+        ctx.font='24px serif'; ctx.fillText('💕', bird.x-12, bird.y+8);
+      }
+      function loop(){
+        if(!running) return;
+        update(); draw();
+        if(running) requestAnimationFrame(loop);
+      }
+      function endGame(){ running=false; status.textContent=`Game over! ${score} pipes = ${score} tokens. Tap Start to play again.`; startBtn.disabled=false; }
+      canvas.addEventListener('click',()=>{ if(running) bird.vy=FLAP; });
+      document.addEventListener('keydown', e=>{ if(running && (e.key===' '||e.key==='ArrowUp')){ bird.vy=FLAP; e.preventDefault(); } });
+      startBtn.addEventListener('click',()=>{ reset(); running=true; startBtn.disabled=true; status.textContent='Tap/click or press Space to fly!'; bird.x=60; requestAnimationFrame(loop); });
+    })();
+
+    // ===== 10. WHACK-A-STAR =====
+    (function(){
+      const grid = document.getElementById('starGrid');
+      const status = document.getElementById('whackstarStatus');
+      const startBtn = document.getElementById('whackstarStart');
+      let running=false, score=0, timer=null, spawnTimer=null;
+      for(let i=0;i<9;i++){
+        const hole = document.createElement('div');
+        hole.className='hole';
+        hole.innerHTML='<span class="mole">⭐</span>';
+        hole.addEventListener('click',()=>{ if(hole.classList.contains('active')){ hole.classList.remove('active'); score++; addTokens(1); status.textContent=`Whacks: ${score}  Time: ${timeLeft}s`; }});
+        grid.appendChild(hole);
+      }
+      const holes = Array.from(grid.querySelectorAll('.hole'));
+      let timeLeft=30;
+      function spawnStar(){ if(!running) return; const h=holes[Math.floor(Math.random()*holes.length)]; if(h.classList.contains('active')) return; h.classList.add('active'); setTimeout(()=>h.classList.remove('active'), 800); }
+      startBtn.addEventListener('click',()=>{
+        holes.forEach(h=>h.classList.remove('active'));
+        score=0; timeLeft=30; running=true; startBtn.disabled=true;
+        status.textContent=`Whacks: 0  Time: 30s`;
+        spawnTimer=setInterval(()=>{ if(running) spawnStar(); }, 600);
+        timer=setInterval(()=>{
+          if(!running) return;
+          timeLeft--;
+          status.textContent=`Whacks: ${score}  Time: ${timeLeft}s`;
+          if(timeLeft<=0){ running=false; clearInterval(timer); clearInterval(spawnTimer); holes.forEach(h=>h.classList.remove('active')); status.textContent=`Time's up! ${score} whacks = ${score} tokens. Tap Start to play again.`; startBtn.disabled=false; }
+        },1000);
+      });
+    })();
   })();
   </script>
 <script src="assets/js/stickers-overlay.js"></script>

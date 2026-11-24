@@ -234,6 +234,7 @@
   box-shadow: 0 10px 24px rgba(0,0,0,.22);
   cursor: grab;
   user-select: none;
+  touch-action: none;
   transition: transform .55s cubic-bezier(.18,.89,.32,1.28);
 }
 .fidget-spinner:active { cursor: grabbing; transform: scale(.92); }
@@ -256,6 +257,7 @@
   box-shadow: 0 8px 20px rgba(0,0,0,.18), inset -4px -6px 10px rgba(0,0,0,.15);
   cursor: grab;
   user-select: none;
+  touch-action: none;
   transition: transform .15s ease;
 }
 .stress-ball:active { cursor: grabbing; transform: scale(.85); }

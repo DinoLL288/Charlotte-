@@ -16,7 +16,7 @@
     if (!document.querySelector('link[data-playful]')) {
       const link = document.createElement('link');
       link.rel = 'stylesheet';
-      link.href = 'playful.css';
+      link.href = '/assets/css/playful.css';
       link.dataset.playful = 'true';
       document.head.appendChild(link);
     }
