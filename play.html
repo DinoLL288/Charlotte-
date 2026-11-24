@@ -78,7 +78,7 @@
     </section>
     <p class="page-status" id="pageStatus" role="status"></p>
   </main>
-  <script src="assets/js/dialog.js"></script>
+  <script defer src="assets/js/dialog.js"></script>
   <script src="assets/js/avatar.js"></script>
   <script>
     const user = localStorage.getItem('charlotte-user') || 'Unknown';
@@ -212,6 +212,6 @@
     window.addEventListener('pagehide', () => { clearInterval(roomPing); clearTimeout(roomReconnect); roomSocket?.close(); });
     loadTruthDare();
   </script>
-<script src="assets/js/stickers-overlay.js"></script>
+<script defer src="assets/js/stickers-overlay.js"></script>
 </body>
 </html>

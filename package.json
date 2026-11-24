@@ -4,6 +4,7 @@
   "description": "A little site for Charlotte. Now split into a hub with multiple sections.",
   "main": "avatar.js",
   "scripts": {
+    "build": "node scripts/build.mjs",
     "test": "node --test tests/*.test.mjs",
     "gallery:migrate": "node scripts/migrate-gallery-to-b2.mjs"
   },

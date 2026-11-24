@@ -36,7 +36,7 @@
     </section>
     <section class="panel" id="historyPanel"><h2>Our saved questions &amp; answers</h2><p class="intro">Our question nights stay here by the night they happened, with the date each answer was saved.</p><div id="questionHistory">Loading our saved question nights…</div></section>
   </main>
-  <script src="assets/js/dialog.js"></script><script src="assets/js/avatar.js"></script>
+  <script defer src="assets/js/dialog.js"></script><script src="assets/js/avatar.js"></script>
   <script>
     const user = localStorage.getItem('charlotte-user') || 'Unknown';
     const data = { questionCounts: { Charlotte: 0, Luke: 0 }, questionItems: [], questionSessions: {}, questionResponses: {}, historySessions: {}, historyResponses: {} };
@@ -140,6 +140,6 @@
     let currentRoomKey='';setInterval(()=>{const key=roomKey();if(key!==currentRoomKey){currentRoomKey=key;connectRoom();}renderRoom();},60000);
     loadMeta().then(()=>{currentRoomKey=roomKey();return loadHistory();}).catch(error=>{showStatus('connectionStatus',error.message);});
   </script>
-<script src="assets/js/stickers-overlay.js"></script>
+<script defer src="assets/js/stickers-overlay.js"></script>
 </body>
 </html>

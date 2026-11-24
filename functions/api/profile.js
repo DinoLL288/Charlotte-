@@ -20,8 +20,9 @@ export async function onRequestGet(context) {
     };
     if (token) headers['Authorization'] = `Bearer ${token}`;
 
-    // Try common extensions in parallel
-    const results = await Promise.all(['jpg', 'jpeg', 'png', 'webp', 'gif'].map(async ext => {
+    // Try common extensions in parallel. WebP first so a smaller generated
+    // .webp (see scripts/build.mjs) wins over the original PNG/JPEG.
+    const results = await Promise.all(['webp', 'jpg', 'jpeg', 'png', 'gif'].map(async ext => {
       const res = await fetch(`https://api.github.com/repos/${repo}/contents/data/profiles/${user}.${ext}?ref=${branch}`, { headers });
       if (res.status !== 200) return null;
       const json = await res.json();

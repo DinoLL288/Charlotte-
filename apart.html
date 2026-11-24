@@ -113,7 +113,7 @@
     form.addEventListener('submit',async e=>{e.preventDefault();const from=fromDate.value,until=untilDate.value;if(!from||!until){formStatus.textContent='Pick both days first';return}if(until<from){formStatus.textContent='The last day must be on or after the first';return}saveApart.disabled=true;formStatus.textContent='Saving…';try{await postApart({entry:{from,until,note:apartNote.value.trim(),author:currentUser},sha:currentSha});await loadProfilePic(currentUser);form.reset();fromDate.value=todayString();untilDate.value=todayString();formStatus.textContent='Saved 🤍';render()}catch(e){formStatus.textContent=e.message}finally{saveApart.disabled=false}});
     fromDate.value=todayString();untilDate.value=todayString();loadEntries();
   </script>
-  <script src="assets/js/avatar.js"></script><script src="assets/js/dialog.js"></script>
-<script src="assets/js/stickers-overlay.js"></script>
+  <script src="assets/js/avatar.js"></script><script defer src="assets/js/dialog.js"></script>
+<script defer src="assets/js/stickers-overlay.js"></script>
 </body>
 </html>

@@ -1,17 +1,23 @@
 // Service Worker for Charlotte & Luke
 // Strategy: stale-while-revalidate for static assets, network-first for API
 
-const CACHE_NAME = 'charlotte-v7';
+const CACHE_NAME = 'charlotte-v8';
 const OFFLINE_URL = '/offline.html';
 
-// Static assets to precache
+// Static assets to precache — keep in sync with what pages actually load.
+// The four source CSS files are still loaded directly by 16 pages, so they
+// stay here alongside site-bundle.css (hub + 6 pages) until those pages
+// are switched to the bundle alone.
 const PRECACHE_ASSETS = [
   '/',
   '/index.html',
+  '/offline.html',
   '/assets/css/theme.css',
   '/assets/css/site-polish.css',
   '/assets/css/site-theme.css',
   '/assets/css/motion.css',
+  '/assets/css/site-bundle.css',
+  '/assets/css/gallery-media.css',
   '/assets/js/avatar.js',
   '/assets/js/together.js',
   '/assets/js/dialog.js',
@@ -26,6 +32,10 @@ const PRECACHE_ASSETS = [
   '/assets/js/surprises.js',
   '/assets/js/special-dates.js',
   '/assets/js/playful.js',
+  '/assets/js/gallery.js',
+  '/assets/js/gallery-videos.js',
+  '/assets/js/vault.js',
+  '/assets/js/stickers-overlay.js',
 ];
 
 // Install: precache static assets
