@@ -1,0 +1,76 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <script src="assets/js/site-shell-guard.js"></script>
+  <meta charset="UTF-8"><meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover"><title>Phone widgets · Charlotte &amp; Luke</title>
+  <script>if (!localStorage.getItem('charlotte-user')) location.href = 'login.html';</script>
+  <link rel="manifest" href="/site.webmanifest">
+  <link rel="apple-touch-icon" href="/apple-touch-icon.png">
+  <meta name="theme-color" content="#0d2c44">
+  <meta name="apple-mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-title" content="Charlotte">
+  <link rel="stylesheet" href="assets/css/theme.css">
+  <style>
+    body{margin:0;min-height:100vh;font-family:var(--font-body);background:linear-gradient(160deg,#edf8ff,#badff5 100%);color:#123a58}.hero{padding:78px 20px 48px;text-align:center;color:#fff;background:linear-gradient(160deg,#0d2c44,#2a78a8)}.hero h1{margin:8px 0;font-size:clamp(2.2rem,8vw,3.5rem)}.hero p{margin:0 auto;max-width:48ch;opacity:.9}.shell{width:min(820px,calc(100% - 32px));margin:-28px auto 70px}.panel{padding:18px;border-radius:20px;background:rgba(255,255,255,.88);border:1px solid rgba(255,255,255,.95);box-shadow:0 10px 30px rgba(29,90,128,.12);margin-bottom:14px}.panel h2{font-family:var(--font-display);margin:0 0 12px}.panel p{line-height:1.6;color:#486a83}.panel ol{line-height:1.7;color:#486a83;padding-left:22px}.top-bar{position:absolute}.button{padding:10px 16px;border-radius:999px;background:#123a58;color:#fff;text-decoration:none;font-weight:700;font-size:.9rem;border:0;cursor:pointer}.button.secondary{background:#edf4f8;color:#123a58}.widget-card{border:1px solid #d5e3ec;border-radius:16px;background:#fff;padding:16px;margin-bottom:12px}.widget-card h3{margin:0 0 6px}.widget-card p{margin:0 0 12px}.copy-status{min-height:1.2em;margin:8px 0 0;color:#73591f;font-weight:700;font-size:.85rem}.note{font-size:.85rem;color:#6a8292}
+  </style>
+  <link rel="stylesheet" href="assets/css/site-polish.css" data-site-polish="true"><link rel="stylesheet" href="assets/css/site-theme.css" data-site-theme="true"><link rel="stylesheet" href="assets/css/motion.css">
+</head>
+<body>
+  <div class="top-bar"><a class="button" href="index.html">← Back to hub</a></div>
+  <header class="hero"><p style="text-transform:uppercase;letter-spacing:.12em;font-size:.8rem">On your home screen</p><h1>Phone widgets</h1><p>Our mood and bathroom trackers, right on your iPhone or Mac home screen.</p></header>
+  <main class="shell">
+    <section class="panel">
+      <h2>How it works</h2>
+      <p>A website on its own can't make iPhone or Mac widgets — those need an app. So we use <strong>Scriptable</strong>, a free app that runs little JavaScript widgets. The widgets read a tiny public summary from our site (latest moods and today's bathroom counts, no notes or history), and tapping one opens the matching tracker page.</p>
+    </section>
+    <section class="panel">
+      <h2>The widgets</h2>
+      <div class="widget-card">
+        <h3>💛 Mood widget</h3>
+        <p>Charlotte &amp; Luke's latest moods, with how long ago each was logged.</p>
+        <button class="button" type="button" data-copy="/widgets/mood-widget.js">Copy mood script</button>
+        <span class="copy-status" data-status="mood"></span>
+      </div>
+      <div class="widget-card">
+        <h3>🚻 Bathroom widget</h3>
+        <p>Who's away right now, and how many check-ins each of us has today.</p>
+        <button class="button" type="button" data-copy="/widgets/bathroom-widget.js">Copy bathroom script</button>
+        <span class="copy-status" data-status="bathroom"></span>
+      </div>
+    </section>
+    <section class="panel">
+      <h2>Set them up</h2>
+      <ol>
+        <li>Install <strong>Scriptable</strong> free from the App Store (iPhone / iPad) or the Mac App Store (Mac).</li>
+        <li>In Scriptable, tap <strong>+</strong> to make a new script and give it a name, like “Mood”.</li>
+        <li>Tap <strong>Copy</strong> above for the widget you want, then paste the whole script into Scriptable and save it.</li>
+        <li>On iPhone: long-press the home screen → <strong>+</strong> → <strong>Scriptable</strong> → pick a widget size → long-press the widget → <strong>Edit Widget</strong> → choose your script. On Mac: add it from Notification Center instead.</li>
+        <li>Tap the widget any time to open the tracker on our site.</li>
+      </ol>
+      <p class="note">Widgets refresh on your phone's own schedule, so they can be a little behind — tapping one always opens the latest on the site.</p>
+    </section>
+    <section class="panel">
+      <h2>The site itself, on your home screen too</h2>
+      <p>On iPhone, open our site in Safari, tap <strong>Share</strong>, then <strong>Add to Home Screen</strong> — it sits next to the widgets like an app. On Android, use Chrome's menu → <strong>Add to Home screen</strong>.</p>
+      <p><a class="button secondary" href="mood.html">Mood tracker</a> <a class="button secondary" href="bathroom.html">Bathroom check-ins</a></p>
+    </section>
+  </main>
+  <script>
+    document.querySelectorAll('[data-copy]').forEach(button => {
+      button.addEventListener('click', async () => {
+        const key = button.closest('.widget-card').querySelector('[data-status]').dataset.status;
+        const status = document.querySelector('[data-status="' + key + '"]');
+        try {
+          const res = await fetch(button.dataset.copy);
+          if (!res.ok) throw new Error('Could not load the script');
+          await navigator.clipboard.writeText(await res.text());
+          status.textContent = 'Copied — paste it into Scriptable.';
+        } catch (e) {
+          status.textContent = 'Copy didn’t work — open the script file and copy it by hand.';
+        }
+      });
+    });
+  </script>
+<script src="assets/js/stickers-overlay.js"></script>
+</body>
+</html>
