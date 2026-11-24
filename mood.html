@@ -62,7 +62,7 @@
     async function load(){try{const r=await fetch('/api/question-room?view=mood&user='+encodeURIComponent(user),{cache:'no-store'}),j=await r.json();entries=normalizeEntries(j.entries||j.moods||{},user);}catch{}render();const m=myEntries();if(m.length)setSelected(m[m.length-1]);}
     function personEntries(person){const source=entries[person]||{};const out={};Object.keys(source).forEach(d=>{const arr=(source[d]||[]).map(normalizeEntry).filter(v=>v&&v.mood);if(arr.length)out[d]=arr;});return out;}
     function myEntries(date=todayKey()){const src=entries[user]&&entries[user][date];return Array.isArray(src)?src.map(normalizeEntry).filter(v=>v&&v.mood):[];}
-    async function save(){if(!selectedMood){status.textContent='Choose a mood first.';return;}const button=document.getElementById('saveMood');button.disabled=true;status.textContent='Saving…';try{const r=await fetch('/api/question-room',{method:'POST',headers:{'content-type':'application/json'},body:JSON.stringify({action:'mood',user,date:selectedDate,mood:selectedMood,intensity:Number(intensity.value),note:note.value.trim()})});const j=await r.json();if(!r.ok)throw new Error(j.error||'Could not save mood');entries=normalizeEntries(j.entries||j.moods||entries,user);status.textContent='Mood added.';selectedMood='';moodChoices.querySelectorAll('.mood-btn').forEach(b=>b.classList.remove('selected'));note.value='';renderEntries();render();}catch(e){status.textContent=e.message||'Could not save mood';}finally{button.disabled=false;}}
+    async function save(){if(!selectedMood){status.textContent='Choose a mood first.';return;}const button=document.getElementById('saveMood');button.disabled=true;status.textContent='Saving…';try{const r=await fetch('/api/question-room',{method:'POST',headers:{'content-type':'application/json'},body:JSON.stringify({action:'mood',user,date:selectedDate,mood:selectedMood,intensity:Number(intensity.value),note:note.value.trim()})});const j=await r.json();if(!r.ok)throw new Error(j.error||'Could not save mood');entries=normalizeEntries(j.entries||j.moods||entries,user);status.textContent='Mood added.';burstMood(selectedMood);selectedMood='';moodChoices.querySelectorAll('.mood-btn').forEach(b=>b.classList.remove('selected'));note.value='';renderEntries();render();}catch(e){status.textContent=e.message||'Could not save mood';}finally{button.disabled=false;}}
     moodChoices.addEventListener('click',e=>{const button=e.target.closest('.mood-btn');if(!button)return;selectedMood=button.dataset.mood;moodChoices.querySelectorAll('.mood-btn').forEach(b=>b.classList.toggle('selected',b===button));});intensity.addEventListener('input',()=>document.getElementById('intensityValue').textContent=intensity.value);document.getElementById('saveMood').addEventListener('click',save);
     document.getElementById('prevMonth').addEventListener('click',()=>{current=new Date(current.getFullYear(),current.getMonth()-1,1);renderCalendar()});document.getElementById('nextMonth').addEventListener('click',()=>{current=new Date(current.getFullYear(),current.getMonth()+1,1);renderCalendar()});
     function renderCalendar(){monthLabel.textContent=current.toLocaleDateString(undefined,{month:'long',year:'numeric'});cal.replaceChildren();const year=current.getFullYear(),month=current.getMonth(),first=new Date(year,month,1).getDay(),count=new Date(year,month+1,0).getDate();for(let i=0;i<first;i++){const blank=document.createElement('div');blank.className='mood-day empty';cal.appendChild(blank);}const mine=personEntries(user),other=personEntries(user==='Charlotte'?'Luke':'Charlotte');for(let day=1;day<=count;day++){const date=new Date(year,month,day),dateKey=key(date),a=mine[dateKey],b=other[dateKey],cell=document.createElement('div');cell.className='mood-day'+(dateKey===todayKey()?' today':'');const number=document.createElement('span');number.className='day-number';number.textContent=day;cell.appendChild(number);if(a||b){const moods=document.createElement('span');moods.className='day-mood';const mineStr=(a||[]).map(e=>e.mood).join('');const otherStr=(b||[]).map(e=>e.mood).join('');moods.textContent=(mineStr||'·')+(otherStr?' '+otherStr:'');cell.appendChild(moods);const noteTxt=[...(a||[]).map(e=>e.note),...(b||[]).map(e=>e.note)].filter(Boolean).join(' | ');if(noteTxt)cell.title=noteTxt; cell.addEventListener('click',()=>openDay(dateKey)); }cal.appendChild(cell);}}
@@ -91,6 +91,28 @@
     // live sync
     (function(){const protocol=location.protocol==='https:'?'wss:':'ws:';let sock=null,timer=null;function open(){sock=new WebSocket(`${protocol}//${location.host}/api/question-room?user=${encodeURIComponent(user)}&sessionDate=2000-01-07`);sock.onopen=()=>{timer=setInterval(()=>{if(sock&&sock.readyState===WebSocket.OPEN)sock.send(JSON.stringify({type:'ping'}));},20000);};sock.onmessage=ev=>{let m;try{m=JSON.parse(ev.data);}catch{return;}if(m.type==='refresh')load();};sock.onclose=()=>{clearInterval(timer);setTimeout(open,3000);};}open();})();
   })();
+  </script>
+  <style>
+    /* Mood-save burst: the chosen mood emoji floats up the screen. */
+    .mood-burst-layer{position:fixed;inset:0;z-index:99;overflow:hidden;pointer-events:none}
+    .mood-burst{position:absolute;bottom:12%;left:var(--x);font-size:clamp(1.8rem,6vw,3rem);filter:drop-shadow(0 3px 6px rgba(20,63,95,.25));animation:mood-burst-float 2.8s cubic-bezier(.22,1,.36,1) forwards}
+    @keyframes mood-burst-float{0%{opacity:0;transform:translate(0,0) scale(.6)}15%{opacity:1}100%{opacity:0;transform:translate(var(--drift,10px),-55vh) scale(1.1)}}
+    @media(prefers-reduced-motion:reduce){.mood-burst{animation-duration:1ms!important}}
+  </style>
+  <script>
+    function burstMood(emoji){
+      if(!emoji) return;
+      if(window.matchMedia && window.matchMedia('(prefers-reduced-motion: reduce)').matches) return;
+      let layer=document.getElementById('mood-burst-layer');
+      if(!layer){layer=document.createElement('div');layer.id='mood-burst-layer';layer.className='mood-burst-layer';layer.setAttribute('aria-hidden','true');document.body.appendChild(layer);}
+      for(let i=0;i<9;i++){
+        const b=document.createElement('div');b.className='mood-burst';b.textContent=emoji;
+        b.style.setProperty('--x',(30+Math.random()*40)+'%');
+        b.style.setProperty('--drift',(Math.random()*60-30).toFixed(0)+'px');
+        b.style.animationDelay=(i*70)+'ms';
+        layer.appendChild(b);setTimeout(()=>b.remove(),3600);
+      }
+    }
   </script>
 <script src="assets/js/stickers-overlay.js"></script>
 </body>
