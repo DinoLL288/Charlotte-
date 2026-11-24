@@ -243,7 +243,7 @@
       const card = document.createElement('button'); card.type = 'button'; card.className = 'album-card';
       const cover = album.items[0];
       const coverUrl = cover?.type === 'video' ? `https://i.ytimg.com/vi/${encodeURIComponent(cover.videoId)}/hqdefault.jpg` : cover?.url;
-      card.innerHTML = coverUrl ? `<img src="${escapeHtml(coverUrl)}" alt="" loading="lazy"><span class="album-card-count">${album.items.length}</span>` : '<span class="album-card-empty">📁</span>';
+      card.innerHTML = coverUrl ? `<img src="${escapeHtml(coverUrl)}" alt="" loading="lazy" decoding="async"><span class="album-card-count">${album.items.length}</span>` : '<span class="album-card-empty">📁</span>';
       const title = document.createElement('strong'); title.textContent = albumName(album.name);
       const count = document.createElement('small'); count.textContent = `${album.items.length} ${album.items.length === 1 ? 'memory' : 'memories'}`;
       card.append(title, count); card.addEventListener('click', () => { activeAlbum = album.name; renderAlbumFilters(); setView('all'); });
@@ -257,7 +257,7 @@
     const tile = document.createElement('div'); tile.className = 'tile' + (isVideo ? ' video-tile' : ''); tile.tabIndex = 0;
     tile.dataset.uploadedBy = photo.uploadedBy || photo.uploader || 'Unknown'; tile.dataset.path = itemKey(photo); tile.dataset.date = itemDate(photo)?.toLocaleDateString([], { dateStyle: 'medium' }) || '';
     if (isVideo) tile.dataset.title = photo.title || 'Our video';
-    const img = document.createElement('img'); img.src = isVideo ? `https://i.ytimg.com/vi/${encodeURIComponent(photo.videoId)}/hqdefault.jpg` : (photo.url || 'data:image/svg+xml,%3Csvg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 400 300"%3E%3Crect width="400" height="300" fill="%23e8f4f9"/%3E%3Ctext x="200" y="150" text-anchor="middle" font-size="52"%3E%F0%9F%93%B7%3C/text%3E%3C/svg%3E'); img.alt = isVideo ? `Video: ${photo.title || 'Our video'}` : `Photo from ${albumName(photo.album)}`; img.loading = 'lazy';
+    const img = document.createElement('img'); img.src = isVideo ? `https://i.ytimg.com/vi/${encodeURIComponent(photo.videoId)}/hqdefault.jpg` : (photo.url || 'data:image/svg+xml,%3Csvg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 400 300"%3E%3Crect width="400" height="300" fill="%23e8f4f9"/%3E%3Ctext x="200" y="150" text-anchor="middle" font-size="52"%3E%F0%9F%93%B7%3C/text%3E%3C/svg%3E'); img.alt = isVideo ? `Video: ${photo.title || 'Our video'}` : `Photo from ${albumName(photo.album)}`; img.loading = 'lazy'; img.decoding = 'async'; if (isVideo) { img.width = 480; img.height = 360; } else if (Number(photo.width) > 0 && Number(photo.height) > 0) { img.width = photo.width; img.height = photo.height; }
     tile.appendChild(img);
     if (isVideo) { const play = document.createElement('span'); play.className = 'video-play'; play.innerHTML = '<span aria-hidden="true">▶</span>'; tile.appendChild(play); }
     const copy = document.createElement('button'); copy.type = 'button'; copy.textContent = '+'; copy.title = `Add this ${isVideo ? 'video' : 'photo'} to another album`; copy.setAttribute('aria-label', 'Add to another album');
