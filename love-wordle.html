@@ -1,0 +1,306 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <script src="assets/js/site-shell-guard.js"></script>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+  <title>Love Wordle</title>
+  <script>if (!localStorage.getItem('charlotte-user')) location.href = 'login.html';</script>
+  <link rel="stylesheet" href="assets/css/theme.css">
+  <link rel="icon" href="assets/images/favicon.svg" type="image/svg+xml">
+  <style>
+    body { margin: 0; min-height: 100vh; font-family: var(--font-body); background: linear-gradient(160deg, #eaf7ff, #c3e6fb 42%, #8ecbeb 100%); color: #10344f; }
+    .top-bar { position: fixed; top: 12px; left: 12px; z-index: 5; display: flex; gap: 8px; flex-wrap: wrap; }
+    .button { padding: 8px 14px; border-radius: 999px; background: #123a58; color: #fff; text-decoration: none; font-weight: 700; font-size: .85rem; border: 0; cursor: pointer; }
+    .button.secondary { background: rgba(255,255,255,.85); color: #123a58; }
+    .hero { padding: 78px 20px 30px; text-align: center; color: #fff; background: linear-gradient(160deg, #0d2c44, #2a78a8); }
+    .hero .eyebrow { color: #ecd7a0; font-size: 1rem; font-family: var(--font-display); font-style: italic; }
+    .hero h1 { margin: 10px 0 8px; font-size: clamp(2rem, 7vw, 3.2rem); font-weight: 400; }
+    .hero p { margin: 0 auto; max-width: 52ch; color: #e6f3fc; line-height: 1.6; }
+    .shell { width: min(620px, calc(100% - 32px)); margin: 0 auto; padding: 24px 0 80px; }
+    .hud { display: flex; gap: 10px; flex-wrap: wrap; justify-content: center; margin-bottom: 18px; }
+    .hud .pill { padding: 8px 16px; border-radius: 999px; background: rgba(255,255,255,.9); color: #123a58; font-weight: 700; font-size: .95rem; box-shadow: 0 6px 16px rgba(0,0,0,.12); }
+    .panel { padding: clamp(20px, 5vw, 28px); border-radius: 22px; background: rgba(255,255,255,.75); border: 1px solid rgba(255,255,255,.9); box-shadow: 0 20px 50px rgba(20,63,95,.13); text-align: center; }
+    .panel h2 { margin: 0; color: #123a58; font-size: 1.5rem; }
+    .intro { margin: 8px 0 18px; color: #5c7c93; line-height: 1.5; }
+    .board { display: grid; gap: 6px; max-width: 330px; margin: 0 auto 18px; }
+    .board-row { display: grid; grid-template-columns: repeat(5, 1fr); gap: 6px; }
+    .tile { aspect-ratio: 1; display: grid; place-items: center; border: 2px solid #c8dceb; border-radius: 8px; background: #fff; font-size: 1.7rem; font-weight: 700; text-transform: uppercase; color: #123a58; transition: transform .15s ease, background .25s ease, border-color .25s ease; }
+    .tile.filled { border-color: #7fa8c0; animation: pop .12s ease; }
+    .tile.correct { background: #2e9e5b; border-color: #2e9e5b; color: #fff; }
+    .tile.present { background: #c9a227; border-color: #c9a227; color: #fff; }
+    .tile.absent { background: #8a9aa5; border-color: #8a9aa5; color: #fff; }
+    .tile.shake { animation: shake .3s ease; }
+    @keyframes pop { 0% { transform: scale(1); } 50% { transform: scale(1.12); } 100% { transform: scale(1); } }
+    @keyframes shake { 0%, 100% { transform: translateX(0); } 25% { transform: translateX(-5px); } 75% { transform: translateX(5px); } }
+    .keyboard { display: grid; gap: 6px; max-width: 480px; margin: 0 auto; }
+    .kb-row { display: flex; gap: 6px; justify-content: center; }
+    .key { flex: 1 1 0; min-width: 0; max-width: 46px; height: 52px; border: 0; border-radius: 8px; background: #d5e3ec; color: #123a58; font: inherit; font-weight: 700; font-size: 1rem; cursor: pointer; touch-action: manipulation; user-select: none; -webkit-tap-highlight-color: transparent; }
+    .key:active { transform: scale(.95); }
+    .key.wide { max-width: 72px; font-size: .8rem; }
+    .key.correct { background: #2e9e5b; color: #fff; }
+    .key.present { background: #c9a227; color: #fff; }
+    .key.absent { background: #8a9aa5; color: #fff; }
+    .status { min-height: 1.4em; margin: 16px 0 0; color: #73591f; font-weight: 700; }
+    .btn { border: 1px solid #143f5f; border-radius: 999px; padding: 12px 26px; color: #fff; background: #143f5f; font: inherit; font-weight: 700; font-size: 1rem; cursor: pointer; margin-top: 16px; touch-action: manipulation; }
+    .btn:disabled { opacity: .5; cursor: wait; }
+    .btn.secondary { color: #315d78; background: #eef7fb; border-color: #cddfe8; }
+    .best-line { margin-top: 14px; color: #5c7c93; font-size: .9rem; }
+    @media (max-width: 480px) {
+      .tile { font-size: 1.4rem; }
+      .key { height: 48px; font-size: .9rem; }
+    }
+  </style>
+</head>
+<body>
+  <div class="top-bar">
+    <a class="button" href="index.html">← Back to hub</a>
+    <a class="button secondary" href="games.html">All games</a>
+  </div>
+  <header class="hero">
+    <p class="eyebrow">Play &amp; earn</p>
+    <h1>Love Wordle 💌</h1>
+    <p>Guess the five-letter love word in six tries. Green means the letter is in the right spot, gold means it is in the word but in the wrong spot. Win and earn 5 tokens.</p>
+  </header>
+  <main class="shell">
+    <div class="hud">
+      <span class="pill">🪙 Tokens: <span id="tokenCount">0</span></span>
+      <span class="pill">⭐ Wins: <span id="winCount">0</span></span>
+      <span class="pill">🔥 Streak: <span id="streakCount">0</span></span>
+    </div>
+    <div class="panel">
+      <h2>Guess the love word</h2>
+      <p class="intro">Type with your keyboard or tap the keys below. Any five letters count as a guess — no wrong answers, just clues.</p>
+      <div class="board" id="board" aria-label="Wordle board"></div>
+      <div class="keyboard" id="keyboard" aria-label="On-screen keyboard"></div>
+      <div class="status" id="wordleStatus" aria-live="polite">A new love word is waiting. Good luck! 💕</div>
+      <button class="btn" id="newWordBtn">New word</button>
+      <p class="best-line">Best streak on this device: <span id="bestStreak">0</span> · Words solved: <span id="wordsSolved">0</span></p>
+    </div>
+  </main>
+  <script src="assets/js/avatar.js"></script>
+  <script>
+    (function () {
+      var WORDS = ['HEART', 'SWEET', 'ANGEL', 'ADORE', 'HONEY', 'CANDY', 'SMILE', 'LOVED', 'DREAM', 'MAGIC', 'CHARM', 'ROSES', 'CUPID', 'DATES', 'PEACH', 'BLISS', 'TRUST', 'CRUSH', 'FLIRT', 'AMOUR', 'MUSHY', 'LOVES', 'SUGAR', 'BERRY', 'SUNNY', 'TULIP', 'DAISY', 'WALTZ', 'SONGS', 'HAPPY'];
+      var WIN_LINES = [
+        'You got it — just like you always get me. 💕',
+        'Solved! You really do know the language of love. 💖',
+        'That was lovely. Same time tomorrow, word wizard? ✨'
+      ];
+      var ROWS = 6, COLS = 5, WIN_TOKENS = 5;
+      var boardEl = document.getElementById('board');
+      var keyboardEl = document.getElementById('keyboard');
+      var statusEl = document.getElementById('wordleStatus');
+      var tokenEl = document.getElementById('tokenCount');
+      var winEl = document.getElementById('winCount');
+      var streakEl = document.getElementById('streakCount');
+      var bestStreakEl = document.getElementById('bestStreak');
+      var solvedEl = document.getElementById('wordsSolved');
+      var newWordBtn = document.getElementById('newWordBtn');
+
+      var user = 'Unknown';
+      try { user = localStorage.getItem('charlotte-user') || 'Unknown'; } catch (e) {}
+      var tokenBalance = 0, pendingTokens = 0, flushTimer = null;
+      var wins = 0, streak = 0, bestStreak = 0;
+      try {
+        wins = parseInt(localStorage.getItem('love-wordle-wins') || '0', 10) || 0;
+        streak = parseInt(localStorage.getItem('love-wordle-streak') || '0', 10) || 0;
+        bestStreak = parseInt(localStorage.getItem('love-wordle-best-streak') || '0', 10) || 0;
+      } catch (e) {}
+
+      var answer = '', row = 0, col = 0, over = false, guesses = [];
+      var tiles = [], keys = {};
+
+      function readNum(key) {
+        try { return parseInt(localStorage.getItem(key) || '0', 10) || 0; } catch (e) { return 0; }
+      }
+      function saveNum(key, value) {
+        try { localStorage.setItem(key, String(value)); } catch (e) {}
+      }
+      function renderStats() {
+        winEl.textContent = wins;
+        streakEl.textContent = streak;
+        bestStreakEl.textContent = bestStreak;
+        solvedEl.textContent = wins;
+        tokenEl.textContent = tokenBalance;
+      }
+      function updateTokenCount() { tokenEl.textContent = tokenBalance; }
+      function flushTokens() {
+        if (pendingTokens <= 0) return;
+        var amount = pendingTokens;
+        pendingTokens = 0;
+        if (flushTimer) { clearTimeout(flushTimer); flushTimer = null; }
+        fetch('/api/question-room', { method: 'POST', headers: { 'content-type': 'application/json' }, body: JSON.stringify({ action: 'playful-award', user: user, amount: Math.min(amount, 50) }) })
+          .then(function (r) { return r.json(); })
+          .then(function (j) { if (j && j.state) { tokenBalance = j.state.tokens[user] || 0; updateTokenCount(); } })
+          .catch(function () { pendingTokens += amount; }); // re-queue on failure
+      }
+      function scheduleFlush() {
+        if (flushTimer) clearTimeout(flushTimer);
+        flushTimer = setTimeout(flushTokens, 800);
+      }
+      function addTokens(n) {
+        tokenBalance += n;
+        pendingTokens += n;
+        updateTokenCount();
+        scheduleFlush();
+      }
+      function loadTokens() {
+        fetch('/api/question-room?view=playful-state', { cache: 'no-store' })
+          .then(function (r) { return r.json(); })
+          .then(function (s) { tokenBalance = (s.tokens && s.tokens[user]) || 0; updateTokenCount(); })
+          .catch(function () {});
+      }
+      window.addEventListener('beforeunload', flushTokens);
+
+      // Board + keyboard setup
+      for (var r = 0; r < ROWS; r++) {
+        var rowEl = document.createElement('div');
+        rowEl.className = 'board-row';
+        tiles[r] = [];
+        for (var c = 0; c < COLS; c++) {
+          var tile = document.createElement('div');
+          tile.className = 'tile';
+          rowEl.appendChild(tile);
+          tiles[r][c] = tile;
+        }
+        boardEl.appendChild(rowEl);
+      }
+      ['QWERTYUIOP', 'ASDFGHJKL', 'ZXCVBNM'].forEach(function (letters, i) {
+        var kbRow = document.createElement('div');
+        kbRow.className = 'kb-row';
+        if (i === 2) {
+          var enter = document.createElement('button');
+          enter.type = 'button'; enter.className = 'key wide'; enter.textContent = 'ENTER';
+          enter.addEventListener('click', function () { handleKey('ENTER'); });
+          kbRow.appendChild(enter);
+        }
+        letters.split('').forEach(function (ch) {
+          var k = document.createElement('button');
+          k.type = 'button'; k.className = 'key'; k.textContent = ch;
+          k.addEventListener('click', function () { handleKey(ch); });
+          kbRow.appendChild(k);
+          keys[ch] = k;
+        });
+        if (i === 2) {
+          var back = document.createElement('button');
+          back.type = 'button'; back.className = 'key wide'; back.textContent = '⌫';
+          back.setAttribute('aria-label', 'Delete');
+          back.addEventListener('click', function () { handleKey('BACKSPACE'); });
+          kbRow.appendChild(back);
+        }
+        keyboardEl.appendChild(kbRow);
+      });
+
+      // Wordle scoring: greens first, then golds with letter counts.
+      function evaluate(guess, target) {
+        var result = ['absent', 'absent', 'absent', 'absent', 'absent'];
+        var counts = {};
+        for (var i = 0; i < COLS; i++) {
+          if (guess[i] === target[i]) { result[i] = 'correct'; }
+          else { counts[target[i]] = (counts[target[i]] || 0) + 1; }
+        }
+        for (var j = 0; j < COLS; j++) {
+          if (result[j] === 'correct') continue;
+          if (counts[guess[j]] > 0) { result[j] = 'present'; counts[guess[j]]--; }
+        }
+        return result;
+      }
+
+      function colourKey(letter, state) {
+        var k = keys[letter];
+        if (!k) return;
+        if (state === 'correct') { k.classList.remove('present', 'absent'); k.classList.add('correct'); }
+        else if (state === 'present' && !k.classList.contains('correct')) { k.classList.remove('absent'); k.classList.add('present'); }
+        else if (state === 'absent' && !k.classList.contains('correct') && !k.classList.contains('present')) { k.classList.add('absent'); }
+      }
+
+      function pickWord() {
+        var next = answer;
+        while (next === answer) { next = WORDS[Math.floor(Math.random() * WORDS.length)]; }
+        return next;
+      }
+
+      function newRound() {
+        answer = pickWord();
+        row = 0; col = 0; over = false; guesses = [];
+        for (var r = 0; r < ROWS; r++) {
+          for (var c = 0; c < COLS; c++) {
+            tiles[r][c].textContent = '';
+            tiles[r][c].className = 'tile';
+          }
+        }
+        Object.keys(keys).forEach(function (ch) { keys[ch].className = 'key'; });
+        statusEl.textContent = 'A new love word is waiting. Good luck! 💕';
+        newWordBtn.textContent = 'New word';
+      }
+
+      function submitGuess() {
+        if (over || col < COLS) return;
+        var guess = guesses[row];
+        var marks = evaluate(guess, answer);
+        for (var i = 0; i < COLS; i++) {
+          tiles[row][i].classList.add(marks[i]);
+          colourKey(guess[i], marks[i]);
+        }
+        if (guess === answer) {
+          over = true;
+          wins++; streak++;
+          if (streak > bestStreak) bestStreak = streak;
+          saveNum('love-wordle-wins', wins);
+          saveNum('love-wordle-streak', streak);
+          saveNum('love-wordle-best-streak', bestStreak);
+          addTokens(WIN_TOKENS);
+          renderStats();
+          statusEl.textContent = WIN_LINES[Math.floor(Math.random() * WIN_LINES.length)] + ' The word was ' + answer + ' — +' + WIN_TOKENS + ' tokens! 🎉';
+          newWordBtn.textContent = 'Play again';
+          return;
+        }
+        row++; col = 0;
+        if (row >= ROWS) {
+          over = true;
+          streak = 0;
+          saveNum('love-wordle-streak', 0);
+          renderStats();
+          statusEl.textContent = 'So close! The word was ' + answer + '. Tap New word to try another. 💛';
+          newWordBtn.textContent = 'Try another word';
+        } else {
+          statusEl.textContent = 'Not this time — ' + (ROWS - row) + (ROWS - row === 1 ? ' guess' : ' guesses') + ' left.';
+        }
+      }
+
+      function handleKey(key) {
+        if (over) return;
+        if (key === 'BACKSPACE') {
+          if (col > 0) {
+            col--;
+            guesses[row] = (guesses[row] || '').slice(0, -1);
+            tiles[row][col].textContent = '';
+            tiles[row][col].classList.remove('filled');
+          }
+          return;
+        }
+        if (key === 'ENTER') { submitGuess(); return; }
+        if (!/^[A-Z]$/.test(key) || col >= COLS) return;
+        guesses[row] = (guesses[row] || '') + key;
+        tiles[row][col].textContent = key;
+        tiles[row][col].classList.add('filled');
+        col++;
+      }
+
+      document.addEventListener('keydown', function (e) {
+        if (e.metaKey || e.ctrlKey || e.altKey) return;
+        if (e.key === 'Enter') { handleKey('ENTER'); }
+        else if (e.key === 'Backspace') { handleKey('BACKSPACE'); }
+        else if (/^[a-zA-Z]$/.test(e.key)) { handleKey(e.key.toUpperCase()); }
+      });
+      newWordBtn.addEventListener('click', newRound);
+
+      renderStats();
+      loadTokens();
+      newRound();
+    })();
+  </script>
+  <script src="assets/js/stickers-overlay.js"></script>
+</body>
+</html>
