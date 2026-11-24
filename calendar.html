@@ -241,6 +241,12 @@
     .call-fields input,.call-fields select { min-width:0; width:100%; border-radius:10px; border:1px solid #b9dcf5; padding:9px; font:inherit; color:#245b85; }
     .call-history { display:grid; gap:5px; max-height:120px; overflow:auto; margin-top:10px; font-size:.78rem; }
     .call-history div { background:#eff8ff; border-radius:9px; padding:6px 8px; }
+    .roster-status { margin:10px 0 0; font-size:.85rem; color:#3b7db3; }
+    .roster-preview { display:grid; gap:8px; margin-top:12px; }
+    .roster-shift { display:flex; gap:10px; align-items:flex-start; background:#eff8ff; border-radius:10px; padding:9px 10px; font-size:.85rem; line-height:1.45; cursor:pointer; }
+    .roster-shift input { margin-top:3px; flex:none; }
+    .roster-shift strong { display:block; color:#245b85; }
+    .roster-shift small { display:block; color:#3b7db3; }
     .event.quiet-calendar-event { background:#f1edfa; color:#635080; border:1px solid #e1d8f1; cursor:default; }
     .day.drag-over { background:rgba(40,115,166,.12); outline:2px dashed #2873a6; }
     .event.call-event { background:#fff0f4; color:#8a4561; }
@@ -296,6 +302,21 @@
       </div>
     </section>
     </details>
+    <section class="calendar-tools" style="margin-top:14px;">
+      <div class="tool-card">
+        <h2>Add shifts from a screenshot</h2>
+        <p>Pick a photo of a roster (like the McDonald’s myJob roster). It’s read on this device only — it’s never uploaded or saved. Check the shifts it finds, then add them to our calendar as your job shifts.</p>
+        <div class="tool-actions">
+          <label class="button" for="rosterFile">Choose a screenshot</label>
+          <input id="rosterFile" type="file" accept="image/*" hidden>
+        </div>
+        <p class="roster-status" id="rosterStatus" role="status"></p>
+        <div class="roster-preview" id="rosterPreview" hidden></div>
+        <div class="tool-actions" style="margin-top:10px;">
+          <button class="button" id="saveRosterShifts" type="button" hidden>Add to calendar</button>
+        </div>
+      </div>
+    </section>
   </main>
 
   <div class="modal" id="eventModal">
@@ -875,6 +896,7 @@
     setInterval(tick, 15000);
     loadEvents();
   </script>
+  <script type="module" src="assets/js/roster-scan-ui.js"></script>
   <script src="assets/js/avatar.js"></script>
   <script defer src="assets/js/dialog.js"></script>
 <script defer src="assets/js/stickers-overlay.js"></script>
