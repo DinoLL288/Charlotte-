@@ -51,7 +51,7 @@
     <div id="journalEntries"></div>
     <p class="empty" id="journalEmpty" style="display:none">No entries yet. Write your first memory above.</p>
   </main>
-  <script src="assets/js/dialog.js"></script><script src="assets/js/avatar.js"></script>
+  <script defer src="assets/js/dialog.js"></script><script src="assets/js/avatar.js"></script>
   <script>
   (function(){
     const user = localStorage.getItem('charlotte-user') || 'Unknown';
@@ -130,6 +130,6 @@
     load();
   })();
   </script>
-<script src="assets/js/stickers-overlay.js"></script>
+<script defer src="assets/js/stickers-overlay.js"></script>
 </body>
 </html>
