@@ -144,9 +144,23 @@ function parseShiftBlock(lines) {
     }
 
     // Role line, e.g. "PI:Production Intermediate" or "PI: Production Intermediate".
-    const roleMatch = /^([A-Z]{1,3})\s*:\s*(.+)$/.exec(line);
-    if (roleMatch && !/start|finish|break/i.test(line)) {
-      shift.role = `${roleMatch[1]}: ${roleMatch[2].trim()}`;
+    // OCR often misreads the code ("PI" as "Pl" or "P1") or the colon (";" for ":").
+    const roleMatch = /^([A-Za-z0-9]{1,3})\s*[:;]\s*(.+)$/.exec(line);
+    if (
+      roleMatch &&
+      /[A-Za-z]/.test(roleMatch[1]) &&
+      /[A-Za-z]/.test(roleMatch[2]) &&
+      !/start|finish|break/i.test(line)
+    ) {
+      const code = roleMatch[1].replace(/l/g, 'I').replace(/1/g, 'I').toUpperCase();
+      shift.role = `${code}: ${roleMatch[2].trim()}`;
+      continue;
+    }
+
+    // Fallback: a line naming the role with no readable code still counts.
+    if (/production\s+intermediate/i.test(line)) {
+      const cleaned = line.replace(/^[A-Za-z0-9]{1,3}\s*[:;]\s*/, '').replace(/\s+/g, ' ').trim();
+      shift.role = `PI: ${cleaned}`;
       continue;
     }
 

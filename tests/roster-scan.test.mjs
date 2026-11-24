@@ -76,6 +76,30 @@ test('parses all three shifts from the roster screenshot text', () => {
   });
 });
 
+test('tolerates an OCR-misread role code or colon', () => {
+  const misread = `
+    Friday 04/Dec/2026
+    EAST VICTORIA PARK WA
+    Start 4:00 PM
+    Finish 8:00 PM
+    4:00hrs
+    Pl;Production Intermediate
+  `;
+  const shifts = parseRosterText(misread);
+  assert.equal(shifts.length, 1);
+  assert.equal(shifts[0].role, 'PI: Production Intermediate');
+
+  const noCode = `
+    Friday 04/Dec/2026
+    EAST VICTORIA PARK WA
+    Start 4:00 PM
+    Finish 8:00 PM
+    4:00hrs
+    Production Intermediate
+  `;
+  assert.equal(parseRosterText(noCode)[0].role, 'PI: Production Intermediate');
+});
+
 test('the roster period header does not become a shift', () => {
   const shifts = parseRosterText(
     'Roster period from Monday 30/Nov/2026 to Sunday 06/Dec/2026\n' +
