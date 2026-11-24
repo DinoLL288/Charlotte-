@@ -3,6 +3,18 @@
   if (!user) return;
   const key = `charlotte-preferences-${user}`;
   const presets = new Set(['blue', 'midnight', 'lavender', 'sage', 'sunset']);
+
+  // Keep the default and blue site backgrounds consistent with original-heart.html.
+  const skyBackground = document.createElement('style');
+  skyBackground.textContent = `
+    :root:not([data-dark-mode="true"]):not([data-quiet-days="on"]):not([data-couple-theme]) body,
+    :root:not([data-dark-mode="true"]):not([data-quiet-days="on"])[data-couple-theme="blue"] body {
+      background-color: #a4deff !important;
+      background-image: linear-gradient(145deg, #c8edff 0%, #a4deff 55%, #8ccfff 100%) !important;
+    }
+  `;
+  document.head.appendChild(skyBackground);
+
   function apply(preferences) {
     if (!preferences || !presets.has(preferences.theme)) return;
     const root = document.documentElement;
