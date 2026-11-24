@@ -237,6 +237,16 @@
         "author": "Luke",
         "id": "0355cd87-d8fc-41ba-a8ff-1b9b0481e4f8"
       }
+    ],
+    "2026-12-04": [
+      {
+        "title": "Luke's job shift",
+        "startTime": "16:00",
+        "endTime": "20:00",
+        "time": "EAST VICTORIA PARK WA · PI: Production Intermediate · 4:00hrs",
+        "author": "Luke",
+        "id": "9555a26b-e09c-4420-9ff8-93f21651ab54"
+      }
     ]
   }
 }
