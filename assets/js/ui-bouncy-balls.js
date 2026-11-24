@@ -4,9 +4,13 @@
   if (window.__bouncyBallsLoaded) return;
   window.__bouncyBallsLoaded = true;
 
-  // SETTINGS (base, upgradeable)
+  // SETTINGS
+  // Spawning is free and endless: balls keep falling forever, spawning
+  // never costs tokens. Tokens are only spent on cosmetic shop unlocks.
+  // ballCount is just a live-physics cap so phones stay smooth — balls
+  // are collected at the bottom and new ones keep spawning in their place.
   const BASE = {
-    ballCount: 60,        // max live balls in physics
+    ballCount: 80,        // max live balls in physics at once
     minSize: 4,
     maxSize: 8,
     gravity: 0.22,
@@ -18,17 +22,18 @@
     substeps: 4,
     maxSpeed: 18,
     friction: 0.88,
-    waveSize: 40,         // balls per wave (fixed, not upgradeable)
+    waveSize: 40,         // balls per wave; a new wave starts at once
     maxPile: 80           // max rendered collected balls
   };
 
   const STORAGE_KEY = "charlotte-bouncy-balls-v1";
 
-  // Persisted state
+  // Persisted state — saved server-side first (see saveState), with
+  // localStorage only as a cache. Every field here must also be
+  // whitelisted in get/saveBouncyBallsState in question-room-worker/index.js.
   let state = {
     tokens: 0,
-    spawnBatch: 1,        // balls per spawn tick (upgradeable)
-    upgradeCost: 5,
+    spawnBatch: 3,        // balls per spawn tick — a free setting, no cost
     collected: 0,         // total collected (all time)
     wave: 1,
     waveRemaining: BASE.waveSize,
@@ -92,8 +97,7 @@
           const data = await res.json();
           if (data && typeof data === 'object') {
             state.tokens = Math.max(0, Number(data.tokens) || 0);
-            state.spawnBatch = Math.max(1, Math.min(12, Number(data.spawnBatch) || 1));
-            state.upgradeCost = Math.max(5, Number(data.upgradeCost) || 5);
+            state.spawnBatch = Math.max(1, Math.min(12, Number(data.spawnBatch) || 3));
             state.collected = Math.max(0, Number(data.collected) || 0);
             state.wave = Math.max(1, Number(data.wave) || 1);
             state.waveRemaining = Math.max(0, Math.min(BASE.waveSize, Number(data.waveRemaining) || BASE.waveSize));
@@ -116,8 +120,7 @@
           const parsed = JSON.parse(raw);
           if (parsed && typeof parsed === 'object') {
             state.tokens = Number.isFinite(parsed.tokens) ? Math.max(0, parsed.tokens) : 0;
-            state.spawnBatch = Number.isFinite(parsed.spawnBatch) ? Math.max(1, Math.min(12, parsed.spawnBatch)) : 1;
-            state.upgradeCost = Number.isFinite(parsed.upgradeCost) ? Math.max(5, parsed.upgradeCost) : 5;
+            state.spawnBatch = Number.isFinite(parsed.spawnBatch) ? Math.max(1, Math.min(12, parsed.spawnBatch)) : 3;
             state.collected = Number.isFinite(parsed.collected) ? Math.max(0, parsed.collected) : 0;
             state.wave = Number.isFinite(parsed.wave) ? Math.max(1, parsed.wave) : 1;
             state.waveRemaining = Number.isFinite(parsed.waveRemaining) ? Math.max(0, Math.min(BASE.waveSize, parsed.waveRemaining)) : BASE.waveSize;
@@ -140,7 +143,6 @@
     return {
       tokens: state.tokens,
       spawnBatch: state.spawnBatch,
-      upgradeCost: state.upgradeCost,
       collected: state.collected,
       wave: state.wave,
       waveRemaining: state.waveRemaining,
@@ -226,30 +228,32 @@
   }
 
   // ---------- UI: HUD ----------
+  // Styled with the site's own tokens (see assets/css/site-bundle.css),
+  // so the HUD looks like the rest of the site: light surface, ink text,
+  // accent blue and gold — no dark navy panel.
   const hud = document.createElement("div");
   Object.assign(hud.style, {
     position: "fixed",
     top: "14px",
     left: "14px",
     zIndex: "2147483002",
-    padding: "8px 12px",
-    borderRadius: "12px",
-    background: "rgba(20,35,55,0.72)",
-    color: "#fff",
-    font: "600 12px system-ui",
+    padding: "10px 14px",
+    borderRadius: "16px",
+    background: "var(--surface, #ffffff)",
+    color: "var(--ink, #1c3850)",
+    font: "600 12px system-ui, -apple-system, 'Segoe UI', Roboto, Arial, sans-serif",
     lineHeight: "1.5",
-    backdropFilter: "blur(6px)",
-    border: "1px solid rgba(255,255,255,0.15)",
-    boxShadow: "0 4px 14px rgba(0,0,0,0.25)",
+    border: "1px solid var(--line, #dbe4ea)",
+    boxShadow: "var(--shadow, 0 1px 2px rgba(28,56,80,0.05), 0 10px 28px rgba(28,56,80,0.07))",
     display: "none",
     minWidth: "150px"
   });
   document.documentElement.appendChild(hud);
 
   function nextUpgrade() {
-    // Cheapest thing still to buy: spawn upgrade or a shop unlock.
+    // Cheapest shop unlock still to buy. Spawning is free, so it is
+    // never listed here and never costs tokens.
     const options = [];
-    if (state.spawnBatch < 12) options.push({ label: 'Spawn +1', cost: state.upgradeCost });
     for (const item of SHOP) {
       if (!state.unlocks.includes(item.id)) options.push({ label: item.label, cost: item.cost });
     }
@@ -271,12 +275,12 @@
       SHAPES[state.shape].label + ' balls'
     ].filter(Boolean).join(' · ');
     hud.innerHTML =
-      `<div>Wave <b>${state.wave}</b> — ${done}/${BASE.waveSize} fallen</div>` +
-      `<div style="height:6px;border-radius:3px;background:rgba(255,255,255,.2);margin:4px 0 6px;overflow:hidden;"><div style="height:100%;width:${pct}%;border-radius:3px;background:#ffd166;"></div></div>` +
+      `<div style="font-family:Georgia, 'Times New Roman', serif;font-weight:400;font-size:14px;">Wave <b>${state.wave}</b> — ${done}/${BASE.waveSize} fallen</div>` +
+      `<div style="height:6px;border-radius:3px;background:var(--surface-soft, #eef3f6);margin:4px 0 6px;overflow:hidden;"><div style="height:100%;width:${pct}%;border-radius:3px;background:var(--gold, #b48a2e);"></div></div>` +
       `<div>Collected: <b>${state.collected}</b> &nbsp; Tokens: <b>${state.tokens}</b></div>` +
-      `<div>Spawn: <b>${state.spawnBatch}</b>/tick</div>` +
-      `<div style="opacity:.8;">${perks}</div>` +
-      `<div style="opacity:.85;">${next ? `Next: ${next.label} — ${next.cost} tokens` : 'All upgrades unlocked ✨'}</div>`;
+      `<div>Spawn: <b>${state.spawnBatch}</b>/tick · free, endless</div>` +
+      `<div style="color:var(--ink-soft, #52697b);">${perks}</div>` +
+      `<div style="color:var(--ink-soft, #52697b);">${next ? `Next: ${next.label} — ${next.cost} tokens` : 'All unlocks owned ✨'}</div>`;
   }
 
   // ---------- UI: settings button + panel ----------
@@ -291,12 +295,12 @@
     width: "40px",
     height: "40px",
     borderRadius: "50%",
-    border: "1px solid rgba(255,255,255,0.3)",
-    background: "#1c2030",
-    color: "#fff",
-    font: "600 18px system-ui",
+    border: "1px solid var(--line-strong, #c3d1da)",
+    background: "var(--surface, #ffffff)",
+    color: "var(--accent-ink, #1f5778)",
+    font: "600 18px system-ui, -apple-system, 'Segoe UI', Roboto, Arial, sans-serif",
     cursor: "pointer",
-    boxShadow: "0 5px 18px rgba(0,0,0,0.2)",
+    boxShadow: "var(--shadow-sm, 0 1px 2px rgba(28,56,80,0.07))",
     display: "none"
   });
   document.documentElement.appendChild(settingsBtn);
@@ -307,16 +311,16 @@
     bottom: "68px",
     left: "18px",
     zIndex: "2147483003",
-    width: "260px",
-    padding: "14px",
-    borderRadius: "14px",
-    background: "rgba(20,30,50,0.92)",
-    color: "#fff",
-    font: "500 13px system-ui",
+    width: "280px",
+    maxWidth: "calc(100vw - 36px)",
+    padding: "16px",
+    borderRadius: "22px",
+    background: "var(--surface, #ffffff)",
+    color: "var(--ink, #1c3850)",
+    font: "500 13px system-ui, -apple-system, 'Segoe UI', Roboto, Arial, sans-serif",
     lineHeight: "1.5",
-    border: "1px solid rgba(255,255,255,0.18)",
-    boxShadow: "0 8px 24px rgba(0,0,0,0.35)",
-    backdropFilter: "blur(8px)",
+    border: "1px solid var(--line, #dbe4ea)",
+    boxShadow: "var(--shadow, 0 1px 2px rgba(28,56,80,0.05), 0 10px 28px rgba(28,56,80,0.07))",
     display: "none"
   });
   document.documentElement.appendChild(panel);
@@ -328,14 +332,14 @@
     }
     return new Promise(resolve => {
       const overlay = document.createElement('div');
-      overlay.style.cssText = 'position:fixed;inset:0;z-index:2147483005;display:grid;place-items:center;background:rgba(10,20,35,.55);padding:20px;';
+      overlay.style.cssText = 'position:fixed;inset:0;z-index:2147483005;display:grid;place-items:center;background:rgba(28,56,80,.55);padding:20px;';
       overlay.innerHTML =
-        `<div style="width:min(340px,100%);background:#fff;color:#123a58;border-radius:16px;padding:20px;box-shadow:0 16px 40px rgba(0,0,0,.35);font:500 14px system-ui;line-height:1.5;">` +
-        `<div style="font-weight:800;font-size:16px;margin-bottom:6px;">${title || 'Just checking'}</div>` +
+        `<div style="width:min(340px,100%);background:var(--surface, #ffffff);color:var(--ink, #1c3850);border-radius:22px;padding:20px;box-shadow:var(--shadow, 0 1px 2px rgba(28,56,80,0.05), 0 10px 28px rgba(28,56,80,0.07));font:500 14px system-ui, sans-serif;line-height:1.5;">` +
+        `<div style="font-family:Georgia, 'Times New Roman', serif;font-weight:400;font-size:17px;margin-bottom:6px;">${title || 'Just checking'}</div>` +
         `<p style="margin:0 0 16px;">${message}</p>` +
         `<div style="display:flex;gap:8px;justify-content:flex-end;">` +
-        `<button type="button" data-x="no" style="padding:9px 14px;border-radius:999px;border:1px solid #c8dceb;background:#fff;color:#123a58;font:700 13px system-ui;cursor:pointer;">Keep it</button>` +
-        `<button type="button" data-x="yes" style="padding:9px 14px;border-radius:999px;border:0;background:#c0392b;color:#fff;font:700 13px system-ui;cursor:pointer;">Yes, reset it</button>` +
+        `<button type="button" data-x="no" style="padding:9px 14px;border-radius:999px;border:1px solid var(--line-strong, #c3d1da);background:var(--surface, #ffffff);color:var(--ink, #1c3850);font:700 13px system-ui, sans-serif;cursor:pointer;">Keep it</button>` +
+        `<button type="button" data-x="yes" style="padding:9px 14px;border-radius:999px;border:0;background:var(--danger, #a1443a);color:#fff;font:700 13px system-ui, sans-serif;cursor:pointer;">Yes, reset it</button>` +
         `</div></div>`;
       const done = v => { overlay.remove(); resolve(v); };
       overlay.addEventListener('click', e => {
@@ -364,59 +368,57 @@
   }
 
   function renderPanel() {
-    const cost = state.upgradeCost;
-    const canUpgrade = state.tokens >= cost && state.spawnBatch < 12;
+    // Spawning is free: a stepper, not a purchase. Tokens are only
+    // spent on the cosmetic unlocks below.
     const shopRows = SHOP.map(item => {
       const owned = state.unlocks.includes(item.id);
       const afford = state.tokens >= item.cost;
-      return `<div style="display:flex;gap:8px;align-items:center;padding:7px 0;border-bottom:1px solid rgba(255,255,255,.08);">` +
-        `<div style="flex:1;"><div style="font-weight:700;">${owned ? '✓ ' : ''}${item.label}</div><div style="font-size:11px;opacity:.7;">${item.desc}</div></div>` +
-        `<button data-shop="${item.id}" style="flex:none;padding:6px 10px;border:0;border-radius:8px;cursor:pointer;font-weight:700;font-size:11px;background:${owned ? '#2c4a3a' : afford ? '#228b60' : '#444'};color:#fff;" ${owned || !afford ? 'disabled' : ''}>${owned ? 'Owned' : item.cost + ' 🪙'}</button></div>`;
+      return `<div style="display:flex;gap:8px;align-items:center;padding:7px 0;border-bottom:1px solid var(--line, #dbe4ea);">` +
+        `<div style="flex:1;"><div style="font-weight:700;">${owned ? '✓ ' : ''}${item.label}</div><div style="font-size:11px;color:var(--ink-soft, #52697b);">${item.desc}</div></div>` +
+        `<button data-shop="${item.id}" style="flex:none;padding:6px 10px;border:0;border-radius:12px;cursor:pointer;font-weight:700;font-size:11px;background:${owned ? 'var(--ok-soft, #e6f3ec)' : afford ? 'var(--accent, #2c6e92)' : 'var(--surface-soft, #eef3f6)'};color:${owned ? 'var(--ok, #2f7553)' : afford ? '#fff' : 'var(--ink-faint, #6b8090)'};" ${owned || !afford ? 'disabled' : ''}>${owned ? 'Owned' : item.cost + ' 🪙'}</button></div>`;
     }).join('');
+    const pickBtn = (active, unlocked, label, attr, id) =>
+      `<button ${attr}="${id}" style="flex:1;padding:7px 4px;border-radius:12px;border:1px solid ${active ? 'var(--gold, #b48a2e)' : 'var(--line, #dbe4ea)'};background:${active ? 'var(--gold-soft, #ecd7a0)' : 'transparent'};color:${active ? 'var(--gold-ink, #7a5d1a)' : 'var(--ink, #1c3850)'};font:700 11px system-ui, sans-serif;cursor:${unlocked ? 'pointer' : 'not-allowed'};opacity:${unlocked ? 1 : .45};" ${unlocked ? '' : 'disabled'}>${label}${unlocked ? '' : ' 🔒'}</button>`;
     const themeBtns = Object.keys(THEMES).map(id => {
       const unlocked = id === 'classic' || state.unlocks.includes('theme-' + id);
-      const active = state.theme === id;
-      return `<button data-theme="${id}" style="flex:1;padding:7px 4px;border-radius:8px;border:1px solid ${active ? '#ffd166' : 'rgba(255,255,255,.25)'};background:${active ? '#3a2f10' : 'transparent'};color:#fff;font:700 11px system-ui;cursor:${unlocked ? 'pointer' : 'not-allowed'};opacity:${unlocked ? 1 : .45};" ${unlocked ? '' : 'disabled'}>${THEMES[id].label}${unlocked ? '' : ' 🔒'}</button>`;
+      return pickBtn(state.theme === id, unlocked, THEMES[id].label, 'data-theme', id);
     }).join('');
     const gravBtns = Object.keys(GRAVITIES).map(id => {
       const unlocked = id === 'earth' || state.unlocks.includes('gravity-' + id);
-      const active = state.gravity === id;
-      return `<button data-gravity="${id}" style="flex:1;padding:7px 4px;border-radius:8px;border:1px solid ${active ? '#ffd166' : 'rgba(255,255,255,.25)'};background:${active ? '#3a2f10' : 'transparent'};color:#fff;font:700 11px system-ui;cursor:${unlocked ? 'pointer' : 'not-allowed'};opacity:${unlocked ? 1 : .45};" ${unlocked ? '' : 'disabled'}>${GRAVITIES[id].label}${unlocked ? '' : ' 🔒'}</button>`;
+      return pickBtn(state.gravity === id, unlocked, GRAVITIES[id].label, 'data-gravity', id);
     }).join('');
     const shapeBtns = Object.keys(SHAPES).map(id => {
       const unlocked = id === 'round' || state.unlocks.includes('shape-' + id);
-      const active = state.shape === id;
-      return `<button data-shape="${id}" style="flex:1;padding:7px 4px;border-radius:8px;border:1px solid ${active ? '#ffd166' : 'rgba(255,255,255,.25)'};background:${active ? '#3a2f10' : 'transparent'};color:#fff;font:700 11px system-ui;cursor:${unlocked ? 'pointer' : 'not-allowed'};opacity:${unlocked ? 1 : .45};" ${unlocked ? '' : 'disabled'}>${SHAPES[id].label}${unlocked ? '' : ' 🔒'}</button>`;
+      return pickBtn(state.shape === id, unlocked, SHAPES[id].label, 'data-shape', id);
     }).join('');
     panel.innerHTML =
-      `<div style="font-weight:700;font-size:14px;margin-bottom:4px;">Ball settings</div>` +
-      `<div style="font-size:12px;opacity:.85;margin-bottom:10px;">Tokens: <b>${state.tokens}</b> &nbsp;·&nbsp; Collected: <b>${state.collected}</b></div>` +
-      `<div style="margin-bottom:10px;">Spawn batch: <b>${state.spawnBatch}</b> balls/tick</div>` +
-      `<button id="bb-upgrade" style="width:100%;padding:8px 10px;border:0;border-radius:8px;cursor:pointer;font-weight:700;font-size:12px;background:${canUpgrade ? '#228b60' : '#444'};color:#fff;margin-bottom:6px;" ${canUpgrade ? '' : 'disabled'}>` +
-        `Upgrade spawn (cost ${cost} tokens)` +
-      `</button>` +
-      `<div style="font-size:11px;opacity:0.7;margin-bottom:12px;">Each upgrade adds 1 ball per spawn tick.</div>` +
+      `<div style="font-family:Georgia, 'Times New Roman', serif;font-weight:400;font-size:17px;margin-bottom:4px;">Ball settings</div>` +
+      `<div style="font-size:12px;color:var(--ink-soft, #52697b);margin-bottom:10px;">Tokens: <b>${state.tokens}</b> &nbsp;·&nbsp; Collected: <b>${state.collected}</b></div>` +
+      `<div style="font-weight:700;font-size:12px;margin-bottom:4px;">Balls per spawn — free</div>` +
+      `<div style="display:flex;gap:6px;align-items:center;margin-bottom:4px;">` +
+        `<button id="bb-spawn-less" style="flex:none;width:34px;height:34px;border-radius:12px;border:1px solid var(--line, #dbe4ea);background:var(--surface-soft, #eef3f6);color:var(--ink, #1c3850);font:700 16px system-ui, sans-serif;cursor:pointer;" ${state.spawnBatch <= 1 ? 'disabled' : ''}>−</button>` +
+        `<div style="flex:1;text-align:center;font-weight:700;">${state.spawnBatch} balls / tick</div>` +
+        `<button id="bb-spawn-more" style="flex:none;width:34px;height:34px;border-radius:12px;border:0;background:var(--accent, #2c6e92);color:#fff;font:700 16px system-ui, sans-serif;cursor:pointer;" ${state.spawnBatch >= 12 ? 'disabled' : ''}>+</button>` +
+      `</div>` +
+      `<div style="font-size:11px;color:var(--ink-soft, #52697b);margin-bottom:12px;">Balls fall forever and spawning never costs tokens.</div>` +
       `<div style="font-weight:700;font-size:12px;margin-bottom:4px;">Unlocks — new looks &amp; feels</div>${shopRows}` +
       `<div style="font-weight:700;font-size:12px;margin:12px 0 6px;">Colours</div><div style="display:flex;gap:6px;">${themeBtns}</div>` +
       `<div style="font-weight:700;font-size:12px;margin:12px 0 6px;">Shape</div><div style="display:flex;gap:6px;">${shapeBtns}</div>` +
       `<div style="font-weight:700;font-size:12px;margin:12px 0 6px;">Gravity</div><div style="display:flex;gap:6px;">${gravBtns}</div>` +
       `<label style="display:flex;gap:8px;align-items:center;margin-top:12px;font-size:12px;cursor:${state.unlocks.includes('trails') ? 'pointer' : 'not-allowed'};opacity:${state.unlocks.includes('trails') ? 1 : .5};">` +
         `<input type="checkbox" id="bb-trails" ${state.trails ? 'checked' : ''} ${state.unlocks.includes('trails') ? '' : 'disabled'}> Glow trails${state.unlocks.includes('trails') ? '' : ' 🔒'}</label>` +
-      `<button id="bb-reset" style="width:100%;padding:8px 10px;border:1px solid rgba(255,255,255,0.25);border-radius:8px;cursor:pointer;font-weight:600;font-size:12px;background:transparent;color:#fff;margin-top:12px;">Reset progress</button>`;
-    const upBtn = panel.querySelector("#bb-upgrade");
+      `<button id="bb-reset" style="width:100%;padding:8px 10px;border:1px solid var(--line, #dbe4ea);border-radius:12px;cursor:pointer;font-weight:600;font-size:12px;background:transparent;color:var(--danger, #a1443a);margin-top:12px;">Reset progress</button>`;
     const resetBtn = panel.querySelector("#bb-reset");
-    if (upBtn && canUpgrade) {
-      upBtn.addEventListener("click", () => {
-        if (state.tokens >= cost && state.spawnBatch < 12) {
-          state.tokens -= cost;
-          state.spawnBatch++;
-          state.upgradeCost = Math.round(cost * 2);
-          saveState();
-          renderPanel();
-          updateHud();
-        }
-      });
-    }
+    // Free spawn stepper — no tokens change hands. Saved server-side
+    // via saveState(), same as every other setting here.
+    const lessBtn = panel.querySelector("#bb-spawn-less");
+    const moreBtn = panel.querySelector("#bb-spawn-more");
+    if (lessBtn) lessBtn.addEventListener("click", () => {
+      if (state.spawnBatch > 1) { state.spawnBatch--; saveState(); renderPanel(); updateHud(); }
+    });
+    if (moreBtn) moreBtn.addEventListener("click", () => {
+      if (state.spawnBatch < 12) { state.spawnBatch++; saveState(); renderPanel(); updateHud(); }
+    });
     panel.querySelectorAll('[data-shop]').forEach(btn => {
       btn.addEventListener('click', () => {
         const item = SHOP.find(s => s.id === btn.dataset.shop);
@@ -441,8 +443,7 @@
         const ok = await customConfirm("Tokens, collected count, upgrades, unlocks and the pile will be cleared.", "Reset all ball progress?");
         if (!ok) return;
         state.tokens = 0;
-        state.spawnBatch = 1;
-        state.upgradeCost = 5;
+        state.spawnBatch = 3;
         state.collected = 0;
         state.wave = 1;
         state.waveRemaining = BASE.waveSize;
@@ -476,13 +477,13 @@
     bottom: "18px",
     zIndex: "2147483001",
     padding: "11px 15px",
-    border: "1px solid rgba(255,255,255,.3)",
+    border: "1px solid var(--line-strong, #c3d1da)",
     borderRadius: "30px",
-    background: "#1c2030",
-    color: "white",
-    font: "600 13px system-ui",
+    background: "var(--surface, #ffffff)",
+    color: "var(--ink, #1c3850)",
+    font: "600 13px system-ui, -apple-system, 'Segoe UI', Roboto, Arial, sans-serif",
     cursor: "pointer",
-    boxShadow: "0 5px 18px rgba(0,0,0,.2)",
+    boxShadow: "var(--shadow-sm, 0 1px 2px rgba(28,56,80,0.07))",
     transition: "background .15s ease"
   });
   document.documentElement.appendChild(toggle);
@@ -496,15 +497,7 @@
     let x = random(radius, width - radius);
     let y = random(-120, -radius);
     for (let attempt = 0; attempt < 8; attempt++) {
-      let hit = false;
-      for (const rect of obstacles) {
-        if (x + radius > rect.left && x - radius < rect.right &&
-            y + radius > rect.top && y - radius < rect.bottom) {
-          hit = true;
-          break;
-        }
-      }
-      if (!hit) break;
+      if (!obstacleHit(x, y, radius)) break;
       x = random(radius, width - radius);
       y = random(-120, -radius);
     }
@@ -519,6 +512,63 @@
       resting: false,
       restFrames: 0
     };
+  }
+
+  // Obstacles are precomputed shapes, cached per element — the animation
+  // loop only does cheap circle/rect arithmetic, never layout reads.
+  // Cache: element -> { key, shape }. The key is the element's document
+  // position and size, so a sticker that has not moved or resized reuses
+  // its shape with no recomputation at all.
+  const obstacleCache = new WeakMap();
+
+  // Does a point with the given radius overlap any cached obstacle?
+  // Used when choosing a spawn spot, so balls never start inside one.
+  function obstacleHit(x, y, radius) {
+    for (const ob of obstacles) {
+      if (ob.kind === 'circle') {
+        const dx = x - ob.cx, dy = y - ob.cy;
+        const min = ob.r + radius;
+        if (dx * dx + dy * dy < min * min) return true;
+      } else if (x + radius > ob.left && x - radius < ob.right &&
+          y + radius > ob.top && y - radius < ob.bottom) {
+        return true;
+      }
+    }
+    return false;
+  }
+
+  // Circle-vs-ball collision. The normal is radial, so a ball landing
+  // on a sticker rolls off to one side instead of sitting on a flat
+  // ledge — that is what was making balls get stuck.
+  function collideCircle(ball, c) {
+    const dx = ball.x - c.cx;
+    const dy = ball.y - c.cy;
+    const minDist = c.r + ball.radius;
+    const distSq = dx * dx + dy * dy;
+    if (distSq >= minDist * minDist) return false;
+    let nx, ny, dist;
+    if (distSq === 0) { nx = 0; ny = -1; dist = 0; }
+    else { dist = Math.sqrt(distSq); nx = dx / dist; ny = dy / dist; }
+    // Push the ball out to the surface.
+    ball.x = c.cx + nx * minDist;
+    ball.y = c.cy + ny * minDist;
+    const vel = ball.vx * nx + ball.vy * ny;
+    if (vel < 0) {
+      const j = -(1 + effBounce()) * vel;
+      ball.vx += j * nx;
+      ball.vy += j * ny;
+      const tx = -ny, ty = nx;
+      const vt = ball.vx * tx + ball.vy * ty;
+      ball.vx -= (1 - BASE.friction) * vt * tx;
+      ball.vy -= (1 - BASE.friction) * vt * ty;
+      ball.squash = 0.72;
+    }
+    // Anti-stick: a slow ball resting on top gets a sideways nudge so
+    // it rolls off instead of balancing there.
+    if (Math.hypot(ball.vx, ball.vy) < 0.6) {
+      ball.vx += (ball.x >= c.cx ? 0.35 : -0.35);
+    }
+    return true;
   }
 
   function refreshObstacles() {
@@ -537,13 +587,45 @@
       const style = getComputedStyle(el);
       if (style.display === "none" || style.visibility === "hidden" ||
           Number(style.opacity) === 0 || style.pointerEvents === "none") return;
-      const rect = el.getBoundingClientRect();
+      const isSticker = el.classList.contains('gplaced') || el.id === 'sticker-bin';
+      // Measure only the visible sticker itself, never the delete
+      // button / resize handle that sticks out of a selected sticker.
+      // Image stickers: the <img> inside; emoji stickers: the element
+      // itself (its text glyph).
+      const visual = isSticker ? (el.querySelector('img') || el) : el;
+      const rect = visual.getBoundingClientRect();
       // Convert to document coordinates
       const top = rect.top + sy;
       const bottom = rect.bottom + sy;
       if (rect.width < 4 || rect.height < 4 || rect.right <= 0 ||
           rect.left >= width || bottom <= 0 || top >= pageHeight) return;
+      if (isSticker) {
+        // Tight circle fitted to the visible sticker, NOT the full
+        // square box: a square's transparent corners used to catch
+        // balls, and its flat top let them sit there. A circle has no
+        // corners and no flat top, so balls glance off and roll away.
+        // Emoji glyphs only fill ~72% of their em box; imported images
+        // fill more of theirs (~84%). The 2px margin keeps balls from
+        // visually touching the sticker art.
+        const key = `${Math.round(rect.left)}|${Math.round(top)}|${Math.round(rect.width)}|${Math.round(rect.height)}`;
+        const cached = obstacleCache.get(el);
+        if (cached && cached.key === key) { next.push(cached.shape); return; }
+        // The bin is a real circle, so its hitbox is the full circle;
+        // emoji glyphs and imported images are inset (see above).
+        const frac = el.id === 'sticker-bin' ? 0.5
+          : visual.tagName === 'IMG' ? 0.42 : 0.36;
+        const shape = {
+          kind: 'circle',
+          cx: rect.left + rect.width / 2,
+          cy: top + rect.height / 2,
+          r: Math.max(4, Math.min(rect.width, rect.height) * frac - 2)
+        };
+        obstacleCache.set(el, { key, shape });
+        next.push(shape);
+        return;
+      }
       next.push({
+        kind: 'rect',
         left: Math.max(0, rect.left),
         right: Math.min(width, rect.right),
         top: Math.max(0, top),
@@ -551,8 +633,10 @@
       });
     });
     const seen = new Set();
-    obstacles = next.filter(r => {
-      const key = `${r.left}|${r.top}|${r.right}|${r.bottom}`;
+    obstacles = next.filter(ob => {
+      const key = ob.kind === 'circle'
+        ? `c|${ob.cx}|${ob.cy}|${ob.r}`
+        : `${ob.left}|${ob.top}|${ob.right}|${ob.bottom}`;
       if (seen.has(key)) return false;
       seen.add(key);
       return true;
@@ -696,12 +780,21 @@
       ball.squash = 0.78;
     }
 
-    // Obstacles
+    // Obstacles — cheap arithmetic only; shapes were precomputed and
+    // cached in refreshObstacles(), nothing here touches the DOM.
     for (let pass = 0; pass < 3; pass++) {
-      for (const rect of obstacles) {
-        if (ball.x + ball.radius < rect.left || ball.x - ball.radius > rect.right ||
-            ball.y + ball.radius < rect.top || ball.y - ball.radius > rect.bottom) continue;
-        collideRect(ball, rect);
+      for (const ob of obstacles) {
+        if (ob.kind === 'circle') {
+          // Broad phase: skip if outside the circle's bounding box.
+          const reach = ob.r + ball.radius;
+          if (ball.x < ob.cx - reach || ball.x > ob.cx + reach ||
+              ball.y < ob.cy - reach || ball.y > ob.cy + reach) continue;
+          collideCircle(ball, ob);
+        } else {
+          if (ball.x + ball.radius < ob.left || ball.x - ball.radius > ob.right ||
+              ball.y + ball.radius < ob.top || ball.y - ball.radius > ob.bottom) continue;
+          collideRect(ball, ob);
+        }
       }
     }
 
@@ -830,16 +923,19 @@
     if (!ctx) return;
     ctx.clearRect(0, 0, width, height);
 
-    // Spawn
+    // Spawn — free and endless. There is no token cost and no wave
+    // gate: as balls are collected at the bottom, new ones keep coming.
+    // (No saveState() here: spawning every 180ms must not hammer the
+    // server. Progress is saved when balls are collected, a wave
+    // completes, or a setting changes.)
     spawnTimer += dt;
-    if (spawnTimer >= BASE.spawnRate && state.waveRemaining > 0 && balls.length < BASE.ballCount) {
+    if (spawnTimer >= BASE.spawnRate && balls.length < BASE.ballCount) {
       spawnTimer = 0;
-      const n = Math.min(state.spawnBatch, state.waveRemaining, BASE.ballCount - balls.length);
+      const n = Math.min(state.spawnBatch, BASE.ballCount - balls.length);
       for (let i = 0; i < n; i++) {
         balls.push(createBall());
         state.waveRemaining--;
       }
-      saveState();
     }
 
     // Physics substeps
@@ -873,8 +969,9 @@
     drawPile();
     for (const ball of balls) drawBall(ball);
 
-    // New wave?
-    if (state.waveRemaining <= 0 && balls.length === 0) {
+    // New wave — starts at once, never pauses spawning. The wave is
+    // just a counter now (with a small token bonus); balls keep falling.
+    if (state.waveRemaining <= 0) {
       state.wave++;
       state.waveRemaining = BASE.waveSize;
       state.tokens += 5; // wave completion bonus
@@ -899,7 +996,8 @@
   toggle.addEventListener("click", () => {
     enabled = !enabled;
     toggle.textContent = enabled ? "● Fidget balls: ON" : "● Fidget balls: OFF";
-    toggle.style.background = enabled ? "#228b60" : "#1c2030";
+    toggle.style.background = enabled ? "var(--accent, #2c6e92)" : "var(--surface, #ffffff)";
+    toggle.style.color = enabled ? "#fff" : "var(--ink, #1c3850)";
     toggle.setAttribute("aria-pressed", String(enabled));
     settingsBtn.style.display = enabled ? "block" : "none";
     if (!enabled) {
@@ -909,13 +1007,9 @@
     if (enabled) {
       ensureCanvas();
       balls = [];
-      // Spawn initial batch
-      const n = Math.min(state.spawnBatch, state.waveRemaining, BASE.ballCount);
-      for (let i = 0; i < n; i++) {
-        balls.push(createBall());
-        state.waveRemaining--;
-      }
-      saveState();
+      // Spawn the first batch for free — no tokens, no wave gate.
+      const n = Math.min(state.spawnBatch, BASE.ballCount);
+      for (let i = 0; i < n; i++) balls.push(createBall());
       start();
     } else {
       balls = [];
@@ -975,7 +1069,8 @@
       balls = [];
       stop();
       toggle.textContent = "● Fidget balls: OFF";
-      toggle.style.background = "#1c2030";
+      toggle.style.background = "var(--surface, #ffffff)";
+      toggle.style.color = "var(--ink, #1c3850)";
       settingsBtn.style.display = "none";
       panel.style.display = "none";
     },

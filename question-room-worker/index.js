@@ -552,8 +552,9 @@ export class QuestionNightRoom {
     const shopIds = ['trails', 'theme-sunset', 'theme-ocean', 'gravity-moon', 'shape-star', 'shape-heart'];
     return {
       tokens: Math.max(0, Number(s.tokens) || 0),
-      spawnBatch: Math.max(1, Math.min(12, Number(s.spawnBatch) || 1)),
-      upgradeCost: Math.max(5, Number(s.upgradeCost) || 5),
+      // Spawning balls is free — there is no upgradeCost any more.
+      // spawnBatch is a free setting (1–12 balls per spawn tick).
+      spawnBatch: Math.max(1, Math.min(12, Number(s.spawnBatch) || 3)),
       collected: Math.max(0, Number(s.collected) || 0),
       wave: Math.max(1, Number(s.wave) || 1),
       waveRemaining: Math.max(0, Math.min(40, Number(s.waveRemaining) || 40)),
@@ -571,8 +572,9 @@ export class QuestionNightRoom {
     const shopIds = ['trails', 'theme-sunset', 'theme-ocean', 'gravity-moon', 'shape-star', 'shape-heart'];
     all[user] = {
       tokens: Math.max(0, Number(state.tokens) || 0),
-      spawnBatch: Math.max(1, Math.min(12, Number(state.spawnBatch) || 1)),
-      upgradeCost: Math.max(5, Number(state.upgradeCost) || 5),
+      // Spawning balls is free — there is no upgradeCost any more.
+      // spawnBatch is a free setting (1–12 balls per spawn tick).
+      spawnBatch: Math.max(1, Math.min(12, Number(state.spawnBatch) || 3)),
       collected: Math.max(0, Number(state.collected) || 0),
       wave: Math.max(1, Number(state.wave) || 1),
       waveRemaining: Math.max(0, Math.min(40, Number(state.waveRemaining) || 40)),
