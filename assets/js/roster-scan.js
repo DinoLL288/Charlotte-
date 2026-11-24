@@ -206,14 +206,9 @@ export function parseRosterText(text) {
     .filter(shift => shift.date && (shift.startTime || shift.endTime));
 }
 
-// "EAST VICTORIA PARK WA · PI: Production Intermediate · Break 6:30 PM - 7:00 PM · 4:00hrs"
+// Just the break, if there is one — the calendar shows the start/end times itself.
 export function formatShiftDetails(shift) {
-  const parts = [];
-  if (shift.location) parts.push(shift.location);
-  if (shift.role) parts.push(shift.role);
-  if (shift.breakText) parts.push(`Break ${shift.breakText}`);
-  if (shift.hours) parts.push(shift.hours);
-  return parts.join(' · ');
+  return shift.breakText ? `Break ${shift.breakText}` : '';
 }
 
 // Build the { date, event } payload the calendar API expects for a shift.

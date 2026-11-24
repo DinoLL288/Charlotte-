@@ -233,7 +233,7 @@
         "title": "Luke's job shift",
         "startTime": "16:00",
         "endTime": "20:30",
-        "time": "EAST VICTORIA PARK WA · PI: Production Intermediate · 4:30hrs",
+        "time": "",
         "author": "Luke",
         "id": "0355cd87-d8fc-41ba-a8ff-1b9b0481e4f8"
       }
@@ -243,7 +243,7 @@
         "title": "Luke's job shift",
         "startTime": "16:00",
         "endTime": "20:00",
-        "time": "EAST VICTORIA PARK WA · PI: Production Intermediate · 4:00hrs",
+        "time": "",
         "author": "Luke",
         "id": "9555a26b-e09c-4420-9ff8-93f21651ab54"
       }
@@ -253,7 +253,7 @@
         "title": "Luke's job shift",
         "startTime": "14:00",
         "endTime": "21:00",
-        "time": "EAST VICTORIA PARK WA · PI: Production Intermediate · Break 6:30 PM - 7:00 PM · 6:30hrs + 0:30hrs Break",
+        "time": "Break 6:30 PM - 7:00 PM",
         "author": "Luke",
         "id": "74d6bd08-fb8e-479e-9dc6-5e2af56038c2"
       }

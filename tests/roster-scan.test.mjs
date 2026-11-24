@@ -153,7 +153,7 @@ test('returns no shifts for empty or unrelated text', () => {
   assert.deepEqual(parseRosterText('Friday 04/Dec/2026\nJust a date, no times\n'), []);
 });
 
-test('formats shift details with every part, skipping empty ones', () => {
+test('formats shift details as just the break, if there is one', () => {
   assert.equal(
     formatShiftDetails({
       location: 'EAST VICTORIA PARK WA',
@@ -161,7 +161,7 @@ test('formats shift details with every part, skipping empty ones', () => {
       breakText: '6:30 PM - 7:00 PM',
       hours: '6:30hrs + 0:30hrs Break'
     }),
-    'EAST VICTORIA PARK WA · PI: Production Intermediate · Break 6:30 PM - 7:00 PM · 6:30hrs + 0:30hrs Break'
+    'Break 6:30 PM - 7:00 PM'
   );
   assert.equal(
     formatShiftDetails({
@@ -170,7 +170,7 @@ test('formats shift details with every part, skipping empty ones', () => {
       breakText: '',
       hours: '4:00hrs'
     }),
-    'EAST VICTORIA PARK WA · PI: Production Intermediate · 4:00hrs'
+    ''
   );
   assert.equal(formatShiftDetails({ location: '', role: '', breakText: '', hours: '' }), '');
 });
@@ -183,7 +183,7 @@ test('builds the calendar event payload for the logged-in user', () => {
       title: "Luke's job shift",
       startTime: '14:00',
       endTime: '21:00',
-      time: 'EAST VICTORIA PARK WA · PI: Production Intermediate · Break 6:30 PM - 7:00 PM · 6:30hrs + 0:30hrs Break',
+      time: 'Break 6:30 PM - 7:00 PM',
       author: 'Luke'
     }
   });
