@@ -1,0 +1,177 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <script src="assets/js/site-shell-guard.js"></script>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+  <title>Color tap</title>
+  <link rel="stylesheet" href="assets/css/theme.css">
+  <link rel="icon" href="assets/images/favicon.svg" type="image/svg+xml">
+  <style>
+    body { margin: 0; min-height: 100vh; font-family: var(--font-body); background: linear-gradient(160deg, #eaf7ff, #c3e6fb 42%, #8ecbeb 100%); color: #10344f; }
+    .top-bar { position: fixed; top: 12px; left: 12px; z-index: 5; display: flex; gap: 8px; flex-wrap: wrap; }
+    .button { padding: 8px 14px; border-radius: 999px; background: #123a58; color: #fff; text-decoration: none; font-weight: 700; font-size: .85rem; border: 0; cursor: pointer; }
+    .button.secondary { background: rgba(255,255,255,.85); color: #123a58; }
+    .hero { padding: 78px 20px 30px; text-align: center; color: #fff; background: linear-gradient(160deg, #0d2c44, #2a78a8); }
+    .hero .eyebrow { color: #ecd7a0; font-size: 1rem; font-family: var(--font-display); font-style: italic; }
+    .hero h1 { margin: 10px 0 8px; font-size: clamp(2rem, 7vw, 3.2rem); font-weight: 400; }
+    .hero p { margin: 0 auto; max-width: 52ch; color: #e6f3fc; line-height: 1.6; }
+    .shell { width: min(620px, calc(100% - 32px)); margin: 0 auto; padding: 24px 0 80px; }
+    .hud { display: flex; gap: 10px; flex-wrap: wrap; justify-content: center; margin-bottom: 18px; }
+    .hud .pill { padding: 8px 16px; border-radius: 999px; background: rgba(255,255,255,.9); color: #123a58; font-weight: 700; font-size: .95rem; box-shadow: 0 6px 16px rgba(0,0,0,.12); }
+    .panel { padding: clamp(20px, 5vw, 28px); border-radius: 22px; background: rgba(255,255,255,.75); border: 1px solid rgba(255,255,255,.9); box-shadow: 0 20px 50px rgba(20,63,95,.13); text-align: center; }
+    .panel h2 { margin: 0; color: #123a58; font-size: 1.5rem; }
+    .intro { margin: 8px 0 18px; color: #5c7c93; line-height: 1.5; }
+    #colorWord { font-size: 3rem; font-weight: 700; text-align: center; margin: 18px 0 22px; min-height: 1.2em; line-height: 1.2; }
+    .color-btns { display: grid; grid-template-columns: repeat(2, 1fr); gap: 12px; max-width: 360px; margin: 0 auto; }
+    .color-btn { min-height: 72px; padding: 16px; border-radius: 14px; border: 2px solid #fff; font-weight: 700; font-size: 1.2rem; font-family: inherit; cursor: pointer; color: #fff; touch-action: manipulation; user-select: none; -webkit-tap-highlight-color: transparent; box-shadow: 0 6px 16px rgba(0,0,0,.15); }
+    .color-btn:active { transform: scale(.97); }
+    .color-btn:disabled { opacity: .55; cursor: default; }
+    .color-btn.wrong { animation: shake .3s ease; }
+    @keyframes shake { 0%, 100% { transform: translateX(0); } 25% { transform: translateX(-6px); } 75% { transform: translateX(6px); } }
+    .status { min-height: 1.4em; margin: 16px 0 0; color: #73591f; font-weight: 700; }
+    .btn { border: 1px solid #143f5f; border-radius: 999px; padding: 12px 26px; color: #fff; background: #143f5f; font: inherit; font-weight: 700; font-size: 1rem; cursor: pointer; margin-top: 16px; touch-action: manipulation; }
+    .btn:disabled { opacity: .5; cursor: wait; }
+    .btn.secondary { color: #315d78; background: #eef7fb; border-color: #cddfe8; }
+    .best-line { margin-top: 14px; color: #5c7c93; font-size: .9rem; }
+    @media (max-width: 480px) {
+      #colorWord { font-size: 2.4rem; }
+      .color-btn { min-height: 64px; font-size: 1.1rem; }
+    }
+  </style>
+</head>
+<body>
+  <div class="top-bar">
+    <a class="button" href="index.html">← Back to hub</a>
+    <a class="button secondary" href="more-games.html">More games</a>
+  </div>
+  <header class="hero">
+    <p class="eyebrow">Play &amp; earn</p>
+    <h1>Color tap 🎨</h1>
+    <p>A colour word appears in a different colour. Tap the button matching the <strong>word</strong> — not the colour it is written in. 30 seconds, as many as you can.</p>
+  </header>
+  <main class="shell">
+    <div class="hud">
+      <span class="pill">⭐ Score: <span id="score">0</span></span>
+      <span class="pill">⏱ Time: <span id="timeLeft">30</span>s</span>
+      <span class="pill">🏆 Best: <span id="best">0</span></span>
+    </div>
+    <div class="panel">
+      <h2>Tap the word</h2>
+      <p class="intro">If the word says BLUE but it is written in red, tap the blue button. Wrong taps do not score — just keep going.</p>
+      <div id="colorWord" aria-live="polite">Tap Start to play.</div>
+      <div class="color-btns" id="colorBtns"></div>
+      <div class="status" id="colorStatus">Tap Start to play.</div>
+      <button class="btn" id="colorStart">Start</button>
+      <p class="best-line">Best score on this device: <span id="bestLine">0</span></p>
+    </div>
+  </main>
+  <script src="assets/js/avatar.js"></script>
+  <script>
+    (function () {
+      var colors = [
+        { name: 'RED', color: '#e74c3c', text: '#ffffff' },
+        { name: 'BLUE', color: '#3498db', text: '#ffffff' },
+        { name: 'GREEN', color: '#2ecc71', text: '#ffffff' },
+        { name: 'YELLOW', color: '#f1c40f', text: '#123a58' }
+      ];
+      var wordEl = document.getElementById('colorWord');
+      var btnsEl = document.getElementById('colorBtns');
+      var statusEl = document.getElementById('colorStatus');
+      var startBtn = document.getElementById('colorStart');
+      var scoreEl = document.getElementById('score');
+      var timeEl = document.getElementById('timeLeft');
+      var bestEl = document.getElementById('best');
+      var bestLineEl = document.getElementById('bestLine');
+      var GAME_SECONDS = 30;
+      var score = 0, timeLeft = GAME_SECONDS, playing = false, timer = null, answer = '';
+
+      var best = 0;
+      try { best = parseInt(localStorage.getItem('color-tap-best') || '0', 10) || 0; } catch (e) { best = 0; }
+      bestEl.textContent = best;
+      bestLineEl.textContent = best;
+
+      var buttons = {};
+      colors.forEach(function (c) {
+        var b = document.createElement('button');
+        b.type = 'button';
+        b.className = 'color-btn';
+        b.style.background = c.color;
+        b.style.color = c.text;
+        b.textContent = c.name;
+        b.disabled = true;
+        b.addEventListener('click', function () { onTap(c.name, b); });
+        btnsEl.appendChild(b);
+        buttons[c.name] = b;
+      });
+
+      function setButtonsDisabled(disabled) {
+        Object.keys(buttons).forEach(function (name) { buttons[name].disabled = disabled; });
+      }
+
+      function nextWord() {
+        var word = colors[Math.floor(Math.random() * colors.length)];
+        var ink = colors[Math.floor(Math.random() * colors.length)];
+        answer = word.name;
+        wordEl.textContent = word.name;
+        wordEl.style.color = ink.color;
+      }
+
+      function onTap(name, btn) {
+        if (!playing) return;
+        if (name === answer) {
+          score++;
+          scoreEl.textContent = score;
+          statusEl.textContent = 'Nice! Score: ' + score;
+          nextWord();
+        } else {
+          statusEl.textContent = 'Not quite — tap the WORD, not the ink colour.';
+          btn.classList.remove('wrong');
+          void btn.offsetWidth;
+          btn.classList.add('wrong');
+        }
+      }
+
+      function endGame() {
+        playing = false;
+        clearInterval(timer);
+        timer = null;
+        setButtonsDisabled(true);
+        startBtn.disabled = false;
+        startBtn.textContent = 'Play again';
+        wordEl.textContent = 'Time’s up!';
+        wordEl.style.color = '#123a58';
+        if (score > best) {
+          best = score;
+          try { localStorage.setItem('color-tap-best', String(best)); } catch (e) {}
+          bestEl.textContent = best;
+          bestLineEl.textContent = best;
+          statusEl.textContent = 'New best! ' + score + ' correct in 30 seconds. 🎉';
+        } else {
+          statusEl.textContent = 'Done! ' + score + ' correct in 30 seconds. Tap Play again to beat it.';
+        }
+      }
+
+      startBtn.addEventListener('click', function () {
+        score = 0;
+        timeLeft = GAME_SECONDS;
+        scoreEl.textContent = '0';
+        timeEl.textContent = String(GAME_SECONDS);
+        statusEl.textContent = 'Go! Tap the button matching the WORD.';
+        startBtn.disabled = true;
+        startBtn.textContent = 'Playing…';
+        playing = true;
+        setButtonsDisabled(false);
+        nextWord();
+        clearInterval(timer);
+        timer = setInterval(function () {
+          timeLeft--;
+          timeEl.textContent = String(Math.max(timeLeft, 0));
+          if (timeLeft <= 0) endGame();
+        }, 1000);
+      });
+    })();
+  </script>
+  <script src="assets/js/stickers-overlay.js"></script>
+</body>
+</html>
