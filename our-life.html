@@ -26,7 +26,7 @@
     <section class="panel maker-panel"><div class="panel-title"><span class="panel-icon" aria-hidden="true">🧩</span><div><h2>Our shared project</h2><p class="intro">A little record of something we’re making or learning together.</p></div></div><form class="composer" data-type="projects"><input name="title" maxlength="120" placeholder="What are we making or learning?" required><textarea name="body" maxlength="1000" placeholder="Our idea, next little step, or notes" required></textarea><button class="button">Start a project</button></form><div class="entries" id="list-projects"></div></section>
     <p class="page-status" id="pageStatus" role="status"></p>
   </main>
-  <script src="assets/js/dialog.js"></script><script src="assets/js/avatar.js"></script>
+  <script defer src="assets/js/dialog.js"></script><script src="assets/js/avatar.js"></script>
   <script>
     const user=localStorage.getItem('charlotte-user')||'Unknown';const data={recipes:[],shelf:[],awards:[],projects:[]};let busy=false;const status=document.getElementById('pageStatus');
     function esc(s){const e=document.createElement('span');e.textContent=s||'';return e.innerHTML;}
@@ -42,6 +42,6 @@
     document.addEventListener('click',async e=>{const remove=e.target.closest('[data-remove]');if(remove&&await siteDialog.confirm('Remove this item?',{title:'Let this one go?'}))await post({action:'delete',type:remove.dataset.remove,id:remove.dataset.id});const progress=e.target.closest('[data-progress]');if(progress)await post({action:'update',type:'projects',id:progress.dataset.progress,progress:Number(progress.dataset.value)});});
     fetch('/api/heart').then(async r=>{const j=await r.json();if(!r.ok)throw new Error(j.error||'Could not load');Object.assign(data,j.data||{});render();}).catch(e=>{status.textContent=e.message;render();});
   </script>
-<script src="assets/js/stickers-overlay.js"></script>
+<script defer src="assets/js/stickers-overlay.js"></script>
 </body>
 </html>
