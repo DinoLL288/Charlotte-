@@ -12,14 +12,20 @@ without building one:
    server-side in the question-room Durable Object, so both people see the
    same data.
 
-2. **Ready-to-use Scriptable scripts** — Scriptable is a free app
-   (App Store / Mac App Store) that runs JavaScript widgets on iPhone,
-   iPad and Mac. Paste one of these scripts into Scriptable and add it as
-   a home-screen widget:
+2. **Ready-to-use Scriptable scripts (iPhone / iPad)** — Scriptable is a
+   free app (App Store) that runs JavaScript widgets on iPhone and iPad.
+   Paste one of these scripts into Scriptable and add it as a home-screen
+   widget:
    - `mood-widget.js` — Charlotte & Luke's latest moods.
    - `bathroom-widget.js` — who's away right now, and today's counts.
 
    Tapping either widget opens the matching tracker page on the site.
+
+   Scriptable is **not available on macOS**, so the Mac versions live in
+   `scriptwidget/` instead: the same two widgets rewritten for
+   ScriptWidget (free, from scriptwidget.app), each as a `main.jsx` plus
+   a `widget.json` that declares the network permission and the site's
+   host. See `scriptwidget/README.md` for the Mac setup.
 
 3. **The site itself as a home-screen app** — the site has a web app
    manifest (`site.webmanifest`) and an Apple touch icon, so in Safari

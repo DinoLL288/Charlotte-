@@ -1,0 +1,19 @@
+{
+  "entry": "main.jsx",
+  "formatVersion": 2,
+  "id": "com.charlotte-site.mood-widget",
+  "name": "Mood",
+  "networkDomains": [
+    "charlotte-3ts.pages.dev"
+  ],
+  "permissions": [
+    "network"
+  ],
+  "plugins": [],
+  "runtimeVersion": "1.0",
+  "supportedFamilies": [
+    "systemSmall",
+    "systemMedium"
+  ],
+  "version": "1.0.0"
+}

@@ -13,9 +13,9 @@
 //      the "Mood" script.
 //   4. Tap the widget any time to open the mood tracker on the site.
 //
-// SETUP (Mac): same steps in Scriptable for Mac, then add the widget
-//   from Notification Center. Widgets refresh on the system's own
-//   schedule — for the very latest mood, tap the widget to open the site.
+// SETUP (Mac): Scriptable isn't available on macOS — the Mac versions
+// of this widget are in widgets/scriptwidget/ instead, written for the
+// free ScriptWidget app. See widgets.html on the site.
 
 const API_URL = 'https://charlotte-3ts.pages.dev/api/trackers';
 const MOOD_PAGE = 'https://charlotte-3ts.pages.dev/mood.html';

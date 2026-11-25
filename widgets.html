@@ -21,7 +21,7 @@
   <main class="shell">
     <section class="panel">
       <h2>How it works</h2>
-      <p>A website on its own can't make iPhone or Mac widgets — those need an app. So we use <strong>Scriptable</strong>, a free app that runs little JavaScript widgets. The widgets read a tiny public summary from our site (latest moods and today's bathroom counts, no notes or history), and tapping one opens the matching tracker page.</p>
+      <p>A website on its own can't make iPhone or Mac widgets — those need an app. So we use a free widget app: <strong>Scriptable</strong> on iPhone / iPad, and <strong>ScriptWidget</strong> on Mac (Scriptable isn't available on macOS). The widgets read a tiny public summary from our site (latest moods and today's bathroom counts, no notes or history), and tapping one opens the matching tracker page.</p>
     </section>
     <section class="panel">
       <h2>The widgets</h2>
@@ -37,17 +37,42 @@
         <button class="button" type="button" data-copy="/widgets/bathroom-widget.js">Copy bathroom script</button>
         <span class="copy-status" data-status="bathroom"></span>
       </div>
+      <div class="widget-card">
+        <h3>💛 Mood widget — Mac (ScriptWidget)</h3>
+        <p>Our latest moods, as a Mac widget. Needs both files: the script and its manifest.</p>
+        <button class="button" type="button" data-copy="/widgets/scriptwidget/mood/main.jsx" data-dest="ScriptWidget">Copy mood script</button>
+        <button class="button secondary" type="button" data-copy="/widgets/scriptwidget/mood/widget.json" data-dest="ScriptWidget">Copy mood manifest</button>
+        <span class="copy-status" data-status="mood-mac"></span>
+      </div>
+      <div class="widget-card">
+        <h3>🚻 Bathroom widget — Mac (ScriptWidget)</h3>
+        <p>Who's away right now and today's counts, as a Mac widget. Needs both files: the script and its manifest.</p>
+        <button class="button" type="button" data-copy="/widgets/scriptwidget/bathroom/main.jsx" data-dest="ScriptWidget">Copy bathroom script</button>
+        <button class="button secondary" type="button" data-copy="/widgets/scriptwidget/bathroom/widget.json" data-dest="ScriptWidget">Copy bathroom manifest</button>
+        <span class="copy-status" data-status="bathroom-mac"></span>
+      </div>
     </section>
     <section class="panel">
-      <h2>Set them up</h2>
+      <h2>Set them up — iPhone / iPad (Scriptable)</h2>
       <ol>
-        <li>Install <strong>Scriptable</strong> free from the App Store (iPhone / iPad) or the Mac App Store (Mac).</li>
+        <li>Install <strong>Scriptable</strong> free from the App Store.</li>
         <li>In Scriptable, tap <strong>+</strong> to make a new script and give it a name, like “Mood”.</li>
         <li>Tap <strong>Copy</strong> above for the widget you want, then paste the whole script into Scriptable and save it.</li>
-        <li>On iPhone: long-press the home screen → <strong>+</strong> → <strong>Scriptable</strong> → pick a widget size → long-press the widget → <strong>Edit Widget</strong> → choose your script. On Mac: add it from Notification Center instead.</li>
+        <li>Long-press the home screen → <strong>+</strong> → <strong>Scriptable</strong> → pick a widget size → long-press the widget → <strong>Edit Widget</strong> → choose your script.</li>
         <li>Tap the widget any time to open the tracker on our site.</li>
       </ol>
-      <p class="note">Widgets refresh on your phone's own schedule, so they can be a little behind — tapping one always opens the latest on the site.</p>
+    </section>
+    <section class="panel">
+      <h2>Set them up — Mac (ScriptWidget)</h2>
+      <ol>
+        <li>Install <strong>ScriptWidget</strong> free from <a href="https://scriptwidget.app">scriptwidget.app</a> and open ScriptWidget Studio.</li>
+        <li>In Studio, choose <strong>Blank Widget</strong> and give it a name, like “Mood” (repeat for “Bathroom”).</li>
+        <li>Tap <strong>Copy script</strong> above, then paste the whole script over <strong>main.jsx</strong>. Tap <strong>Copy manifest</strong> and paste that over <strong>widget.json</strong> — the manifest lets the widget reach our site, which the fetch needs.</li>
+        <li>Press <strong>Command-R</strong> to preview and <strong>Command-S</strong> to save.</li>
+        <li>Add the widget from the system widget gallery and pick the widget you just made.</li>
+        <li>Tap the widget any time to open the tracker on our site.</li>
+      </ol>
+      <p class="note">Widgets refresh on your device's own schedule, so they can be a little behind — tapping one always opens the latest on the site.</p>
     </section>
     <section class="panel">
       <h2>The site itself, on your home screen too</h2>
@@ -64,7 +89,7 @@
           const res = await fetch(button.dataset.copy);
           if (!res.ok) throw new Error('Could not load the script');
           await navigator.clipboard.writeText(await res.text());
-          status.textContent = 'Copied — paste it into Scriptable.';
+          status.textContent = 'Copied — paste it into ' + (button.dataset.dest || 'Scriptable') + '.';
         } catch (e) {
           status.textContent = 'Copy didn’t work — open the script file and copy it by hand.';
         }
