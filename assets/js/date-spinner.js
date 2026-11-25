@@ -68,6 +68,30 @@ export function spinTargetRotation(currentRotation, index, count, extraTurns) {
   return currentRotation + turns * 360 + delta;
 }
 
+// Split a wheel label into at most two lines, breaking at the space nearest
+// the middle, so each line stays short enough to fit inside one segment.
+// Single words come back untouched (truncated to 12 characters).
+export function splitLabel(label) {
+  var text = String(label || '').trim();
+  if (!text) return [''];
+  if (text.length <= 8) return [text];
+  var mid = text.length / 2;
+  var best = -1;
+  var bestDist = Infinity;
+  for (var i = 0; i < text.length; i++) {
+    if (text[i] === ' ') {
+      var d = Math.abs(i - mid);
+      if (d < bestDist) { bestDist = d; best = i; }
+    }
+  }
+  if (best === -1) return [text.length > 12 ? text.slice(0, 11) + '…' : text];
+  var lines = [text.slice(0, best).trim(), text.slice(best + 1).trim()];
+  if (!lines[0] || !lines[1]) return [text];
+  return lines.map(function (line) {
+    return line.length > 12 ? line.slice(0, 11) + '…' : line;
+  });
+}
+
 export function isDuplicateIdea(ideas, label) {
   var wanted = String(label || '').trim().toLowerCase();
   if (!wanted) return true;
@@ -153,7 +177,11 @@ if (typeof document !== 'undefined') {
         ctx.strokeStyle = 'rgba(255,255,255,.9)';
         ctx.lineWidth = 2;
         ctx.stroke();
-        // Label: emoji + short text, reading outwards from the centre.
+        // Label: emoji + short text. The text sits near the rim, where the
+        // segment is widest, split over two lines so it never spills into
+        // the neighbouring segment (labels drawn close to the centre
+        // overlapped: a 13-character label is ~85px wide but a segment is
+        // only ~40px wide that close in).
         var mid = start + seg / 2;
         ctx.save();
         ctx.translate(cx, cy);
@@ -161,10 +189,15 @@ if (typeof document !== 'undefined') {
         ctx.textAlign = 'center';
         ctx.textBaseline = 'middle';
         ctx.fillStyle = '#123a58';
-        ctx.font = '22px system-ui, sans-serif';
-        ctx.fillText(idea.emoji, 0, -radius * 0.62);
+        ctx.font = '20px system-ui, sans-serif';
+        ctx.fillText(idea.emoji, 0, -radius * 0.60);
         ctx.font = 'bold 13px system-ui, sans-serif';
-        ctx.fillText(idea.label.length > 14 ? idea.label.slice(0, 13) + '…' : idea.label, 0, -radius * 0.38);
+        var lines = splitLabel(idea.label);
+        var lineGap = 14;
+        var firstY = -radius * 0.82 - (lines.length - 1) * lineGap / 2;
+        lines.forEach(function (line, li) {
+          ctx.fillText(line, 0, firstY + li * lineGap);
+        });
         ctx.restore();
       });
       // Hub cap

@@ -9,6 +9,7 @@ import {
   segmentSize,
   segmentForRotation,
   spinTargetRotation,
+  splitLabel,
   isDuplicateIdea,
   loadCustomIdeas,
   saveCustomIdeas,
@@ -87,6 +88,23 @@ test('spinTargetRotation lands the chosen segment under the pointer', function (
         assert.equal(segmentForRotation(target, count), index);
       });
     }
+  });
+});
+
+test('splitLabel keeps wheel labels short enough to fit a segment', function () {
+  assert.deepEqual(splitLabel('Movie night'), ['Movie', 'night']);
+  assert.deepEqual(splitLabel('Cook together'), ['Cook', 'together']);
+  assert.deepEqual(splitLabel('Stargazing'), ['Stargazing']);
+  assert.deepEqual(splitLabel('Walk & talk'), ['Walk &', 'talk']);
+  assert.deepEqual(splitLabel('Bubble tea'), ['Bubble', 'tea']);
+  assert.deepEqual(splitLabel('Picnic'), ['Picnic']);
+  assert.deepEqual(splitLabel(''), ['']);
+  // Every default label splits into lines of at most 12 characters, so no
+  // line can spill into the neighbouring segment and overlap its text.
+  DEFAULT_IDEAS.forEach(function (idea) {
+    splitLabel(idea.label).forEach(function (line) {
+      assert.ok(line.length <= 12, 'line fits a segment: ' + line);
+    });
   });
 });
 
