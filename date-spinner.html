@@ -1,0 +1,101 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <script src="assets/js/site-shell-guard.js"></script>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+  <title>Date Night Spinner</title>
+  <script>if (!localStorage.getItem('charlotte-user')) location.href = 'login.html';</script>
+  <link rel="stylesheet" href="assets/css/theme.css">
+  <link rel="icon" href="assets/images/favicon.svg" type="image/svg+xml">
+  <style>
+    body { margin: 0; min-height: 100vh; font-family: var(--font-body); background: linear-gradient(160deg, #eaf7ff, #c3e6fb 42%, #8ecbeb 100%); color: #10344f; }
+    .top-bar { position: fixed; top: 12px; left: 12px; z-index: 5; display: flex; gap: 8px; flex-wrap: wrap; }
+    .button { padding: 8px 14px; border-radius: 999px; background: #123a58; color: #fff; text-decoration: none; font-weight: 700; font-size: .85rem; border: 0; cursor: pointer; }
+    .button.secondary { background: rgba(255,255,255,.85); color: #123a58; }
+    .hero { padding: 78px 20px 30px; text-align: center; color: #fff; background: linear-gradient(160deg, #0d2c44, #2a78a8); }
+    .hero .eyebrow { color: #ecd7a0; font-size: 1rem; font-family: var(--font-display); font-style: italic; }
+    .hero h1 { margin: 10px 0 8px; font-size: clamp(2rem, 7vw, 3.2rem); font-weight: 400; }
+    .hero p { margin: 0 auto; max-width: 52ch; color: #e6f3fc; line-height: 1.6; }
+    .shell { width: min(620px, calc(100% - 32px)); margin: 0 auto; padding: 24px 0 80px; }
+    .panel { padding: clamp(20px, 5vw, 28px); border-radius: 22px; background: rgba(255,255,255,.75); border: 1px solid rgba(255,255,255,.9); box-shadow: 0 20px 50px rgba(20,63,95,.13); text-align: center; }
+    .panel h2 { margin: 0; color: #123a58; font-size: 1.5rem; }
+    .intro { margin: 8px 0 18px; color: #5c7c93; line-height: 1.5; }
+    .plan-banner { margin: 0 0 18px; padding: 12px 16px; border-radius: 14px; background: #fff7df; border: 1px solid #e9d9b4; color: #73591f; font-weight: 700; display: flex; align-items: center; justify-content: center; gap: 10px; flex-wrap: wrap; }
+    .plan-banner button { border: 0; background: none; color: #73591f; font: inherit; font-size: .85rem; text-decoration: underline; cursor: pointer; padding: 0; }
+    .chips { display: flex; gap: 8px; flex-wrap: wrap; justify-content: center; margin-bottom: 18px; }
+    .chip { border: 1px solid #cddfe8; border-radius: 999px; padding: 8px 14px; background: #eef7fb; color: #315d78; font: inherit; font-weight: 700; font-size: .9rem; cursor: pointer; }
+    .chip.active { background: #143f5f; border-color: #143f5f; color: #fff; }
+    .wheel-wrap { position: relative; width: min(340px, 100%); margin: 0 auto 8px; }
+    .wheel-pointer { position: absolute; top: -6px; left: 50%; transform: translateX(-50%); z-index: 2; width: 0; height: 0; border-left: 14px solid transparent; border-right: 14px solid transparent; border-top: 26px solid #e74c3c; filter: drop-shadow(0 2px 3px rgba(0,0,0,.25)); }
+    #dateWheel { display: block; width: 100%; height: auto; border-radius: 50%; box-shadow: 0 14px 36px rgba(20,63,95,.25); background: #fff; will-change: transform; }
+    .idea-count { margin: 10px 0 0; color: #5c7c93; font-size: .9rem; }
+    .status { min-height: 1.4em; margin: 16px 0 0; color: #73591f; font-weight: 700; }
+    .btn { border: 1px solid #143f5f; border-radius: 999px; padding: 12px 26px; color: #fff; background: #143f5f; font: inherit; font-weight: 700; font-size: 1rem; cursor: pointer; margin-top: 16px; touch-action: manipulation; }
+    .btn:disabled { opacity: .5; cursor: wait; }
+    .btn.secondary { color: #315d78; background: #eef7fb; border-color: #cddfe8; }
+    .btn.small { padding: 8px 18px; font-size: .9rem; margin-top: 10px; }
+    .result { margin-top: 18px; padding: 18px; border-radius: 16px; background: #fff7df; border: 1px solid #e9d9b4; }
+    .result-emoji { font-size: 2.6rem; }
+    .result h3 { margin: 6px 0 4px; color: #123a58; font-size: 1.4rem; }
+    .result p { margin: 0; color: #5c7c93; line-height: 1.5; }
+    .add-idea { margin-top: 24px; padding-top: 18px; border-top: 1px dashed #c3d8e4; text-align: left; }
+    .add-idea h3 { margin: 0 0 4px; color: #123a58; font-size: 1.1rem; text-align: center; }
+    .add-idea p { margin: 0 0 12px; color: #5c7c93; font-size: .9rem; text-align: center; }
+    .add-row { display: flex; gap: 8px; flex-wrap: wrap; justify-content: center; }
+    .add-row input[type="text"] { flex: 1 1 160px; max-width: 240px; padding: 10px 14px; border: 1px solid #c8dceb; border-radius: 12px; font: inherit; font-size: 1rem; }
+    .add-row select { padding: 10px 12px; border: 1px solid #c8dceb; border-radius: 12px; font: inherit; font-size: 1rem; background: #fff; color: #123a58; }
+    .custom-list { list-style: none; margin: 12px 0 0; padding: 0; display: flex; flex-wrap: wrap; gap: 8px; justify-content: center; }
+    .custom-list li { display: flex; align-items: center; gap: 6px; padding: 6px 8px 6px 12px; border-radius: 999px; background: #eef7fb; border: 1px solid #cddfe8; color: #315d78; font-size: .9rem; font-weight: 700; }
+    .remove-idea { border: 0; background: #d5e3ec; color: #315d78; width: 22px; height: 22px; border-radius: 50%; font: inherit; font-weight: 700; line-height: 1; cursor: pointer; }
+  </style>
+</head>
+<body>
+  <div class="top-bar">
+    <a class="button" href="index.html">← Back to hub</a>
+    <a class="button secondary" href="games.html">All games</a>
+  </div>
+  <header class="hero">
+    <p class="eyebrow">Plans &amp; dates</p>
+    <h1>Date Night Spinner 🎡</h1>
+    <p>Can&rsquo;t decide what to do together? Spin the wheel and let fate pick tonight&rsquo;s plan. Add your own ideas to the wheel, too.</p>
+  </header>
+  <main class="shell">
+    <div class="panel">
+      <div class="plan-banner" id="tonightsPlan" hidden>
+        <span>💕 Tonight&rsquo;s plan: <span id="planText"></span></span>
+        <button type="button" id="planClear">Change it</button>
+      </div>
+      <h2>What should we do?</h2>
+      <p class="intro">Pick a mood, spin the wheel, and whatever it lands on — that&rsquo;s the plan. No take-backs (unless you both agree 😄).</p>
+      <div class="chips" id="categoryChips" role="group" aria-label="Filter ideas by mood"></div>
+      <div class="wheel-wrap" id="wheelWrap">
+        <div class="wheel-pointer" aria-hidden="true"></div>
+        <canvas id="dateWheel" width="340" height="340" role="img" aria-label="Spinning wheel of date ideas"></canvas>
+      </div>
+      <p class="idea-count" id="ideaCount"></p>
+      <div class="status" id="spinStatus" aria-live="polite">Tap Spin and let the wheel decide. 🎡</div>
+      <button class="btn" id="spinBtn" type="button">Spin the wheel 🎡</button>
+      <button class="btn secondary" id="againBtn" type="button" hidden>Spin again</button>
+      <div class="result" id="spinResult" aria-live="polite" hidden></div>
+      <div class="add-idea">
+        <h3>Add your own idea 💡</h3>
+        <p>Got a date idea of your own? Put it on the wheel — it stays on this device.</p>
+        <div class="add-row">
+          <input type="text" id="customIdeaInput" maxlength="40" placeholder="e.g. Bake brownies" aria-label="Your date idea">
+          <select id="customIdeaCategory" aria-label="Category for your idea">
+            <option value="home">🏠 Cosy at home</option>
+            <option value="out">🌳 Out &amp; about</option>
+            <option value="treats">🍦 Sweet treats</option>
+          </select>
+          <button class="btn small" id="addIdeaBtn" type="button">Add to wheel</button>
+        </div>
+        <ul class="custom-list" id="customIdeas"></ul>
+      </div>
+    </div>
+  </main>
+  <script src="assets/js/avatar.js"></script>
+  <script type="module" src="assets/js/date-spinner.js"></script>
+  <script src="assets/js/stickers-overlay.js"></script>
+</body>
+</html>
