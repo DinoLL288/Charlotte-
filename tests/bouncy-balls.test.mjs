@@ -18,12 +18,15 @@ test('balls land on the bottom of the page — the bottom of where you can scrol
   assert.doesNotMatch(src, /scrollY \+ height - ball\.radius/, 'ground is not the viewport bottom');
 });
 
-test('collected balls pile at the bottom of the page', () => {
+test('collected balls pile into a heap at the bottom of the page', () => {
   assert.match(src, /state\.pile\.push\(\{ x: ball\.x, y: pageHeight - ball\.radius/, 'pile entries sit on the document bottom');
-  // The pile is drawn at its stored position (document coordinates minus
-  // the scroll), so it sits at the bottom of the page and you see it when
-  // you scroll all the way down.
-  assert.match(src, /const py = b\.y - scrollY;/, 'pile is drawn at the bottom of the page');
+  // Balls stack in columns where they landed, so the heap grows upward
+  // instead of spreading in one flat row.
+  assert.match(src, /PILE_MAX_ROWS = 6/, 'the heap stacks up to six rows high');
+  assert.match(src, /const py = pageHeight - r - row \* PILE_ROW_H - scrollY;/, 'each ball is drawn stacked in its column at the bottom of the page');
+  // When the heap is full the oldest ball makes way, so the pile stays
+  // fresh instead of freezing with stale entries.
+  assert.match(src, /if \(state\.pile\.length >= BASE\.maxPile\) state\.pile\.shift\(\);/, 'a full heap makes way for new balls');
 });
 
 test('balls spawn just above the top of the screen you can see', () => {

@@ -738,9 +738,12 @@
   function collectBall(ball) {
     state.collected++;
     state.tokens++;
-    if (state.pile.length < BASE.maxPile) {
-      state.pile.push({ x: ball.x, y: pageHeight - ball.radius, r: ball.radius, hue: ball.hue });
-    }
+    // The pile is a heap at the bottom of the page, not a single flat row:
+    // balls stack in columns where they landed (see drawPile). When the
+    // heap is full, the oldest ball makes way for the new one so the pile
+    // stays fresh instead of freezing with stale entries.
+    if (state.pile.length >= BASE.maxPile) state.pile.shift();
+    state.pile.push({ x: ball.x, y: pageHeight - ball.radius, r: ball.radius, hue: ball.hue });
     saveState();
   }
 
@@ -889,11 +892,28 @@
     ctx.restore();
   }
 
+  // The pile is a heap at the bottom of the page (the bottom of where you
+  // can scroll to). Balls stack in columns where they landed: each ball
+  // sits on top of the balls already in its column, so the heap grows
+  // upward instead of spreading in one flat row. The stored y is ignored
+  // here — it goes stale when the page height changes — and the row is
+  // always worked out from the bottom of the page, so the heap is right
+  // no matter when a ball was collected.
+  const PILE_COL_W = 14;
+  const PILE_ROW_H = 12;
+  const PILE_MAX_ROWS = 6;
   function drawPile() {
-    for (const b of state.pile) {
+    for (let i = 0; i < state.pile.length; i++) {
+      const b = state.pile[i];
       const r = b.r;
       const px = b.x;
-      const py = b.y - scrollY;
+      const col = Math.max(0, Math.floor(b.x / PILE_COL_W));
+      let row = 0;
+      for (let j = 0; j < i; j++) {
+        if (Math.max(0, Math.floor(state.pile[j].x / PILE_COL_W)) === col) row++;
+      }
+      if (row >= PILE_MAX_ROWS) row = PILE_MAX_ROWS - 1;
+      const py = pageHeight - r - row * PILE_ROW_H - scrollY;
       // skip if off-screen
       if (py + r < 0 || py - r > height) continue;
       const gradient = ctx.createRadialGradient(px - r * 0.35, py - r * 0.4, 0, px, py, r);
