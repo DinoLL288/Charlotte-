@@ -78,7 +78,7 @@ test('ubersicht bathroom and mood widgets hide when the flag file exists', () =>
 
 test('ubersicht hide-toggle widget flips the flag file', () => {
   const src = read('widgets/ubersicht/hide-toggle.widget/index.jsx');
-  assert.match(src, /bottom: 20px;/, 'sits at the bottom of the desktop');
+  assert.match(src, /bottom: 100px;/, 'sits above the Dock (task bar) at the bottom of the desktop');
   assert.match(src, /left: 20px;/, 'sits at the left of the desktop');
   assert.match(src, /test -f .*FLAG.*&& rm .*FLAG.*\|\| touch .*FLAG/, 'tap writes or removes the flag file');
   assert.match(src, /Hide trackers/, 'offers to hide the trackers');

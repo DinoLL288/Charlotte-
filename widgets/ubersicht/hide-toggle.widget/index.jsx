@@ -45,7 +45,7 @@ export const updateState = (event, previousState) => {
 };
 
 export const className = `
-  bottom: 20px;
+  bottom: 100px;
   left: 20px;
   width: 180px;
 `;
