@@ -27,6 +27,12 @@ without building one:
    a `widget.json` that declares the network permission and the site's
    host. See `scriptwidget/README.md` for the Mac setup.
 
+   Scriptable is **not available on Android** either, so the Android
+   versions live in `kwgt/` instead: the same two widgets as KWGT
+   (Kustom Widget Maker) presets. See `kwgt/README.md` for the Android
+   setup, the preset format, and what could not be verified without
+   the app.
+
 3. **The site itself as a home-screen app** — the site has a web app
    manifest (`site.webmanifest`) and an Apple touch icon, so in Safari
    use Share → Add to Home Screen and it sits next to the widgets like an
