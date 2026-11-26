@@ -1,0 +1,62 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Ball course — Charlotte &amp; Luke</title>
+<script src="assets/js/site-shell-guard.js"></script>
+<script>if (!localStorage.getItem('charlotte-user')) location.href = 'login.html';</script>
+<link rel="stylesheet" href="assets/css/theme.css">
+<link rel="stylesheet" href="assets/css/site-theme.css">
+<style>
+  body{margin:0;font-family:var(--font-body);color:var(--ink);background:var(--bg)}
+  .top-bar{position:absolute;top:16px;left:16px;z-index:2}
+  .button{display:inline-block;padding:10px 18px;border-radius:999px;border:1px solid var(--line);background:var(--surface);color:var(--ink);font:700 .9rem var(--font-body);text-decoration:none;cursor:pointer}
+  .button.primary{background:var(--accent);border-color:var(--accent);color:#fff}
+  .hero{padding:72px 20px 26px;text-align:center;color:#fff;background:linear-gradient(160deg,#0d2c44,#2a78a8)}
+  .hero h1{margin:6px 0;font-family:var(--font-display);font-size:clamp(2rem,6vw,3rem);font-weight:400}
+  .hero p{max-width:56ch;margin:0 auto;color:#e6f3fc;line-height:1.6}
+  .shell{width:min(920px,100%);margin:0 auto 60px;padding:18px;position:relative}
+  .course-area{position:relative;height:min(62vh,560px);min-height:380px;border:1px dashed var(--line-strong);border-radius:24px;background:var(--surface);overflow:hidden;box-shadow:var(--shadow)}
+  .course-area canvas{position:absolute;inset:0;width:100%;height:100%;pointer-events:none}
+  .sticker-layer{position:absolute;inset:0;pointer-events:none}
+  .placed-sticker{position:absolute;font-size:2.5rem;line-height:1;cursor:grab;user-select:none;-webkit-user-select:none;touch-action:none;filter:drop-shadow(0 2px 4px rgba(0,0,0,.18));transform:translate(-50%,-50%);pointer-events:auto}
+  .placed-sticker:hover{transform:translate(-50%,-50%) scale(1.12)}
+  .placed-sticker.dragging{cursor:grabbing;transform:translate(-50%,-50%) scale(1.15);z-index:5}
+  .placed-sticker .sticker-del{position:absolute;top:-12px;right:-12px;width:22px;height:22px;border-radius:50%;border:2px solid #fff;background:#c0392b;color:#fff;font-size:13px;line-height:18px;text-align:center;cursor:pointer;box-shadow:0 2px 6px rgba(0,0,0,.3);padding:0}
+  .placed-sticker .sticker-del:hover{background:#e74c3c}
+  .course-empty{position:absolute;inset:0;display:grid;place-items:center;pointer-events:none;color:var(--ink-faint);font-size:1.05rem;text-align:center;padding:20px}
+  .controls{display:flex;gap:8px;flex-wrap:wrap;align-items:center;margin:14px 0}
+  .controls .spacer{flex:1}
+  .tray{display:flex;gap:8px;flex-wrap:wrap;padding:12px;border:1px solid var(--line);border-radius:18px;background:var(--surface);box-shadow:var(--shadow)}
+  .tray-sticker{border:1px solid var(--line);border-radius:14px;background:var(--surface-soft);font-size:1.7rem;line-height:1;padding:10px 12px;cursor:pointer}
+  .tray-sticker:hover{transform:scale(1.12)}
+  .hint{color:var(--ink-soft);font-size:.9rem;margin:12px 2px 0;line-height:1.55}
+</style>
+</head>
+<body>
+  <div class="top-bar"><a class="button" href="index.html">← Back to hub</a></div>
+  <header class="hero">
+    <h1>Ball course 🎢</h1>
+    <p>An almost-empty page. Build a course out of stickers, then drop balls and watch them bounce through it.</p>
+  </header>
+  <main class="shell">
+    <div class="course-area" id="courseArea">
+      <canvas id="courseCanvas"></canvas>
+      <div class="sticker-layer" id="stickerLayer"></div>
+      <div class="course-empty" id="courseEmpty">Tap a sticker below to add it, then drag it where you want it.<br>Drop a ball and watch it bounce through your course.</div>
+    </div>
+    <div class="controls">
+      <button class="button primary" id="dropBall" type="button">Drop a ball</button>
+      <button class="button" id="dropFive" type="button">Drop 5 balls</button>
+      <button class="button" id="clearBalls" type="button">Clear balls</button>
+      <span class="spacer"></span>
+      <span>Balls: <b id="ballCount">0</b></span>
+      <button class="button" id="clearCourse" type="button">Clear course</button>
+    </div>
+    <div class="tray" id="stickerTray" aria-label="Stickers to build with"></div>
+    <p class="hint">Tap a sticker to add it to the course, then drag it around to build ramps, walls and bumpers. Tap the × on a sticker to take it away. Your course is saved on this device, so it is still there when you come back. Balls rest on the floor for a few seconds, then fade away.</p>
+  </main>
+  <script src="assets/js/ball-course.js"></script>
+</body>
+</html>

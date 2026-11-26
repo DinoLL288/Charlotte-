@@ -213,6 +213,13 @@
   let scrollY = window.scrollY || 0;
   let pageHeight = Math.max(document.documentElement.scrollHeight, document.body ? document.body.scrollHeight : 0, height);
 
+  // The ground is the bottom of what you can see (the viewport), not the
+  // bottom of the whole document. On a page taller than the screen, a
+  // document-bottom ground sits below the fold, so balls fall past the
+  // bottom edge of the screen and only "land" where nobody can see them.
+  // In document coordinates the viewport bottom is scrollY + height.
+  function groundY() { return scrollY + height; }
+
   function resize() {
     width = innerWidth;
     height = innerHeight;
@@ -495,11 +502,11 @@
   function createBall() {
     const radius = random(BASE.minSize, BASE.maxSize);
     let x = random(radius, width - radius);
-    let y = random(-120, -radius);
+    let y = scrollY + random(-120, -radius);
     for (let attempt = 0; attempt < 8; attempt++) {
       if (!obstacleHit(x, y, radius)) break;
       x = random(radius, width - radius);
-      y = random(-120, -radius);
+      y = scrollY + random(-120, -radius);
     }
     return {
       x, y,
@@ -739,7 +746,7 @@
     state.collected++;
     state.tokens++;
     if (state.pile.length < BASE.maxPile) {
-      state.pile.push({ x: ball.x, y: pageHeight - ball.radius, r: ball.radius, hue: ball.hue });
+      state.pile.push({ x: ball.x, y: groundY() - ball.radius, r: ball.radius, hue: ball.hue });
     }
     saveState();
   }
@@ -798,9 +805,9 @@
       }
     }
 
-    // Ground (bottom of page)
-    if (ball.y >= pageHeight - ball.radius - 2) {
-      ball.y = pageHeight - ball.radius;
+    // Ground (bottom of the screen you can see)
+    if (ball.y >= groundY() - ball.radius - 2) {
+      ball.y = groundY() - ball.radius;
       if (Math.abs(ball.vy) < 0.5) {
         ball.vy = 0;
         ball.vx *= BASE.groundDamp;
@@ -893,7 +900,10 @@
     for (const b of state.pile) {
       const r = b.r;
       const px = b.x;
-      const py = b.y - scrollY;
+      // Pin the pile to the bottom of the screen you can see. The stored
+      // y is from when the ball was collected, so it goes stale when you
+      // scroll; the viewport bottom is always right.
+      const py = height - r;
       // skip if off-screen
       if (py + r < 0 || py - r > height) continue;
       const gradient = ctx.createRadialGradient(px - r * 0.35, py - r * 0.4, 0, px, py, r);
