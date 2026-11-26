@@ -21,6 +21,11 @@
 // Luke — for Charlotte's own widget, change 'Luke' to 'Charlotte' in
 // TOGGLE_URL below.
 //
+// The tap uses BOTH tap mechanisms ScriptWidget provides: linkurl on the
+// outer stack and a <link> wrapping the whole card. (linkurl alone opened
+// ScriptWidget Studio instead of the page on Luke's Mac, so the <link>
+// wrapper is the belt-and-braces fix.)
+//
 // Widgets refresh on the system's own schedule — for the very latest
 // status, tap the widget to open the site.
 
@@ -85,4 +90,8 @@ try {
   );
 }
 
-$render(content);
+$render(
+  <link url={TOGGLE_URL}>
+    {content}
+  </link>
+);

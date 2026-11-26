@@ -14,6 +14,11 @@
 //   5. Add the widget from the system widget gallery and pick the "Mood"
 //      widget. Tap it any time to open the mood tracker on the site.
 //
+// The tap uses BOTH tap mechanisms ScriptWidget provides: linkurl on the
+// outer stack and a <link> wrapping the whole card. (linkurl alone opened
+// ScriptWidget Studio instead of the page on Luke's Mac, so the <link>
+// wrapper is the belt-and-braces fix.)
+//
 // Widgets refresh on the system's own schedule — for the very latest mood,
 // tap the widget to open the site.
 
@@ -80,4 +85,8 @@ try {
   );
 }
 
-$render(content);
+$render(
+  <link url={MOOD_PAGE}>
+    {content}
+  </link>
+);
