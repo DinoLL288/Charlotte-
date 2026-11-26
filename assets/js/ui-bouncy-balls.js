@@ -893,24 +893,30 @@
   }
 
   // The pile is a heap at the bottom of the page (the bottom of where you
-  // can scroll to). Balls stack in columns where they landed: each ball
-  // sits on top of the balls already in its column, so the heap grows
-  // upward instead of spreading in one flat row. The stored y is ignored
-  // here — it goes stale when the page height changes — and the row is
-  // always worked out from the bottom of the page, so the heap is right
-  // no matter when a ball was collected.
-  const PILE_COL_W = 14;
+  // can scroll to). It is a compact mound, not a row stretched across the
+  // whole screen: the heap is at most 480px wide, centred, split into 24
+  // columns, and balls stack in the column they landed nearest to, so the
+  // heap grows upward to six rows high. The stored y is ignored here — it
+  // goes stale when the page height changes — and the row is always worked
+  // out from the bottom of the page, so the heap is right no matter when
+  // a ball was collected.
+  const HEAP_COLS = 24;
+  const HEAP_MAX_W = 480;
   const PILE_ROW_H = 12;
   const PILE_MAX_ROWS = 6;
   function drawPile() {
+    const heapW = Math.min(width, HEAP_MAX_W);
+    const heapLeft = (width - heapW) / 2;
+    const colW = heapW / HEAP_COLS;
     for (let i = 0; i < state.pile.length; i++) {
       const b = state.pile[i];
       const r = b.r;
-      const px = b.x;
-      const col = Math.max(0, Math.floor(b.x / PILE_COL_W));
+      const col = Math.max(0, Math.min(HEAP_COLS - 1, Math.floor((b.x / width) * HEAP_COLS)));
+      const px = heapLeft + (col + 0.5) * colW;
       let row = 0;
       for (let j = 0; j < i; j++) {
-        if (Math.max(0, Math.floor(state.pile[j].x / PILE_COL_W)) === col) row++;
+        const cj = Math.max(0, Math.min(HEAP_COLS - 1, Math.floor((state.pile[j].x / width) * HEAP_COLS)));
+        if (cj === col) row++;
       }
       if (row >= PILE_MAX_ROWS) row = PILE_MAX_ROWS - 1;
       const py = pageHeight - r - row * PILE_ROW_H - scrollY;

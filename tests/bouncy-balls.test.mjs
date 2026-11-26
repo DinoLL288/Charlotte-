@@ -20,9 +20,11 @@ test('balls land on the bottom of the page — the bottom of where you can scrol
 
 test('collected balls pile into a heap at the bottom of the page', () => {
   assert.match(src, /state\.pile\.push\(\{ x: ball\.x, y: pageHeight - ball\.radius/, 'pile entries sit on the document bottom');
-  // Balls stack in columns where they landed, so the heap grows upward
-  // instead of spreading in one flat row.
-  assert.match(src, /PILE_MAX_ROWS = 6/, 'the heap stacks up to six rows high');
+  // Balls stack in a compact centred mound (24 columns, at most 480px
+  // wide), so the heap grows upward instead of spreading in one flat row.
+  assert.match(src, /HEAP_COLS = 24/, 'the heap is 24 columns wide');
+  assert.match(src, /HEAP_MAX_W = 480/, 'the heap is at most 480px wide');
+  assert.match(src, /const px = heapLeft \+ \(col \+ 0\.5\) \* colW;/, 'balls are drawn at their heap column centre');
   assert.match(src, /const py = pageHeight - r - row \* PILE_ROW_H - scrollY;/, 'each ball is drawn stacked in its column at the bottom of the page');
   // When the heap is full the oldest ball makes way, so the pile stays
   // fresh instead of freezing with stale entries.
