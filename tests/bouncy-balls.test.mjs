@@ -27,6 +27,9 @@ test('collected balls pile into a heap at the bottom of the page', () => {
   // When the heap is full the oldest ball makes way, so the pile stays
   // fresh instead of freezing with stale entries.
   assert.match(src, /if \(state\.pile\.length >= BASE\.maxPile\) state\.pile\.shift\(\);/, 'a full heap makes way for new balls');
+  // The heap holds up to 160 balls, so it stacks into several rows even
+  // on a wide screen.
+  assert.match(src, /maxPile: 160/, 'the heap holds up to 160 balls');
 });
 
 test('balls spawn just above the top of the screen you can see', () => {

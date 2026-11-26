@@ -23,7 +23,7 @@
     maxSpeed: 18,
     friction: 0.88,
     waveSize: 40,         // balls per wave; a new wave starts at once
-    maxPile: 80           // max rendered collected balls
+    maxPile: 160          // max settled balls in the visible heap
   };
 
   const STORAGE_KEY = "charlotte-bouncy-balls-v1";
