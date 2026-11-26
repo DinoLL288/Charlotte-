@@ -53,6 +53,20 @@ test('ubersicht mood widget opens the mood page on click', () => {
   assert.match(src, /run\('open ' \+ MOOD_PAGE\)/, 'opens the mood page on click');
 });
 
+test('ubersicht mood widget logs a mood from the widget itself', () => {
+  const src = read('widgets/ubersicht/mood.widget/index.jsx');
+  assert.match(src, /api\/question-room/, 'posts to the question-room API');
+  assert.match(src, /action: 'mood'/, 'posts a mood action');
+  assert.match(src, /user: USER/, 'posts for the configured user');
+  assert.match(src, /const USER = 'Luke'/, 'configured for Luke');
+  assert.match(src, /run\('curl -s -X POST /, 'runs the POST with curl on tap');
+  assert.match(src, /stopPropagation/, 'a mood tap does not also open the mood page');
+  assert.match(src, /justLogged/, 'shows the logged mood right away');
+  for (const emoji of ['🥰', '😊', '💛', '🌙', '🤔', '😤', '😔', '😢', '😰', '😠', '😞', '😶', '😭']) {
+    assert.ok(src.includes(emoji), `picker includes ${emoji}`);
+  }
+});
+
 test('widgets page offers the ubersicht widgets and setup', () => {
   const page = read('widgets.html');
   assert.match(page, /widgets\/ubersicht\/bathroom\.widget\.zip/, 'page links the bathroom zip');

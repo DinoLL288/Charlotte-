@@ -21,7 +21,7 @@
   <main class="shell">
     <section class="panel">
       <h2>How it works</h2>
-      <p>A website on its own can't make phone or Mac widgets — those need an app. So we use a widget app: <strong>Scriptable</strong> on iPhone / iPad, <strong>Übersicht</strong> on Mac (free, open-source — the one to use), and <strong>KWGT</strong> on Android (Scriptable isn't available on macOS or Android). The widgets read a tiny public summary from our site (latest moods and today's bathroom counts, no notes or history), and tapping one opens the matching tracker page — tapping the bathroom widget flips your own check-in, away then back.</p>
+      <p>A website on its own can't make phone or Mac widgets — those need an app. So we use a widget app: <strong>Scriptable</strong> on iPhone / iPad, <strong>Übersicht</strong> on Mac (free, open-source — the one to use), and <strong>KWGT</strong> on Android (Scriptable isn't available on macOS or Android). The widgets read a tiny public summary from our site (latest moods and today's bathroom counts, no notes or history), and tapping one opens the matching tracker page — tapping the bathroom widget flips your own check-in, away then back, and tapping a mood on the mood widget logs that mood for you.</p>
     </section>
     <section class="panel">
       <h2>The widgets</h2>
@@ -39,7 +39,7 @@
       </div>
       <div class="widget-card">
         <h3>💛 Mood widget — Mac (Übersicht)</h3>
-        <p>Our latest moods, as a Mac desktop widget. Click it to open the mood tracker and log a mood. Download the ready-made widget folder, or copy the script and make the folder by hand.</p>
+        <p>Our latest moods, as a Mac desktop widget. Tap a mood on it to log it right from the desktop, or click it to open the mood tracker. Download the ready-made widget folder, or copy the script and make the folder by hand.</p>
         <a class="button" href="/widgets/ubersicht/mood.widget.zip" download>Download mood widget</a>
         <button class="button secondary" type="button" data-copy="/widgets/ubersicht/mood.widget/index.jsx" data-dest="Übersicht">Copy mood script</button>
         <span class="copy-status" data-status="mood-mac-ubersicht"></span>
@@ -106,7 +106,7 @@
         <li>Click the Übersicht menu-bar icon → <strong>Open Widgets Folder</strong>.</li>
         <li>Tap <strong>Download</strong> above for the widget you want, unzip it, and drag the whole <code>.widget</code> folder into the widgets folder. (No zip? Make a folder called <code>bathroom.widget</code> or <code>mood.widget</code> in there, tap <strong>Copy script</strong> above, and paste it in as <code>index.jsx</code>.)</li>
         <li>In Übersicht Preferences, set an <strong>interaction shortcut</strong> and allow <strong>Accessibility</strong> when asked — clicks only reach a widget while you hold that shortcut. That's Übersicht's own rule, not ours.</li>
-        <li>Hold the interaction shortcut and click the bathroom widget to toggle your own check-in (away, then back) — no browser, no login page. Click the mood widget to open the mood tracker and log a mood.</li>
+        <li>Hold the interaction shortcut and click the bathroom widget to toggle your own check-in (away, then back) — no browser, no login page. Tap a mood on the mood widget to log it, or click the mood widget to open the mood tracker.</li>
       </ol>
       <p class="note">The widgets refresh from our site every 15 seconds. Their position on the desktop is set in the <code>className</code> near the top of each <code>index.jsx</code> — change the <code>top</code> and <code>left</code> numbers to move one.</p>
     </section>
