@@ -62,6 +62,17 @@
       text-shadow: 0 2px 8px #428ec080;
     }
     .now-line span { opacity: 0.85; font-weight: 600; }
+    .countdown-banner {
+      padding: 12px 22px;
+      border-radius: 999px;
+      background: #fff;
+      color: #245b85;
+      font-size: 1rem;
+      font-weight: 700;
+      box-shadow: 0 7px 20px #347eac35;
+      text-align: center;
+    }
+    .countdown-banner .countdown-when { color: #5c7c93; font-weight: 400; }
     .calendar-grid {
       width: min(980px, 94vw);
       display: grid;
@@ -265,6 +276,7 @@
   <main class="screen">
     <h1>Calendar</h1>
     <p class="subtitle">Click a day to add · click an event to edit</p>
+    <div class="countdown-banner" data-next-up="banner" hidden></div>
     <div class="calendar-header">
       <button class="button" id="prevMonth">←</button>
       <h2 id="monthLabel"></h2>
@@ -897,6 +909,7 @@
     loadEvents();
   </script>
   <script type="module" src="assets/js/roster-scan-ui.js"></script>
+  <script type="module" src="assets/js/next-up.js"></script>
   <script src="assets/js/avatar.js"></script>
   <script defer src="assets/js/dialog.js"></script>
 <script defer src="assets/js/stickers-overlay.js"></script>

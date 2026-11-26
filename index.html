@@ -218,6 +218,10 @@
   .calm-section-title { margin: 0 0 10px; font-family: var(--font-display); font-size: 1.05rem; color: #8a6d2b; letter-spacing: .08em; text-transform: uppercase; }
   .calm-row { display: flex; align-items: center; gap: 14px; padding: 16px 18px; margin-bottom: 8px; border-radius: 16px; background: rgba(255,255,255,.72); border: 1px solid rgba(255,255,255,.85); text-decoration: none; color: #123a58; transition: background .15s, transform .15s; }
   .calm-row:hover { background: rgba(255,255,255,.92); transform: translateX(2px); }
+  .calm-row.next-up { background: linear-gradient(120deg, #fff7df, #eaf4fb); border-color: #e9d9b4; }
+  .calm-row.next-up:hover { background: linear-gradient(120deg, #fff3cf, #dceefb); }
+  .next-up-eyebrow { display: block; font-size: .68rem; font-weight: 800; letter-spacing: .09em; text-transform: uppercase; color: #8a6d2b; margin-bottom: 2px; }
+  .calm-row.next-up .calm-title { font-size: 1.2rem; }
   .calm-icon { flex: none; font-size: 1.35rem; width: 34px; text-align: center; }
   .calm-body { flex: 1; min-width: 0; }
   .calm-title { font-weight: 700; font-size: 1rem; line-height: 1.2; display: block; }
@@ -334,6 +338,7 @@
       </div>
       <div class="calm-section">
         <h2 class="calm-section-title">Plans &amp; dates</h2>
+        <a class="calm-row next-up" data-next-up="card" href="calendar.html"><span class="calm-icon">⏳</span><span class="calm-body"><span class="next-up-eyebrow">Next up together</span><span class="calm-title">Counting down…</span><span class="calm-sub">Loading our next date</span></span><span class="calm-arrow">→</span></a>
         <a class="calm-row" href="calendar.html"><span class="calm-icon">📅</span><span class="calm-body"><span class="calm-title">Calendar</span><span class="calm-sub">Dates, plans and countdowns</span></span><span class="calm-arrow">→</span></a>
         <a class="calm-row" href="question-night.html"><span class="calm-icon">💬</span><span class="calm-body"><span class="calm-title">Question night</span><span class="calm-sub">A shared room that opens when we’re both ready</span></span><span class="calm-arrow">→</span></a>
         <a class="calm-row" href="tiktok.html"><span class="calm-icon">🎵</span><span class="calm-body"><span class="calm-title">TikTok plans</span><span class="calm-sub">Videos we want to dance to</span></span><span class="calm-arrow">→</span></a>
@@ -576,6 +581,8 @@
     })();
   </script>
   <script src="assets/js/together.js"></script>
+  <script src="assets/js/special-dates.js"></script>
+  <script type="module" src="assets/js/next-up.js"></script>
   <script src="assets/js/avatar.js"></script>
   <script src="assets/js/emoji-rain.js"></script>
   <script>
