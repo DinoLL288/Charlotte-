@@ -79,6 +79,18 @@ test('widgets page offers the ubersicht widgets and setup', () => {
   assert.match(page, /ScriptWidget/, 'page still documents ScriptWidget');
 });
 
+test('widgets page has a hide toggle for the install command', () => {
+  const page = read('widgets.html');
+  assert.match(page, /id="install-command"/, 'install section has an id to hide');
+  assert.match(page, /id="installToggle"/, 'toggle button exists');
+  assert.match(page, /position:fixed;left:16px;bottom:16px/, 'toggle stays fixed bottom-left');
+  assert.match(page, /#install-command\.is-hidden\{display:none\}/, 'hidden state hides the section');
+  assert.match(page, /charlotte-hide-install-command/, 'choice is remembered across visits');
+  assert.match(page, /var\(--couple-panel,var\(--surface\)\)/, 'toggle follows the site theme');
+  assert.match(page, /html\[data-quiet-days="on"\] \.install-toggle/, 'toggle follows quiet mode');
+  assert.match(page, /:root\[data-dark-mode="true"\] \.install-toggle/, 'toggle follows dark mode');
+});
+
 test('ubersicht one-command install script is safe and complete', () => {
   const src = read('widgets/ubersicht/install.sh');
   assert.match(src, /^#!\/bin\/bash/, 'has a bash shebang');

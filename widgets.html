@@ -12,6 +12,12 @@
   <link rel="stylesheet" href="assets/css/theme.css">
   <style>
     body{margin:0;min-height:100vh;font-family:var(--font-body);background:linear-gradient(160deg,#edf8ff,#badff5 100%);color:#123a58}.hero{padding:78px 20px 48px;text-align:center;color:#fff;background:linear-gradient(160deg,#0d2c44,#2a78a8)}.hero h1{margin:8px 0;font-size:clamp(2.2rem,8vw,3.5rem)}.hero p{margin:0 auto;max-width:48ch;opacity:.9}.shell{width:min(820px,calc(100% - 32px));margin:-28px auto 70px}.panel{padding:18px;border-radius:20px;background:rgba(255,255,255,.88);border:1px solid rgba(255,255,255,.95);box-shadow:0 10px 30px rgba(29,90,128,.12);margin-bottom:14px}.panel h2{font-family:var(--font-display);margin:0 0 12px}.panel p{line-height:1.6;color:#486a83}.panel ol{line-height:1.7;color:#486a83;padding-left:22px}.top-bar{position:absolute}.button{padding:10px 16px;border-radius:999px;background:#123a58;color:#fff;text-decoration:none;font-weight:700;font-size:.9rem;border:0;cursor:pointer}.button.secondary{background:#edf4f8;color:#123a58}.widget-card{border:1px solid #d5e3ec;border-radius:16px;background:#fff;padding:16px;margin-bottom:12px}.widget-card h3{margin:0 0 6px}.widget-card p{margin:0 0 12px}.copy-status{min-height:1.2em;margin:8px 0 0;color:#73591f;font-weight:700;font-size:.85rem}.note{font-size:.85rem;color:#6a8292}
+    /* Little toggle that hides the install-command panel (for presenting). It is fixed bottom-left and always stays, and it follows the site theme: the panel colour in couple themes, a lavender border in quiet mode, and a dark pill in dark mode. */
+    .install-toggle{position:fixed;left:16px;bottom:16px;z-index:1000;display:flex;align-items:center;gap:6px;padding:9px 14px;border-radius:999px;border:1px solid var(--line);background:var(--couple-panel,var(--surface));color:#123a58;font:700 .85rem var(--font-body);cursor:pointer;box-shadow:var(--shadow)}
+    .install-toggle:hover{box-shadow:var(--shadow-lift)}
+    #install-command.is-hidden{display:none}
+    html[data-quiet-days="on"] .install-toggle{border-color:#c5b2de;box-shadow:0 8px 22px rgba(90,70,130,.10)}
+    :root[data-dark-mode="true"] .install-toggle{background:#1e2a35;border-color:rgba(255,255,255,.15);color:#e8f0f7}
   </style>
   <link rel="stylesheet" href="assets/css/site-polish.css" data-site-polish="true"><link rel="stylesheet" href="assets/css/site-theme.css" data-site-theme="true"><link rel="stylesheet" href="assets/css/motion.css">
 </head>
@@ -110,7 +116,7 @@
       </ol>
       <p class="note">The widgets refresh from our site every 15 seconds. Their position on the desktop is set in the <code>className</code> near the top of each <code>index.jsx</code> — change the <code>top</code> and <code>left</code> numbers to move one.</p>
     </section>
-    <section class="panel">
+    <section class="panel" id="install-command">
       <h2>Put them on another Mac with one command</h2>
       <p>To get the same two widgets on another Mac — Charlotte's, say — open <strong>Terminal</strong> on that Mac and paste this one command. It installs Übersicht if it is not there, downloads both widgets from this site, sets them up for the named person, and opens Übersicht so they appear on the desktop.</p>
       <p><code>curl -fsSL https://charlotte-3ts.pages.dev/widgets/ubersicht/install.sh -o /tmp/charlotte-widgets.sh &amp;&amp; bash /tmp/charlotte-widgets.sh Charlotte</code></p>
@@ -142,6 +148,7 @@
       <p><a class="button secondary" href="mood.html">Mood tracker</a> <a class="button secondary" href="bathroom.html">Bathroom check-ins</a></p>
     </section>
   </main>
+  <button id="installToggle" class="install-toggle" type="button" aria-pressed="true" title="Hide the install command"><span class="toggle-icon">👁️</span><span class="toggle-label">Hide install command</span></button>
   <script>
     document.querySelectorAll('[data-copy]').forEach(button => {
       button.addEventListener('click', async () => {
@@ -157,6 +164,27 @@
         }
       });
     });
+  </script>
+  <script>
+    // Little toggle for the install-command panel: hides it for presenting,
+    // and remembers the choice so it stays hidden on the next visit.
+    (function () {
+      var KEY = 'charlotte-hide-install-command';
+      var section = document.getElementById('install-command');
+      var btn = document.getElementById('installToggle');
+      if (!section || !btn) return;
+      function apply(hidden) {
+        section.classList.toggle('is-hidden', hidden);
+        btn.setAttribute('aria-pressed', String(!hidden));
+        btn.querySelector('.toggle-icon').textContent = hidden ? '🙈' : '👁️';
+        btn.querySelector('.toggle-label').textContent = hidden ? 'Show install command' : 'Hide install command';
+        try { localStorage.setItem(KEY, hidden ? '1' : '0'); } catch (e) {}
+      }
+      var hidden = false;
+      try { hidden = localStorage.getItem(KEY) === '1'; } catch (e) {}
+      apply(hidden);
+      btn.addEventListener('click', function () { apply(!section.classList.contains('is-hidden')); });
+    })();
   </script>
 <script src="assets/js/stickers-overlay.js"></script>
 </body>
