@@ -111,6 +111,12 @@
       <p class="note">The widgets refresh from our site every 15 seconds. Their position on the desktop is set in the <code>className</code> near the top of each <code>index.jsx</code> — change the <code>top</code> and <code>left</code> numbers to move one.</p>
     </section>
     <section class="panel">
+      <h2>Put them on another Mac with one command</h2>
+      <p>To get the same two widgets on another Mac — Charlotte's, say — open <strong>Terminal</strong> on that Mac and paste this one command. It installs Übersicht if it is not there, downloads both widgets from this site, sets them up for the named person, and opens Übersicht so they appear on the desktop.</p>
+      <p><code>curl -fsSL https://charlotte-3ts.pages.dev/widgets/ubersicht/install.sh -o /tmp/charlotte-widgets.sh &amp;&amp; bash /tmp/charlotte-widgets.sh Charlotte</code></p>
+      <p class="note">Change <code>Charlotte</code> at the end to <code>Luke</code> to set them up for Luke instead. The name only ever controls whose own check-ins and moods the widgets log — taps can never flip the other person's. After it runs, set the interaction shortcut and allow Accessibility in Übersicht Preferences, just like above.</p>
+    </section>
+    <section class="panel">
       <h2>Set them up — Android (KWGT)</h2>
       <p class="note">Importing a ready-made preset file needs the paid <strong>KWGT Pro key</strong> (about $6.99, one-time, in the Play Store). The free KWGT app has the full editor, so you can also build the same widget by hand — see below.</p>
       <ol>

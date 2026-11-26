@@ -78,3 +78,18 @@ test('widgets page offers the ubersicht widgets and setup', () => {
   assert.match(page, /Accessibility/, 'page explains the Accessibility requirement');
   assert.match(page, /ScriptWidget/, 'page still documents ScriptWidget');
 });
+
+test('ubersicht one-command install script is safe and complete', () => {
+  const src = read('widgets/ubersicht/install.sh');
+  assert.match(src, /^#!\/bin\/bash/, 'has a bash shebang');
+  assert.match(src, /set -e/, 'stops on the first failure');
+  assert.match(src, /tracesof\.net\/uebersicht\/releases\/Uebersicht-1\.6\.82\.app\.zip/, 'downloads Übersicht from its official site');
+  assert.match(src, /brew install --cask ubersicht/, 'prefers Homebrew when it is there');
+  assert.match(src, /SITE="https:\/\/charlotte-3ts\.pages\.dev"/, 'points at our site');
+  assert.match(src, /\$SITE\/widgets\/ubersicht\/bathroom\.widget\.zip/, 'downloads the bathroom widget from our site');
+  assert.match(src, /\$SITE\/widgets\/ubersicht\/mood\.widget\.zip/, 'downloads the mood widget from our site');
+  assert.match(src, /sed -i '' "s\/const USER = 'Luke'\/const USER = '\$NAME'\/"/, 'sets the widgets up for the named person');
+  assert.match(src, /GettingStarted\.jsx/, 'drops the example widget');
+  assert.match(src, /open -a Übersicht/, 'launches Übersicht at the end');
+  assert.match(src, /NAME.*Charlotte.*Luke/, 'only accepts Charlotte or Luke');
+});
