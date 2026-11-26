@@ -140,17 +140,9 @@
     render();
   }
 
-  document.addEventListener('click', async event => {
-    const periodButton = event.target.closest('[data-leaderboard-period]');
-    if (periodButton) {
-      document.querySelectorAll('[data-leaderboard-period]').forEach(button => button.setAttribute('aria-pressed', String(button === periodButton)));
-      renderLeaderboard();
-      return;
-    }
-    const button = event.target.closest('[data-action]');
-    if (!button || button.disabled) return;
-    button.disabled = true;
-    const active = button.dataset.action === 'start';
+  // Save a check-in (start = stepping away, return = back). Used by both the
+  // page buttons and the ?toggle= link the Mac widget taps.
+  async function saveCheckIn(active, button) {
     const at = new Date().toISOString();
     const previousStatus = JSON.parse(JSON.stringify(data.status[user] || { active: false }));
     const previousEvents = data.events.slice();
@@ -203,8 +195,39 @@
         render();
       }
       statusEl.textContent = error.message;
-      button.disabled = false;
+      if (button) button.disabled = false;
     }
+  }
+
+  // Mac widget tap: ?toggle=Charlotte or ?toggle=Luke flips that person's
+  // check-in (away, then back again). Only the logged-in user can toggle
+  // their own check-in, so a tap can never flip the other person's.
+  async function toggleFromLink() {
+    const name = new URLSearchParams(location.search).get('toggle');
+    if (!names.includes(name)) return;
+    // Strip the param first so refreshing the page can't toggle twice.
+    const url = new URL(location.href);
+    url.searchParams.delete('toggle');
+    history.replaceState(null, '', url.pathname + url.search + url.hash);
+    if (name !== user) {
+      statusEl.textContent = `Only ${name} can update their own check-in.`;
+      return;
+    }
+    const active = !(data.status[name] && data.status[name].active);
+    await saveCheckIn(active, null);
+  }
+
+  document.addEventListener('click', async event => {
+    const periodButton = event.target.closest('[data-leaderboard-period]');
+    if (periodButton) {
+      document.querySelectorAll('[data-leaderboard-period]').forEach(button => button.setAttribute('aria-pressed', String(button === periodButton)));
+      renderLeaderboard();
+      return;
+    }
+    const button = event.target.closest('[data-action]');
+    if (!button || button.disabled) return;
+    button.disabled = true;
+    await saveCheckIn(button.dataset.action === 'start', button);
   });
 
   const laterForm = document.getElementById('bathroomLaterForm');
@@ -244,7 +267,7 @@
     finally { button.disabled = false; }
   });
 
-  Promise.all([loadPhotos(), load()]).then(() => render()).catch(error => { statusEl.textContent = error.message; });
+  Promise.all([loadPhotos(), load()]).then(() => { render(); return toggleFromLink(); }).catch(error => { statusEl.textContent = error.message; });
   let socket = null, pingTimer = null, reconnectTimer = null;
   function connect() {
     const protocol = location.protocol === 'https:' ? 'wss:' : 'ws:';

@@ -12,14 +12,21 @@
 //      which the fetch below needs.
 //   4. Press Command-R to preview, Command-S to save.
 //   5. Add the widget from the system widget gallery and pick the
-//      "Bathroom" widget. Tap it any time to open bathroom check-ins on
-//      the site.
+//      "Bathroom" widget.
+//
+// TAPPING THE WIDGET toggles your own check-in: tap once to step away,
+// tap again when you're back. It opens bathroom check-ins on the site,
+// which flips your status and shows the result. The page only lets the
+// logged-in user toggle their own check-in, so this widget is set up for
+// Luke — for Charlotte's own widget, change 'Luke' to 'Charlotte' in
+// TOGGLE_URL below.
 //
 // Widgets refresh on the system's own schedule — for the very latest
 // status, tap the widget to open the site.
 
 const API_URL = 'https://charlotte-3ts.pages.dev/api/trackers';
 const BATHROOM_PAGE = 'https://charlotte-3ts.pages.dev/bathroom.html';
+const TOGGLE_URL = BATHROOM_PAGE + '?toggle=Luke';
 
 const NAVY = '#0d2c44';
 const GOLD = '#f6d365';
@@ -58,22 +65,22 @@ try {
   // fetch returns the response body as a string.
   const data = JSON.parse(await fetch(API_URL));
   content = (
-    <vstack frame="max" alignment="leading" spacing="8" padding="16" background={NAVY} linkurl={BATHROOM_PAGE}>
+    <vstack frame="max" alignment="leading" spacing="8" padding="16" background={NAVY} linkurl={TOGGLE_URL}>
       <text font="subheadline" fontWeight="bold" color={GOLD}>🚻 Bathroom check-ins</text>
       {personRow('Charlotte', data.bathroom && data.bathroom.Charlotte)}
       {personRow('Luke', data.bathroom && data.bathroom.Luke)}
       <spacer />
-      {family === 'small' ? null : <text font="caption2" color={MUTED}>Tap to log a check-in</text>}
+      {family === 'small' ? null : <text font="caption2" color={MUTED}>Tap to toggle your check-in</text>}
     </vstack>
   );
 } catch (e) {
   content = (
-    <vstack frame="max" alignment="leading" spacing="8" padding="16" background={NAVY} linkurl={BATHROOM_PAGE}>
+    <vstack frame="max" alignment="leading" spacing="8" padding="16" background={NAVY} linkurl={TOGGLE_URL}>
       <text font="subheadline" fontWeight="bold" color={GOLD}>🚻 Bathroom check-ins</text>
       <text font="subheadline" fontWeight="bold" color={WHITE}>Couldn't load check-ins</text>
-      <text font="footnote" color={MUTED}>Tap to open bathroom check-ins</text>
+      <text font="footnote" color={MUTED}>Tap to toggle your check-in</text>
       <spacer />
-      {family === 'small' ? null : <text font="caption2" color={MUTED}>Tap to log a check-in</text>}
+      {family === 'small' ? null : <text font="caption2" color={MUTED}>Tap to toggle your check-in</text>}
     </vstack>
   );
 }
