@@ -42,6 +42,7 @@ The `.zip` files next to the folders are built from the folders:
 cd widgets/ubersicht
 zip -r bathroom.widget.zip bathroom.widget
 zip -r mood.widget.zip mood.widget
+zip -r hide-toggle.widget.zip hide-toggle.widget
 ```
 
 Rebuild them whenever `index.jsx` changes, so the download matches the

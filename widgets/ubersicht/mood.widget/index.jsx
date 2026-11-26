@@ -48,20 +48,26 @@ const MOODS = [
   { emoji: '😭', label: 'Overwhelmed' },
 ];
 
-export const refreshFrequency = 15000;
+// While this flag file exists in the home folder, this widget hides itself.
+// The little hide-toggle widget at the bottom-left of the desktop writes
+// and removes it when you tap it (handy when presenting to a class).
+const FLAG = '$HOME/.charlotte-widgets-hidden';
 
-export const command = 'curl -s ' + API_URL;
+export const refreshFrequency = 5000;
 
-export const initialState = { data: null, error: null, justLogged: null, logging: false };
+export const command = 'test -f ' + FLAG + ' && echo HIDDEN || curl -s ' + API_URL;
+
+export const initialState = { data: null, error: null, justLogged: null, logging: false, hidden: false };
 
 export const updateState = (event, previousState) => {
   if (event.type === 'LOGGING') return { ...previousState, logging: true };
   if (event.type === 'LOGGED') return { ...previousState, justLogged: event.mood, logging: false };
   if (event.type === 'LOG_FAILED') return { ...previousState, logging: false, error: 'Could not log that mood — try again' };
   if (event.output) {
+    if (event.output.trim() === 'HIDDEN') return { ...previousState, hidden: true };
     try {
       const data = JSON.parse(event.output);
-      return { data, error: null, justLogged: null, logging: false };
+      return { data, error: null, justLogged: null, logging: false, hidden: false };
     } catch (e) {
       return { ...previousState, error: 'Could not read moods' };
     }
@@ -192,7 +198,8 @@ function personRow(personName, mood) {
 }
 
 export const render = (state, dispatch) => {
-  const { data, error, justLogged, logging } = state;
+  const { data, error, justLogged, logging, hidden } = state;
+  if (hidden) return (<div />);
   const mood = (data && data.mood) || {};
 
   const openMoodPage = () => {

@@ -57,9 +57,11 @@ mkdir -p "$WIDGETS_DIR"
 cd "$WIDGETS_DIR"
 curl -fsSL -o bathroom.widget.zip "$SITE/widgets/ubersicht/bathroom.widget.zip"
 curl -fsSL -o mood.widget.zip "$SITE/widgets/ubersicht/mood.widget.zip"
+curl -fsSL -o hide-toggle.widget.zip "$SITE/widgets/ubersicht/hide-toggle.widget.zip"
 unzip -q -o bathroom.widget.zip
 unzip -q -o mood.widget.zip
-rm -f bathroom.widget.zip mood.widget.zip
+unzip -q -o hide-toggle.widget.zip
+rm -f bathroom.widget.zip mood.widget.zip hide-toggle.widget.zip
 
 # 3. Set the widgets up for the named person, so taps log their own
 # check-ins and moods.

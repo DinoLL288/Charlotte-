@@ -29,20 +29,26 @@ const TOGGLE_API = 'https://charlotte-3ts.pages.dev/api/question-room';
 // Change to 'Charlotte' for Charlotte's own widget.
 const USER = 'Luke';
 
-export const refreshFrequency = 15000;
+// While this flag file exists in the home folder, this widget hides itself.
+// The little hide-toggle widget at the bottom-left of the desktop writes
+// and removes it when you tap it (handy when presenting to a class).
+const FLAG = '$HOME/.charlotte-widgets-hidden';
 
-export const command = 'curl -s ' + API_URL;
+export const refreshFrequency = 5000;
 
-export const initialState = { data: null, error: null, optimisticAway: null, toggling: false };
+export const command = 'test -f ' + FLAG + ' && echo HIDDEN || curl -s ' + API_URL;
+
+export const initialState = { data: null, error: null, optimisticAway: null, toggling: false, hidden: false };
 
 export const updateState = (event, previousState) => {
   if (event.type === 'TOGGLING') return { ...previousState, toggling: true };
   if (event.type === 'TOGGLED') return { ...previousState, optimisticAway: event.away, toggling: false };
   if (event.type === 'TOGGLE_FAILED') return { ...previousState, toggling: false, error: 'Toggle failed — try again' };
   if (event.output) {
+    if (event.output.trim() === 'HIDDEN') return { ...previousState, hidden: true };
     try {
       const data = JSON.parse(event.output);
-      return { data, error: null, optimisticAway: null, toggling: false };
+      return { data, error: null, optimisticAway: null, toggling: false, hidden: false };
     } catch (e) {
       return { ...previousState, error: 'Could not read check-ins' };
     }
@@ -129,7 +135,8 @@ function personRow(personName, info, awayOverride) {
 }
 
 export const render = (state, dispatch) => {
-  const { data, error, optimisticAway, toggling } = state;
+  const { data, error, optimisticAway, toggling, hidden } = state;
+  if (hidden) return (<div />);
   const bathroom = (data && data.bathroom) || {};
   const me = bathroom[USER];
   const otherName = USER === 'Luke' ? 'Charlotte' : 'Luke';

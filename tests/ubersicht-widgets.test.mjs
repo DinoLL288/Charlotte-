@@ -10,21 +10,21 @@ const read = (p) => readFileSync(join(root, p), 'utf8');
 const widgets = [
   { name: 'bathroom', dir: 'widgets/ubersicht/bathroom.widget' },
   { name: 'mood', dir: 'widgets/ubersicht/mood.widget' },
+  { name: 'hide-toggle', dir: 'widgets/ubersicht/hide-toggle.widget' },
 ];
 
 for (const { name, dir } of widgets) {
   test(`ubersicht ${name} widget exists and is a valid widget module`, () => {
     const src = read(`${dir}/index.jsx`);
-    assert.match(src, /https:\/\/charlotte-3ts\.pages\.dev\/api\/trackers/, 'reads the public trackers summary');
+    assert.match(src, /charlotte-3ts\.pages\.dev\/api\/trackers|\.charlotte-widgets-hidden/, 'reads the public trackers summary or the hide flag');
     assert.match(src, /export const command/, 'exports command');
-    assert.match(src, /export const refreshFrequency = 15000/, 'refreshes every 15 seconds');
+    assert.match(src, /export const refreshFrequency = 5000/, 'refreshes every 5 seconds');
     assert.match(src, /export const updateState/, 'exports updateState');
     assert.match(src, /export const initialState/, 'exports initialState');
     assert.match(src, /export const render/, 'exports render');
     assert.match(src, /export const className/, 'exports className (position)');
     assert.match(src, /from 'uebersicht'/, 'imports from the ubersicht module');
     assert.match(src, /#0d2c44/, 'uses the site navy');
-    assert.match(src, /#f6d365/, 'uses the site gold');
   });
 
   test(`ubersicht ${name} widget has a downloadable zip`, () => {
@@ -67,6 +67,35 @@ test('ubersicht mood widget logs a mood from the widget itself', () => {
   }
 });
 
+test('ubersicht bathroom and mood widgets hide when the flag file exists', () => {
+  for (const name of ['bathroom', 'mood']) {
+    const src = read(`widgets/ubersicht/${name}.widget/index.jsx`);
+    assert.match(src, /\.charlotte-widgets-hidden/, `${name} knows the hide flag file`);
+    assert.match(src, /test -f .*FLAG.*&& echo HIDDEN \|\| curl/, `${name} checks the flag before fetching`);
+    assert.match(src, /if \(hidden\) return \(<div \/>\)/, `${name} renders nothing while hidden`);
+  }
+});
+
+test('ubersicht hide-toggle widget flips the flag file', () => {
+  const src = read('widgets/ubersicht/hide-toggle.widget/index.jsx');
+  assert.match(src, /bottom: 20px;/, 'sits at the bottom of the desktop');
+  assert.match(src, /left: 20px;/, 'sits at the left of the desktop');
+  assert.match(src, /test -f .*FLAG.*&& rm .*FLAG.*\|\| touch .*FLAG/, 'tap writes or removes the flag file');
+  assert.match(src, /Hide trackers/, 'offers to hide the trackers');
+  assert.match(src, /Show trackers/, 'offers to show them again');
+  const zipPath = join(root, 'widgets/ubersicht/hide-toggle.widget.zip');
+  assert.ok(existsSync(zipPath), 'hide-toggle.widget.zip exists');
+  const buf = readFileSync(zipPath);
+  assert.equal(buf.subarray(0, 2).toString('latin1'), 'PK', 'zip starts with PK magic');
+  assert.ok(buf.includes('hide-toggle.widget/index.jsx'), 'zip contains the widget index.jsx');
+});
+
+test('ubersicht bathroom and mood widgets use the site gold', () => {
+  for (const name of ['bathroom', 'mood']) {
+    assert.match(read(`widgets/ubersicht/${name}.widget/index.jsx`), /#f6d365/, `${name} uses the site gold`);
+  }
+});
+
 test('widgets page offers the ubersicht widgets and setup', () => {
   const page = read('widgets.html');
   assert.match(page, /widgets\/ubersicht\/bathroom\.widget\.zip/, 'page links the bathroom zip');
@@ -100,6 +129,7 @@ test('ubersicht one-command install script is safe and complete', () => {
   assert.match(src, /SITE="https:\/\/charlotte-3ts\.pages\.dev"/, 'points at our site');
   assert.match(src, /\$SITE\/widgets\/ubersicht\/bathroom\.widget\.zip/, 'downloads the bathroom widget from our site');
   assert.match(src, /\$SITE\/widgets\/ubersicht\/mood\.widget\.zip/, 'downloads the mood widget from our site');
+  assert.match(src, /\$SITE\/widgets\/ubersicht\/hide-toggle\.widget\.zip/, 'downloads the hide-toggle widget from our site');
   assert.match(src, /sed -i '' "s\/const USER = 'Luke'\/const USER = '\$NAME'\/"/, 'sets the widgets up for the named person');
   assert.match(src, /GettingStarted\.jsx/, 'drops the example widget');
   assert.match(src, /open -a Übersicht/, 'launches Übersicht at the end');
