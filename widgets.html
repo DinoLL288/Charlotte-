@@ -17,11 +17,11 @@
 </head>
 <body>
   <div class="top-bar"><a class="button" href="index.html">← Back to hub</a></div>
-  <header class="hero"><p style="text-transform:uppercase;letter-spacing:.12em;font-size:.8rem">On your home screen</p><h1>Phone widgets</h1><p>Our mood and bathroom trackers, right on your iPhone or Mac home screen.</p></header>
+  <header class="hero"><p style="text-transform:uppercase;letter-spacing:.12em;font-size:.8rem">On your home screen</p><h1>Phone widgets</h1><p>Our mood and bathroom trackers, right on your iPhone, Mac or Android home screen.</p></header>
   <main class="shell">
     <section class="panel">
       <h2>How it works</h2>
-      <p>A website on its own can't make iPhone or Mac widgets — those need an app. So we use a free widget app: <strong>Scriptable</strong> on iPhone / iPad, and <strong>ScriptWidget</strong> on Mac (Scriptable isn't available on macOS). The widgets read a tiny public summary from our site (latest moods and today's bathroom counts, no notes or history), and tapping one opens the matching tracker page.</p>
+      <p>A website on its own can't make phone or Mac widgets — those need an app. So we use a widget app: <strong>Scriptable</strong> on iPhone / iPad, <strong>ScriptWidget</strong> on Mac (Scriptable isn't available on macOS), and <strong>KWGT</strong> on Android (Scriptable isn't available there either). The widgets read a tiny public summary from our site (latest moods and today's bathroom counts, no notes or history), and tapping one opens the matching tracker page.</p>
     </section>
     <section class="panel">
       <h2>The widgets</h2>
@@ -51,6 +51,16 @@
         <button class="button secondary" type="button" data-copy="/widgets/scriptwidget/bathroom/widget.json" data-dest="ScriptWidget">Copy bathroom manifest</button>
         <span class="copy-status" data-status="bathroom-mac"></span>
       </div>
+      <div class="widget-card">
+        <h3>💛 Mood widget — Android (KWGT)</h3>
+        <p>Our latest moods, as an Android widget. A ready-made preset file — download it and import it into KWGT.</p>
+        <a class="button" href="/widgets/kwgt/mood.kwgt" download>Download mood widget</a>
+      </div>
+      <div class="widget-card">
+        <h3>🚻 Bathroom widget — Android (KWGT)</h3>
+        <p>Who's away right now and today's counts, as an Android widget. Tap it to toggle your own check-in — away, then back. A ready-made preset file — download it and import it into KWGT.</p>
+        <a class="button" href="/widgets/kwgt/bathroom.kwgt" download>Download bathroom widget</a>
+      </div>
     </section>
     <section class="panel">
       <h2>Set them up — iPhone / iPad (Scriptable)</h2>
@@ -73,6 +83,26 @@
         <li>Tap the widget any time to open the tracker on our site — tapping the bathroom widget also toggles your own check-in (away, then back).</li>
       </ol>
       <p class="note">Widgets refresh on your device's own schedule, so they can be a little behind — tapping one always opens the latest on the site.</p>
+    </section>
+    <section class="panel">
+      <h2>Set them up — Android (KWGT)</h2>
+      <p class="note">Importing a ready-made preset file needs the paid <strong>KWGT Pro key</strong> (about $6.99, one-time, in the Play Store). The free KWGT app has the full editor, so you can also build the same widget by hand — see below.</p>
+      <ol>
+        <li>Install <strong>KWGT Kustom Widget Maker</strong> free from the Google Play Store (and the <strong>KWGT Pro key</strong> if you want to import the ready-made files).</li>
+        <li>Tap <strong>Download</strong> above for the widget you want, then move the .kwgt file into the <strong>Kustom/widgets</strong> folder on your phone (or, in KWGT, tap <strong>Load Preset</strong> → the folder button → <strong>Import</strong> and pick the file).</li>
+        <li>Long-press the home screen → <strong>Widgets</strong> → <strong>KWGT</strong> → drag a widget onto the screen (4×2 fits these best), then tap it → <strong>Load Preset</strong> → pick the widget you imported.</li>
+        <li>Tap the widget any time to open the tracker on our site — tapping the bathroom widget also toggles your own check-in (away, then back).</li>
+      </ol>
+      <p class="note">Widgets refresh on your device's own schedule, so they can be a little behind — tapping one always opens the latest on the site.</p>
+      <details>
+        <summary>No Pro key? Build it by hand (free)</summary>
+        <p>Add a KWGT widget, tap it to open the editor, add a <strong>global text variable</strong> called <strong>API_URL</strong> with the value <code>https://charlotte-3ts.pages.dev/api/trackers</code>, then add text items with these formulas (repeat for Luke by swapping the name):</p>
+        <p><strong>Mood emoji</strong> — <code>$if(wg(gv(API_URL), json, .mood.Charlotte.emoji)="", "—", wg(gv(API_URL), json, .mood.Charlotte.emoji))$</code></p>
+        <p><strong>Mood detail</strong> — <code>$if(wg(gv(API_URL), json, .mood.Charlotte.emoji)="", "Not logged yet", wg(gv(API_URL), json, .mood.Charlotte.label) + if(wg(gv(API_URL), json, .mood.Charlotte.intensity)="", "", " · " + wg(gv(API_URL), json, .mood.Charlotte.intensity) + "/5") + if(wg(gv(API_URL), json, .mood.Charlotte.time)="", "", " · " + tf(wg(gv(API_URL), json, .mood.Charlotte.time))))$</code></p>
+        <p><strong>Bathroom emoji</strong> — <code>$if(wg(gv(API_URL), json, .bathroom.Charlotte.startedAt)="", "✅", "🚻")$</code></p>
+        <p><strong>Bathroom detail</strong> — <code>$if(wg(gv(API_URL), json, .bathroom.Charlotte.startedAt)="", "Back" + if(wg(gv(API_URL), json, .bathroom.Charlotte.today)="", "", " · " + wg(gv(API_URL), json, .bathroom.Charlotte.today) + " today"), "Away · " + tf(wg(gv(API_URL), json, .bathroom.Charlotte.startedAt)) + if(wg(gv(API_URL), json, .bathroom.Charlotte.today)="", "", " · " + wg(gv(API_URL), json, .bathroom.Charlotte.today) + " today"))$</code></p>
+        <p>For the tap, open the widget's root layer → <strong>Touch</strong> → set a single tap to open the URL: <code>https://charlotte-3ts.pages.dev/mood.html</code> for the mood widget, or <code>https://charlotte-3ts.pages.dev/bathroom.html?toggle=Luke</code> for the bathroom one.</p>
+      </details>
     </section>
     <section class="panel">
       <h2>The site itself, on your home screen too</h2>
