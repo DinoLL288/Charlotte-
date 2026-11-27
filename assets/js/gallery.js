@@ -156,7 +156,7 @@
         const media = entry.mediaItem;
         const photo = batch.find(item => item.mediaItemId === media?.id);
         if (!photo || !media?.baseUrl) continue;
-        byMediaId.get(media.id)?.forEach(copy => { copy.url = `${media.baseUrl}=w900-h900`; copy.fullUrl = `${media.baseUrl}=d`; });
+        byMediaId.get(media.id)?.forEach(copy => { copy.url = `${media.baseUrl}=w400-h400`; copy.fullUrl = `${media.baseUrl}=d`; });
       }
     }
     if (googleConnectButton) googleConnectButton.textContent = 'Google Photos connected ✓';

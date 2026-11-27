@@ -37,3 +37,16 @@ test('collected balls pile into a heap at the bottom of the page', () => {
 test('balls spawn just above the top of the screen you can see', () => {
   assert.match(src, /let y = scrollY \+ random\(-120, -radius\);/, 'balls spawn just above the visible top');
 });
+
+test('the balls script only loads when the user first turns balls on', () => {
+  // The shell puts a stub toggle on the page; the full script (and its
+  // saved-state fetch) loads on the first tap, not on every page load.
+  const shell = readFileSync(join(root, 'assets/js/site-shell.js'), 'utf8');
+  assert.match(shell, /fidget-balls-toggle/, 'the shell creates a stub toggle');
+  assert.match(shell, /__bouncyBallsAutoEnable = true/, 'the tap that loads the script means "on"');
+  assert.doesNotMatch(shell, /script\.src = '\/assets\/js\/ui-bouncy-balls\.js\?v=2'/, 'the old always-load version is gone');
+  assert.match(shell, /ui-bouncy-balls\.js\?v=3/, 'the script version is bumped so browsers fetch the new file');
+  // The balls script adopts the stub toggle instead of making a second one.
+  assert.match(src, /document\.getElementById\("fidget-balls-toggle"\)/, 'the script adopts an existing stub toggle');
+  assert.match(src, /__bouncyBallsAutoEnable/, 'the script auto-enables when loaded from the stub tap');
+});

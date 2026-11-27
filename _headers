@@ -5,10 +5,13 @@
   Cache-Control: no-store
 
 /assets/*
-  Cache-Control: public, max-age=86400, stale-while-revalidate=604800
+  ! Cache-Control
+  Cache-Control: public, max-age=604800, stale-while-revalidate=604800
 
 /api/*
+  ! Cache-Control
   Cache-Control: no-store
 
 /gallery/*
+  ! Cache-Control
   Cache-Control: no-store

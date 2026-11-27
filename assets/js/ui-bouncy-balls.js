@@ -170,7 +170,10 @@
     }).catch(() => { /* ignore */ });
   }
 
-  loadState().catch(() => { /* ignore */ });
+  // The saved state (tokens, pile, theme) loads in the background; the
+  // toggle works before it arrives, and enabling re-renders the HUD once
+  // it lands (see setBallsEnabled).
+  const stateReady = loadState().catch(() => { /* ignore */ });
   let enabled = false;
   let balls = [];          // live physics balls
   let obstacles = [];
@@ -468,25 +471,32 @@
   });
 
   // ---------- UI: toggle ----------
-  const toggle = document.createElement("button");
-  toggle.textContent = "● Fidget balls: OFF";
-  toggle.setAttribute("aria-pressed", "false");
-  Object.assign(toggle.style, {
-    position: "fixed",
-    right: "18px",
-    bottom: "18px",
-    zIndex: "2147483001",
-    padding: "11px 15px",
-    border: "1px solid var(--line-strong, #c3d1da)",
-    borderRadius: "30px",
-    background: "var(--surface, #ffffff)",
-    color: "var(--ink, #1c3850)",
-    font: "600 13px system-ui, -apple-system, 'Segoe UI', Roboto, Arial, sans-serif",
-    cursor: "pointer",
-    boxShadow: "var(--shadow-sm, 0 1px 2px rgba(28,56,80,0.07))",
-    transition: "background .15s ease"
-  });
-  document.documentElement.appendChild(toggle);
+  // The app shell may have already put a stub toggle on the page (so this
+  // script only loads when the user first turns balls on). Adopt it as-is
+  // — same button, same look — instead of making a second one.
+  let toggle = document.getElementById("fidget-balls-toggle");
+  if (!toggle) {
+    toggle = document.createElement("button");
+    toggle.id = "fidget-balls-toggle";
+    toggle.textContent = "● Fidget balls: OFF";
+    toggle.setAttribute("aria-pressed", "false");
+    Object.assign(toggle.style, {
+      position: "fixed",
+      right: "18px",
+      bottom: "18px",
+      zIndex: "2147483001",
+      padding: "11px 15px",
+      border: "1px solid var(--line-strong, #c3d1da)",
+      borderRadius: "30px",
+      background: "var(--surface, #ffffff)",
+      color: "var(--ink, #1c3850)",
+      font: "600 13px system-ui, -apple-system, 'Segoe UI', Roboto, Arial, sans-serif",
+      cursor: "pointer",
+      boxShadow: "var(--shadow-sm, 0 1px 2px rgba(28,56,80,0.07))",
+      transition: "background .15s ease"
+    });
+    document.documentElement.appendChild(toggle);
+  }
 
   function random(min, max) {
     return Math.random() * (max - min) + min;
@@ -1019,8 +1029,8 @@
     if (ctx) ctx.clearRect(0, 0, width, height);
   }
 
-  toggle.addEventListener("click", () => {
-    enabled = !enabled;
+  function setBallsEnabled(on) {
+    enabled = on;
     toggle.textContent = enabled ? "● Fidget balls: ON" : "● Fidget balls: OFF";
     toggle.style.background = enabled ? "var(--accent, #2c6e92)" : "var(--surface, #ffffff)";
     toggle.style.color = enabled ? "#fff" : "var(--ink, #1c3850)";
@@ -1037,13 +1047,17 @@
       const n = Math.min(state.spawnBatch, BASE.ballCount);
       for (let i = 0; i < n; i++) balls.push(createBall());
       start();
+      // The saved pile may still be loading; re-render the HUD once it lands.
+      stateReady.then(() => { try { updateHud(); } catch (e) {} });
     } else {
       balls = [];
       stop();
       removeCanvas();
     }
     updateHud();
-  });
+  }
+
+  toggle.addEventListener("click", () => setBallsEnabled(!enabled));
 
   window.addEventListener("resize", resize);
   window.addEventListener("scroll", () => {
@@ -1112,4 +1126,11 @@
       delete window.__bouncyBallsLoaded;
     }
   };
+
+  // Turned on from the shell's stub toggle: the tap that loaded this
+  // script meant "on", so enable now (same path as tapping the toggle).
+  if (window.__bouncyBallsAutoEnable) {
+    delete window.__bouncyBallsAutoEnable;
+    setBallsEnabled(true);
+  }
 })();

@@ -4,13 +4,19 @@
 //
 // How sync works: there is no realtime server. The shared "now playing"
 // state (video, playing/paused, position, updatedAt) lives in the
-// GitHub-backed queue store. Each open page polls it every 5 seconds
-// and nudges its own player towards it: if the other side is playing
-// and we are paused, we seek to the shared position and play; if the
-// other side paused, we pause at the shared position; if both are
-// playing but we have drifted more than 5 seconds apart, we seek.
-// So both land on roughly the same spot, give or take a few seconds —
-// this is approximate sync, not frame-perfect.
+// GitHub-backed queue store. Each open page polls it and nudges its own
+// player towards it: if the other side is playing and we are paused, we
+// seek to the shared position and play; if the other side paused, we pause
+// at the shared position; if both are playing but we have drifted more
+// than 5 seconds apart, we seek. So both land on roughly the same spot,
+// give or take a few seconds — this is approximate sync, not frame-perfect.
+//
+// The poll is not a fixed 5 seconds: pollDelayMs (exported for tests)
+// backs off when nothing is playing (30 s idle, 15 s when a video is
+// loaded but paused) and stops entirely while the tab is hidden, resuming
+// with an immediate refresh when the tab comes back. While a video is
+// actually playing on either side it stays at 5 seconds, so sync while
+// watching is unchanged.
 //
 // TODO (shared Google account): once the eu.org domain is approved and
 // Google sign-in works for the site, connect the shared Google/YouTube
@@ -50,6 +56,21 @@ export function parseYouTubeId(input) {
 
 export function thumbnailUrl(videoId) {
   return `https://i.ytimg.com/vi/${videoId}/hqdefault.jpg`;
+}
+
+// How long to wait before the next queue/sync poll, in ms. Playing (on
+// either side) stays fast so sync while watching is unchanged; a loaded
+// but paused video polls slower; nothing playing polls slowest; a hidden
+// tab does not poll at all (null) and refreshes as soon as it is visible
+// again. Exported so tests can check the back-off without a DOM.
+export const POLL_ACTIVE_MS = 5000;
+export const POLL_PAUSED_MS = 15000;
+export const POLL_IDLE_MS = 30000;
+export function pollDelayMs({ hidden, nowPlaying } = {}) {
+  if (hidden) return null;
+  if (nowPlaying && nowPlaying.state === 'playing') return POLL_ACTIVE_MS;
+  if (nowPlaying && nowPlaying.videoId) return POLL_PAUSED_MS;
+  return POLL_IDLE_MS;
 }
 
 // Where a follower's player should be, given the shared now-playing
@@ -324,7 +345,23 @@ if (typeof document !== 'undefined' && typeof fetch !== 'undefined') {
     addButton.addEventListener('click', addVideo);
     addInput.addEventListener('keydown', (e) => { if (e.key === 'Enter') addVideo(); });
 
-    refresh();
-    setInterval(refresh, 5000);
+    // Poll on a timeout chain (not a fixed interval) so the delay can
+    // back off when nothing is playing — see pollDelayMs. A hidden tab
+    // stops polling entirely and refreshes as soon as it is visible again.
+    let pollTimer = null;
+    function scheduleNextPoll() {
+      if (pollTimer) clearTimeout(pollTimer);
+      const delay = pollDelayMs({ hidden: document.hidden, nowPlaying });
+      if (delay == null) { pollTimer = null; return; }
+      pollTimer = setTimeout(async () => { await refresh(); scheduleNextPoll(); }, delay);
+    }
+    document.addEventListener('visibilitychange', () => {
+      if (document.hidden) {
+        if (pollTimer) { clearTimeout(pollTimer); pollTimer = null; }
+      } else {
+        refresh().then(scheduleNextPoll);
+      }
+    });
+    refresh().then(scheduleNextPoll);
   })();
 }

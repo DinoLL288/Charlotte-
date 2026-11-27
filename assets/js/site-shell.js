@@ -21,19 +21,55 @@
     else frame.src = next;
   }
 
+  // The balls script (and its saved-state fetch) only loads when the user
+  // first turns balls on. Until then the page just gets the toggle button,
+  // identical to the one the script itself creates — the script adopts it
+  // when it loads instead of making a second one. That saves a 45 KB
+  // download and a state fetch on every page load for anyone who never
+  // turns the balls on, and the toggle looks and behaves exactly the same.
   function installBouncyBalls() {
   try {
     const pageDocument = frame.contentDocument;
-    if (!pageDocument || !pageDocument.documentElement) return;
+    const pageWindow = frame.contentWindow;
+    if (!pageDocument || !pageDocument.documentElement || !pageWindow) return;
 
     if (pageDocument.getElementById('ui-bouncy-balls-script')) return;
+    if (pageDocument.getElementById('fidget-balls-toggle')) return;
 
-    const script = pageDocument.createElement('script');
-    script.id = 'ui-bouncy-balls-script';
-    script.src = '/assets/js/ui-bouncy-balls.js?v=2';
-    script.async = true;
-
-    (pageDocument.head || pageDocument.documentElement).appendChild(script);
+    const toggle = pageDocument.createElement('button');
+    toggle.id = 'fidget-balls-toggle';
+    toggle.textContent = '● Fidget balls: OFF';
+    toggle.setAttribute('aria-pressed', 'false');
+    Object.assign(toggle.style, {
+      position: 'fixed',
+      right: '18px',
+      bottom: '18px',
+      zIndex: '2147483001',
+      padding: '11px 15px',
+      border: '1px solid var(--line-strong, #c3d1da)',
+      borderRadius: '30px',
+      background: 'var(--surface, #ffffff)',
+      color: 'var(--ink, #1c3850)',
+      font: "600 13px system-ui, -apple-system, 'Segoe UI', Roboto, Arial, sans-serif",
+      cursor: 'pointer',
+      boxShadow: 'var(--shadow-sm, 0 1px 2px rgba(28,56,80,0.07))',
+      transition: 'background .15s ease'
+    });
+    toggle.addEventListener('click', () => {
+      // Once the balls script has loaded it owns the toggle.
+      if (pageWindow.__bouncyBallsLoaded) return;
+      if (pageWindow.__bouncyBallsLoading) return;
+      pageWindow.__bouncyBallsLoading = true;
+      // The tap that loads the script means "on".
+      pageWindow.__bouncyBallsAutoEnable = true;
+      const script = pageDocument.createElement('script');
+      script.id = 'ui-bouncy-balls-script';
+      script.src = '/assets/js/ui-bouncy-balls.js?v=3';
+      script.async = true;
+      script.onerror = () => { pageWindow.__bouncyBallsLoading = false; };
+      (pageDocument.head || pageDocument.documentElement).appendChild(script);
+    });
+    pageDocument.documentElement.appendChild(toggle);
   } catch (error) {
     // Fidget balls failed to load — non-critical, silently continue
   }

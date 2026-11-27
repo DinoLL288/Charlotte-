@@ -1,6 +1,6 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
-import { parseYouTubeId, thumbnailUrl, syncPosition } from '../assets/js/watch-together.js';
+import { parseYouTubeId, thumbnailUrl, syncPosition, pollDelayMs, POLL_ACTIVE_MS, POLL_PAUSED_MS, POLL_IDLE_MS } from '../assets/js/watch-together.js';
 
 test('parseYouTubeId accepts watch, short, shorts and embed links', function () {
   assert.equal(parseYouTubeId('https://www.youtube.com/watch?v=dQw4w9WgXcQ'), 'dQw4w9WgXcQ');
@@ -43,4 +43,26 @@ test('syncPosition returns null when nothing is playing', function () {
   assert.equal(syncPosition(null, Date.now()), null);
   assert.equal(syncPosition({}, Date.now()), null);
   assert.equal(syncPosition({ state: 'playing', position: 5 }, Date.now()), null);
+});
+
+test('pollDelayMs stays fast while a video is playing', function () {
+  assert.equal(pollDelayMs({ hidden: false, nowPlaying: { videoId: 'dQw4w9WgXcQ', state: 'playing' } }), POLL_ACTIVE_MS);
+  assert.equal(POLL_ACTIVE_MS, 5000);
+});
+
+test('pollDelayMs backs off when a video is loaded but paused', function () {
+  assert.equal(pollDelayMs({ hidden: false, nowPlaying: { videoId: 'dQw4w9WgXcQ', state: 'paused' } }), POLL_PAUSED_MS);
+  assert.equal(POLL_PAUSED_MS, 15000);
+});
+
+test('pollDelayMs backs off most when nothing is playing', function () {
+  assert.equal(pollDelayMs({ hidden: false, nowPlaying: null }), POLL_IDLE_MS);
+  assert.equal(pollDelayMs({ hidden: false, nowPlaying: {} }), POLL_IDLE_MS);
+  assert.equal(pollDelayMs({}), POLL_IDLE_MS);
+  assert.equal(POLL_IDLE_MS, 30000);
+});
+
+test('pollDelayMs stops polling while the tab is hidden', function () {
+  assert.equal(pollDelayMs({ hidden: true, nowPlaying: { videoId: 'dQw4w9WgXcQ', state: 'playing' } }), null);
+  assert.equal(pollDelayMs({ hidden: true, nowPlaying: null }), null);
 });

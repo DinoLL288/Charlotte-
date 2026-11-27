@@ -20,7 +20,10 @@
     body { color: #ffffff; background: #16324a; }
 
     .backdrop { position: fixed; inset: 0; z-index: -1; overflow: hidden; background: #16324a; }
-    .backdrop-photo { position: absolute; inset: 0; background: url("assets/images/holding-hands.jpg") center 35% / cover no-repeat; }
+    .backdrop-photo { position: absolute; inset: 0; background: image-set(url("assets/images/holding-hands.avif") type("image/avif"), url("assets/images/holding-hands.webp") type("image/webp"), url("assets/images/holding-hands.jpg") type("image/jpeg")) center 35% / cover no-repeat; }
+    @media (max-width: 700px) {
+      .backdrop-photo { background-image: image-set(url("assets/images/holding-hands-mobile.webp") type("image/webp"), url("assets/images/holding-hands-mobile.jpg") type("image/jpeg")); }
+    }
     .backdrop-photo::after { content: ""; position: absolute; inset: 0; background: rgba(18, 40, 58, 0.72); }
 
     .top-bar { position: fixed; top: 12px; left: 12px; z-index: 25; }
@@ -410,6 +413,6 @@
   </script>
   <script src="assets/js/together.js"></script>
   <script src="assets/js/avatar.js"></script>
-<script src="assets/js/stickers-overlay.js"></script>
+<script defer src="assets/js/stickers-overlay.js"></script>
 </body>
 </html>
