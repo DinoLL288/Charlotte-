@@ -113,6 +113,14 @@ This produces an `.AppImage` and a `.deb` in
 `src-tauri/target/release/bundle/`. Run the AppImage directly, or install
 the `.deb` with `sudo dpkg -i`.
 
+**Note:** the Linux build was not completed on this VM — its package
+manager refuses the webkit dev stack because the VM's own `libzstd1`
+build (`1.5.5+dfsg2-2build1.1+hatch2`) conflicts with the exact version
+`libzstd-dev` requires. The Tauri project is complete and ready; build it
+on a normal Linux box (or after fixing that one package conflict) and it
+should just work. Rust itself installs fine here (`cargo 1.100.0` was
+verified).
+
 ## Files
 
 | Path | What it is |
