@@ -1,0 +1,7 @@
+<?xml version='1.0' encoding='utf-8'?>
+<resources>
+    <string name="app_name">Charlotte &amp; Luke</string>
+    <string name="title_activity_main">Charlotte &amp; Luke</string>
+    <string name="package_name">com.charlotte.luke</string>
+    <string name="custom_url_scheme">com.charlotte.luke</string>
+</resources>

@@ -27,6 +27,10 @@
     "image-size": "^2.0.4"
   },
   "devDependencies": {
+    "@capacitor/android": "^8.6.3",
+    "@capacitor/cli": "^8.6.3",
+    "@capacitor/core": "^8.6.3",
+    "@capacitor/ios": "^8.6.3",
     "sharp": "^0.35.5"
   }
 }
