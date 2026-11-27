@@ -159,6 +159,9 @@ export function describeCountdown(target, now) {
 // 'banner' (calendar page). Works with a plain { innerHTML } stub in tests.
 export function renderNextUp(el, target, now) {
   var variant = el.getAttribute ? el.getAttribute('data-next-up') : 'card';
+  // The hub card starts with a shimmering "Counting down…" loading line;
+  // real content (or the friendly empty state) has arrived now.
+  if (el.classList && el.classList.remove) el.classList.remove('is-loading');
   if (!target) {
     if (variant === 'banner') {
       if (el.setAttribute) el.setAttribute('hidden', '');

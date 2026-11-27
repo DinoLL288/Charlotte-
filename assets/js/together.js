@@ -39,7 +39,7 @@
       return '<span class="unit" data-unit="' + item.key + '"><span class="num">' + show(item, 0) +
         '</span><span class="label">' + labelFor(item) + '</span></span>';
     }).join('');
-    targets.forEach(function (target) { target.innerHTML = html; });
+    targets.forEach(function (target) { target.classList.remove('is-loading'); target.innerHTML = html; });
   }
 
   function update(progress) {
