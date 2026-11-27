@@ -195,15 +195,14 @@
         "date": "2026-11-20T05:20:18.758Z",
         "source": "tiktok",
         "sourceId": "50a2e47e-8421-49a7-b199-30f63229eb12"
-      }
-    ],
-    "2026-11-27": [
+      },
       {
-        "title": "Check eu.org domain approval (charlotte-and-lukes-littleuniverse.eu.org) - email hostmaster if not approved",
+        "title": "Charlotte kisses Luke",
         "author": "Luke",
-        "time": "",
+        "id": "0e6b0dad-fe2a-4b2c-ae4c-337512af08d1",
         "startTime": "",
-        "id": "073c8cc9-c396-40ab-8711-7de86e77f1f3"
+        "endTime": "",
+        "time": ""
       }
     ],
     "2026-11-26": [
@@ -246,6 +245,14 @@
         "time": "",
         "author": "Luke",
         "id": "9555a26b-e09c-4420-9ff8-93f21651ab54"
+      },
+      {
+        "title": "Charlotte kisses Luke",
+        "author": "Luke",
+        "id": "316378b8-cc9b-4cbf-92bb-be873dd8513e",
+        "startTime": "",
+        "endTime": "",
+        "time": ""
       }
     ],
     "2026-12-05": [
@@ -256,6 +263,98 @@
         "time": "Break 6:30 PM - 7:00 PM",
         "author": "Luke",
         "id": "74d6bd08-fb8e-479e-9dc6-5e2af56038c2"
+      }
+    ],
+    "2026-11-30": [
+      {
+        "title": "Charlotte kisses Luke",
+        "author": "Luke",
+        "id": "02247ace-58fd-470d-b254-107e3757808b",
+        "startTime": "",
+        "endTime": "",
+        "time": ""
+      }
+    ],
+    "2026-12-01": [
+      {
+        "title": "Charlotte kisses Luke",
+        "author": "Luke",
+        "id": "ac8937c7-d569-4d94-b8c6-945ad09fa07b",
+        "startTime": "",
+        "endTime": "",
+        "time": ""
+      }
+    ],
+    "2026-12-02": [
+      {
+        "title": "Charlotte kisses Luke",
+        "author": "Luke",
+        "id": "ebce1160-ee91-4c86-9a2a-e672ba02b726",
+        "startTime": "",
+        "endTime": "",
+        "time": ""
+      }
+    ],
+    "2026-12-07": [
+      {
+        "title": "Charlotte kisses Luke",
+        "author": "Luke",
+        "id": "f55cc3c8-9983-47c2-8874-40c82be358e9",
+        "startTime": "",
+        "endTime": "",
+        "time": ""
+      }
+    ],
+    "2026-12-08": [
+      {
+        "title": "Charlotte kisses Luke",
+        "author": "Luke",
+        "id": "c104b1aa-df38-47b9-8d71-d7cfd78523c7",
+        "startTime": "",
+        "endTime": "",
+        "time": ""
+      }
+    ],
+    "2026-12-09": [
+      {
+        "title": "Charlotte kisses Luke",
+        "author": "Luke",
+        "id": "fa9c296b-45b1-46c8-9b46-e49fbb69d0f2",
+        "startTime": "",
+        "endTime": "",
+        "time": ""
+      }
+    ],
+    "2026-12-10": [
+      {
+        "title": "Charlotte kisses Luke",
+        "author": "Luke",
+        "id": "add682a7-9097-4b5d-9e3f-9cf773323e17",
+        "startTime": "",
+        "endTime": "",
+        "time": ""
+      }
+    ],
+    "2026-12-11": [
+      {
+        "title": "Charlotte kisses Luke",
+        "author": "Luke",
+        "id": "42ee94ce-c275-4214-975d-f5052c864377",
+        "startTime": "",
+        "endTime": "",
+        "time": ""
+      }
+    ],
+    "2026-12-18": [
+      {
+        "title": "Check eu.org domain approval (charlotte-and-lukes-littleuniverse.eu.org) - email hostmaster if not approved",
+        "author": "Luke",
+        "time": "",
+        "startTime": "",
+        "id": "073c8cc9-c396-40ab-8711-7de86e77f1f3",
+        "endTime": "",
+        "editedBy": "Luke",
+        "editedAt": "2026-11-27T08:50:41.030Z"
       }
     ]
   }
