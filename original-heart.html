@@ -139,7 +139,7 @@
     <section class="screen hidden" id="memory">
       <h1>A little memory</h1>
       <div class="photo-frame">
-        <img id="memoryPhoto" src="assets/images/holding-hands.jpg" alt="A favourite memory together" loading="lazy" decoding="async" onerror="this.onerror=null; this.style.display='none'; document.getElementById('photoFallback').style.display='block';">
+        <picture><source srcset="assets/images/holding-hands.avif" type="image/avif"><source srcset="assets/images/holding-hands.webp" type="image/webp"><img id="memoryPhoto" src="assets/images/holding-hands.jpg" alt="A favourite memory together" loading="lazy" decoding="async" onerror="this.onerror=null; this.style.display='none'; document.getElementById('photoFallback').style.display='block';"></picture>
         <div id="photoFallback" style="display:none; padding:45px 12px; color:#245b85;">
           <strong>Your photo goes here</strong>
           <p>Put the photo in the same folder as index.html and name it <code>holding-hands.jpg</code>.</p>
@@ -187,6 +187,6 @@
       window.scrollTo({ top: 0, behavior: "smooth" });
     });
   </script>
-  <script src="assets/js/stickers-overlay.js"></script>
+  <script defer src="assets/js/stickers-overlay.js"></script>
 </body>
 </html>

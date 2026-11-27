@@ -44,7 +44,11 @@
       position: absolute;
       inset: 0;
       z-index: -2;
-      background: url('assets/images/holding-hands.jpg') center 34% / cover no-repeat;
+      background: image-set(url('assets/images/holding-hands.avif') type("image/avif"), url('assets/images/holding-hands.webp') type("image/webp"), url('assets/images/holding-hands.jpg') type("image/jpeg")) center 34% / cover no-repeat;
+    }
+
+    @media (max-width: 700px) {
+      .hero::before { background-image: image-set(url('assets/images/holding-hands-mobile.webp') type("image/webp"), url('assets/images/holding-hands-mobile.jpg') type("image/jpeg")); }
     }
 
     .hero::after {
