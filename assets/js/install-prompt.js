@@ -36,6 +36,9 @@
 
   // Returns 'install' | 'ios-hint' | 'none'.
   function installPromptState(env) {
+    // Inside the real native apps (Capacitor / Tauri) the site is already
+    // installed — never nag the user to install it again.
+    if (env.nativeApp) return 'none';
     if (isStandalone(env)) return 'none';
     if (dismissedRecently(env)) return 'none';
     if (env.hasBeforeInstallPrompt) return 'install';
@@ -61,6 +64,8 @@
       standalone: !!(window.navigator.standalone || window.matchMedia('(display-mode: standalone)').matches),
       matchMediaStandalone: window.matchMedia('(display-mode: standalone)').matches,
       hasBeforeInstallPrompt: !!deferredPrompt,
+      // Capacitor injects window.Capacitor, Tauri injects window.__TAURI__.
+      nativeApp: !!(window.Capacitor || window.__TAURI__),
       userAgent: window.navigator.userAgent || '',
       platform: window.navigator.platform || '',
       maxTouchPoints: window.navigator.maxTouchPoints || 0

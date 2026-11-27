@@ -81,6 +81,10 @@ test('install prompt shows when the browser offers it', () => {
   assert.equal(installPromptState({ ...baseEnv, hasBeforeInstallPrompt: true }), 'install');
 });
 
+test('install prompt never shows inside the native apps', () => {
+  assert.equal(installPromptState({ ...baseEnv, hasBeforeInstallPrompt: true, nativeApp: true }), 'none');
+});
+
 test('install prompt never shows when already installed', () => {
   assert.equal(installPromptState({ ...baseEnv, hasBeforeInstallPrompt: true, standalone: true }), 'none');
   assert.equal(installPromptState({ ...baseEnv, hasBeforeInstallPrompt: true, matchMediaStandalone: true }), 'none');
