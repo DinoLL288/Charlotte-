@@ -1,0 +1,17 @@
+[build-dependencies]
+tauri-build = { features = [], version = "2" }
+
+[dependencies]
+tauri = { features = [], version = "2" }
+
+[package]
+authors = ["Luke"]
+description = "Charlotte & Luke — our little site as a desktop app"
+edition = "2021"
+name = "charlotte-luke"
+version = "1.0.0"
+
+[profile.release]
+codegen-units = 1
+lto = true
+panic = "abort"
