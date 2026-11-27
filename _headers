@@ -1,6 +1,9 @@
 /*
   Cache-Control: public, max-age=60, stale-while-revalidate=300
 
+/sw.js
+  Cache-Control: no-store
+
 /assets/*
   Cache-Control: public, max-age=86400, stale-while-revalidate=604800
 
