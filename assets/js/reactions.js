@@ -31,27 +31,36 @@
   const reactions = ['💛', '🥰', '😂', '🥹', '😘', '🫶', '✨', '🐻', '❤️', '🌻'];
   reactions.forEach(emoji => {
     const button = document.createElement('button'); button.type = 'button'; button.textContent = emoji; button.setAttribute('aria-label', `Send ${emoji}`);
-    button.addEventListener('click', () => { if (socket?.readyState === WebSocket.OPEN) socket.send(JSON.stringify({ type: 'reaction', emoji })); else status.textContent = 'Trying to reconnect before we send that…'; });
+    button.addEventListener('click', () => { if (socket?.readyState === WebSocket.OPEN) socket.send(JSON.stringify({ type: 'reaction', emoji })); else setStatus('Trying to reconnect before we send that…'); });
     picker.appendChild(button);
   });
   toggle.addEventListener('click', () => { picker.hidden = !picker.hidden; toggle.setAttribute('aria-expanded', String(!picker.hidden)); });
   document.addEventListener('click', event => { if (!widget.contains(event.target)) { picker.hidden = true; toggle.setAttribute('aria-expanded', 'false'); } });
 
-  let socket, retry;
+  let socket, retry, statusTimer;
+  // The status pill floats over page content, so it never lingers:
+  // every message hides itself after a few seconds. The reconnect
+  // loop keeps running in the background regardless.
+  function setStatus(text) {
+    status.textContent = text;
+    clearTimeout(statusTimer);
+    if (text) statusTimer = setTimeout(() => { status.textContent = ''; }, 4000);
+  }
+  function clearStatus() { clearTimeout(statusTimer); status.textContent = ''; }
   function connect() {
     const protocol = location.protocol === 'https:' ? 'wss:' : 'ws:';
     socket = new WebSocket(`${protocol}//${location.host}/api/question-room?user=${encodeURIComponent(user)}&sessionDate=2000-01-01`);
     socket.onmessage = event => { let data; try { data = JSON.parse(event.data); } catch { return; } if (data.type === 'reaction') show(data); };
-    socket.onopen = () => { clearTimeout(retry); status.textContent = ''; };
-    socket.onclose = () => { status.textContent = 'Reconnecting to our reaction line…'; retry = setTimeout(connect, 2500); };
+    socket.onopen = () => { clearTimeout(retry); clearStatus(); };
+    socket.onclose = () => { setStatus('Reconnecting to our reaction line…'); retry = setTimeout(connect, 2500); };
   }
   function show(data) {
     const burst = document.createElement('div'); burst.className = 'reaction-burst'; burst.style.setProperty('--x', `${8 + Math.random() * 84}%`);
     burst.textContent = data.emoji;
     const sender = document.createElement('small'); sender.textContent = data.user === user ? 'sent!' : `${data.user} sent this`;
-    burst.appendChild(sender); layer.appendChild(burst); status.textContent = data.user === user ? `Sent ${data.emoji}` : `${data.user} sent ${data.emoji}`;
+    burst.appendChild(sender); layer.appendChild(burst); setStatus(data.user === user ? `Sent ${data.emoji}` : `${data.user} sent ${data.emoji}`);
     setTimeout(() => burst.remove(), 3500);
   }
   connect();
-  window.addEventListener('pagehide', () => { clearTimeout(retry); socket?.close(); });
+  window.addEventListener('pagehide', () => { clearTimeout(retry); clearTimeout(statusTimer); socket?.close(); });
 })();
