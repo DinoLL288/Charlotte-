@@ -44,12 +44,13 @@ function applyStartTime(date, startTime) {
   return at;
 }
 
-// Work shifts, quiet days and logged WhatsApp calls are not "together"
-// plans, so they never drive the countdown.
+// Work shifts, quiet days, logged WhatsApp calls and single-person
+// events are not "together" plans, so they never drive the countdown.
 export function isCountdownEvent(ev) {
   if (!ev || typeof ev !== 'object') return false;
   if (ev.quietDay || ev.specialDate) return false;
   if (ev.kind === 'whatsapp-call') return false;
+  if (ev.for === 'Luke' || ev.for === 'Charlotte') return false;
   var title = String(ev.title || '').toLowerCase();
   if (title.indexOf('job shift') !== -1) return false;
   return true;

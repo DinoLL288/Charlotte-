@@ -45,14 +45,28 @@ test('nextOccurrence returns the next yearly date, rolling to next year', functi
   assert.equal(nextOccurrence('11-27', now).getDate(), 27);
 });
 
-test('isCountdownEvent skips shifts, quiet days and call logs', function () {
+test('isCountdownEvent skips shifts, quiet days, call logs and single-person events', function () {
   assert.equal(isCountdownEvent({ title: 'Movie night' }), true);
+  assert.equal(isCountdownEvent({ title: 'Movie night', for: 'both' }), true);
   assert.equal(isCountdownEvent({ title: "Luke's job shift", startTime: '09:00' }), false);
   assert.equal(isCountdownEvent({ title: "Charlotte's job shift" }), false);
   assert.equal(isCountdownEvent({ title: '🌙 Luke · quiet day', quietDay: true }), false);
   assert.equal(isCountdownEvent({ title: 'WhatsApp voice call', kind: 'whatsapp-call' }), false);
   assert.equal(isCountdownEvent({ title: 'Birthday', specialDate: true }), false);
+  assert.equal(isCountdownEvent({ title: 'Gym', for: 'Luke' }), false);
+  assert.equal(isCountdownEvent({ title: 'Study', for: 'Charlotte' }), false);
   assert.equal(isCountdownEvent(null), false);
+});
+
+test('findNextUp skips individual-only events for a later shared plan', function () {
+  var events = {
+    '2026-11-28': [{ title: 'Gym', for: 'Luke' }],
+    '2026-11-29': [{ title: 'Study', for: 'Charlotte' }],
+    '2026-12-05': [{ title: 'Picnic', for: 'both', startTime: '11:00' }]
+  };
+  var next = findNextUp(events, SPECIALS, morning());
+  assert.equal(next.title, 'Picnic');
+  assert.equal(next.dateKey, '2026-12-05');
 });
 
 test('findNextUp picks the earliest real plan and skips the rest', function () {

@@ -196,13 +196,25 @@
       flex-direction: column;
       gap: 12px;
     }
-    .modal-card input, .modal-card textarea {
+    .modal-card input, .modal-card select, .modal-card textarea {
       width: 100%;
       border-radius: 10px;
       border: 1px solid #b9dcf5;
       padding: 10px 12px;
       font-family: inherit;
       font-size: 0.98rem;
+      background: #fff;
+      color: #245b85;
+    }
+    .modal-field {
+      display: flex;
+      flex-direction: column;
+      gap: 4px;
+      flex: 1 1 140px;
+      min-width: 0;
+      font-size: 0.8rem;
+      font-weight: 700;
+      color: #3b7db3;
     }
     .modal-date {
       margin-top: -8px;
@@ -259,6 +271,21 @@
     .roster-shift strong { display:block; color:#245b85; }
     .roster-shift small { display:block; color:#3b7db3; }
     .event.quiet-calendar-event { background:#f1edfa; color:#635080; border:1px solid #e1d8f1; cursor:default; }
+    .event.individual { background:#f2f4f6; color:#5f6f7a; border:1px dashed #c2ccd4; }
+    .event.individual:hover { background:#e9edf0; }
+    .event.individual .event-details { color:#6b7c88; }
+    .event.individual .event-clock { color:#5f6f7a; }
+    .event-for-badge {
+      align-self: flex-start;
+      font-size: 0.68rem;
+      font-weight: 800;
+      letter-spacing: 0.02em;
+      text-transform: uppercase;
+      border-radius: 999px;
+      padding: 2px 8px;
+      background: #e3e8ec;
+      color: #54646f;
+    }
     .day.drag-over { background:rgba(40,115,166,.12); outline:2px dashed #2873a6; }
     .event.call-event { background:#fff0f4; color:#8a4561; }
     @media(max-width:700px) { .calendar-tools { grid-template-columns:1fr; } }
@@ -344,6 +371,29 @@
         <input id="eventStart" type="time" aria-label="Start time" title="Start time">
         <input id="eventEnd" type="time" aria-label="End time" title="End time">
       </div>
+      <div class="title-row">
+        <label class="modal-field">For
+          <select id="eventFor">
+            <option value="both">Both of us</option>
+            <option value="Luke">Just Luke</option>
+            <option value="Charlotte">Just Charlotte</option>
+          </select>
+        </label>
+      </div>
+      <div class="title-row" id="repeatRow">
+        <label class="modal-field">Repeat
+          <select id="eventRepeat">
+            <option value="none">No repeat</option>
+            <option value="daily">Daily</option>
+            <option value="weekly">Weekly</option>
+            <option value="weekdays">Weekdays (Mon–Fri)</option>
+            <option value="monthly">Monthly</option>
+          </select>
+        </label>
+        <label class="modal-field" id="repeatUntilField" hidden>Repeat until
+          <input id="eventRepeatUntil" type="date">
+        </label>
+      </div>
       <textarea id="eventTime" rows="2" placeholder="Details (optional)"></textarea>
       <div class="modal-actions">
         <button class="button danger" id="deleteEvent" type="button" style="display:none;">Delete</button>
@@ -373,6 +423,11 @@
     const eventEnd = document.getElementById('eventEnd');
     const eventDate = document.getElementById('eventDate');
     const eventDateLabel = document.getElementById('eventDateLabel');
+    const eventFor = document.getElementById('eventFor');
+    const eventRepeat = document.getElementById('eventRepeat');
+    const eventRepeatUntil = document.getElementById('eventRepeatUntil');
+    const repeatRow = document.getElementById('repeatRow');
+    const repeatUntilField = document.getElementById('repeatUntilField');
     const todayBtn = document.getElementById('todayBtn');
     const nowLabel = document.getElementById('nowLabel');
     const feedLink = document.getElementById('feedLink');
@@ -600,9 +655,10 @@
         }));
         sortDayEvents([...(events[dateKey] || []), ...specialEvents, ...quietEvents]).forEach(({ event: ev, index }) => {
           const status = eventStatus(dateKey, ev.startTime, ev.endTime);
+          const isIndividual = ev.for === 'Luke' || ev.for === 'Charlotte';
           const evEl = document.createElement('div');
-          evEl.className = 'event' + (status ? ' ' + status : '') + (ev.specialDate ? ' special-date' : '') + (ev.quietDay ? ' quiet-calendar-event' : '') + (ev.kind === 'whatsapp-call' ? ' call-event' : '');
-          evEl.title = ev.specialDate ? 'Repeats every year' : ev.quietDay ? 'From Quiet Days' : 'Click to edit · drag to move';
+          evEl.className = 'event' + (status ? ' ' + status : '') + (ev.specialDate ? ' special-date' : '') + (ev.quietDay ? ' quiet-calendar-event' : '') + (ev.kind === 'whatsapp-call' ? ' call-event' : '') + (isIndividual ? ' individual' : '');
+          evEl.title = ev.specialDate ? 'Repeats every year' : ev.quietDay ? 'From Quiet Days' : 'Click to edit · drag to move' + (isIndividual ? ' · ' + (ev.for === 'Luke' ? 'Luke only' : 'Charlotte only') : '');
           if (!ev.specialDate && !ev.quietDay) {
             evEl.draggable = true;
             evEl.dataset.evDate = dateKey;
@@ -629,6 +685,13 @@
             details.className = 'event-details';
             details.textContent = ev.time;
             evEl.appendChild(details);
+          }
+
+          if (isIndividual) {
+            const forBadge = document.createElement('span');
+            forBadge.className = 'event-for-badge';
+            forBadge.textContent = ev.for === 'Luke' ? 'Luke only' : 'Charlotte only';
+            evEl.appendChild(forBadge);
           }
 
           const label = statusLabel(dateKey, ev.startTime, ev.endTime);
@@ -760,6 +823,12 @@
       eventStart.value = '';
       eventEnd.value = '';
       eventTime.value = '';
+      eventFor.value = 'both';
+      eventRepeat.value = 'none';
+      eventRepeatUntil.value = '';
+      eventRepeatUntil.min = key;
+      repeatUntilField.hidden = true;
+      repeatRow.style.display = '';
       deleteEvent.style.display = 'none';
       eventHint.classList.remove('visible');
       showModal();
@@ -777,6 +846,10 @@
       eventStart.value = ev.startTime || '';
       eventEnd.value = ev.endTime || '';
       eventTime.value = ev.time || '';
+      eventFor.value = (ev.for === 'Luke' || ev.for === 'Charlotte') ? ev.for : 'both';
+      // Editing one instance only ever touches that instance, so the
+      // repeat controls are hidden here.
+      repeatRow.style.display = 'none';
 
       const isTikTok = ev.source === 'tiktok';
       deleteEvent.style.display = isTikTok ? 'none' : '';
@@ -788,6 +861,10 @@
       }
       showModal();
     }
+
+    eventRepeat.addEventListener('change', () => {
+      repeatUntilField.hidden = eventRepeat.value === 'none';
+    });
 
     cancelEvent.addEventListener('click', closeModal);
     modal.addEventListener('click', (e) => {
@@ -806,7 +883,25 @@
       }
       const author = localStorage.getItem('charlotte-user') || 'Unknown';
       const chosenDate = eventDate.value || selectedDate;
-      const event = { ...(editing?.event || {}), title, startTime: eventStart.value || '', endTime: eventEnd.value || '', time: eventTime.value.trim(), author, date: new Date().toLocaleString() };
+      const forValue = (eventFor.value === 'Luke' || eventFor.value === 'Charlotte') ? eventFor.value : 'both';
+      const event = { ...(editing?.event || {}), title, startTime: eventStart.value || '', endTime: eventEnd.value || '', time: eventTime.value.trim(), for: forValue, author, date: new Date().toLocaleString() };
+      // A repeat only applies when adding a new event; the server
+      // expands it into one instance per occurrence.
+      if (!editing) {
+        const frequency = eventRepeat.value;
+        if (frequency && frequency !== 'none') {
+          const until = eventRepeatUntil.value;
+          if (!until) {
+            siteDialog.alert('Choose an "until" date for the repeat.');
+            return;
+          }
+          if (until < chosenDate) {
+            siteDialog.alert('The "until" date is before the event date.');
+            return;
+          }
+          event.repeat = { frequency, until };
+        }
+      }
       saveEvent.disabled = true;
       try {
         const target = editing ? { ...editing } : null;
@@ -831,7 +926,7 @@
             const list = events[oldDate] || [];
             const idx = list.findIndex(ev => ev && (ev.id === target.id));
             if (idx >= 0) {
-              const ev = { ...list[idx], title, startTime: event.startTime, endTime: event.endTime, time: event.time, id: list[idx].id || json.id, editedAt: new Date().toISOString() };
+              const ev = { ...list[idx], title, startTime: event.startTime, endTime: event.endTime, time: event.time, for: forValue, id: list[idx].id || json.id, editedAt: new Date().toISOString() };
               list.splice(idx,1);
               if (list.length === 0) delete events[oldDate];
               if (!events[chosenDate]) events[chosenDate] = [];
@@ -840,15 +935,22 @@
           } else {
             const list = events[target.date] || [];
             if (list[target.index]) {
-              list[target.index] = { ...list[target.index], title, startTime: event.startTime, endTime: event.endTime, time: event.time, id: list[target.index].id || json.id, editedAt: new Date().toISOString() };
+              list[target.index] = { ...list[target.index], title, startTime: event.startTime, endTime: event.endTime, time: event.time, for: forValue, id: list[target.index].id || json.id, editedAt: new Date().toISOString() };
             }
           }
+          closeModal();
+          render(); refreshCallHistory();
+        } else if (json.count && json.count > 1) {
+          // A repeating event made many instances; reload from the
+          // server so every one shows up.
+          closeModal();
+          await loadEvents();
         } else {
           if (!events[addDate]) events[addDate] = [];
           events[addDate].push({ ...event, id: json.id });
+          closeModal();
+          render(); refreshCallHistory();
         }
-        closeModal();
-        render(); refreshCallHistory();
       } catch (e) {
         siteDialog.alert('Error: ' + e.message);
       } finally {
@@ -909,7 +1011,7 @@
     loadEvents();
   </script>
   <script type="module" src="assets/js/roster-scan-ui.js"></script>
-  <script type="module" src="assets/js/next-up.js"></script>
+  <script type="module" src="assets/js/next-up.js?v=2"></script>
   <script src="assets/js/avatar.js"></script>
   <script defer src="assets/js/dialog.js"></script>
 <script defer src="assets/js/stickers-overlay.js"></script>

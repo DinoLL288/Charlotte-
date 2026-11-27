@@ -121,6 +121,92 @@ function normalizeTime(value) {
   return `${String(hours).padStart(2, '0')}:${match[2]}`;
 }
 
+// Who an event is for: 'both' (the default), 'Luke' or 'Charlotte'.
+// Anything else falls back to 'both'.
+function normalizeFor(value) {
+  return value === 'Luke' || value === 'Charlotte' ? value : 'both';
+}
+
+function isValidFor(value) {
+  return value === 'both' || value === 'Luke' || value === 'Charlotte';
+}
+
+const REPEAT_FREQUENCIES = ['daily', 'weekly', 'weekdays', 'monthly'];
+
+// Date helpers for repeat expansion. All UTC so month lengths and
+// weekdays never shift with the viewer's timezone.
+function dateParts(value) {
+  const [y, m, d] = String(value).split('-').map(Number);
+  return { y, m, d };
+}
+
+function dateKeyOfParts(parts) {
+  return `${parts.y}-${String(parts.m).padStart(2, '0')}-${String(parts.d).padStart(2, '0')}`;
+}
+
+function daysInMonth(year, month) {
+  // month is 1-12; day 0 of the next month is the last day of this one.
+  return new Date(Date.UTC(year, month, 0)).getUTCDate();
+}
+
+function dayOfWeek(parts) {
+  return new Date(Date.UTC(parts.y, parts.m - 1, parts.d)).getUTCDay();
+}
+
+function addDays(parts, count) {
+  const dt = new Date(Date.UTC(parts.y, parts.m - 1, parts.d + count));
+  return { y: dt.getUTCFullYear(), m: dt.getUTCMonth() + 1, d: dt.getUTCDate() };
+}
+
+function nextRepeatDate(current, frequency, anchorDay) {
+  if (frequency === 'daily') return addDays(current, 1);
+  if (frequency === 'weekly') return addDays(current, 7);
+  if (frequency === 'weekdays') {
+    let next = addDays(current, 1);
+    while (dayOfWeek(next) === 0 || dayOfWeek(next) === 6) {
+      next = addDays(next, 1);
+    }
+    return next;
+  }
+  // monthly: step one month at a time, skipping months that do not
+  // have the anchor day (31 Jan repeats 31 Mar, not 28 Feb).
+  let y = current.y;
+  let m = current.m + 1;
+  if (m > 12) { m = 1; y += 1; }
+  while (anchorDay > daysInMonth(y, m)) {
+    m += 1;
+    if (m > 12) { m = 1; y += 1; }
+  }
+  return { y, m, d: anchorDay };
+}
+
+// Expand a repeat into its occurrence dates, starting on `startDate`
+// and stopping at `until` (inclusive). At most 52 instances. The
+// first occurrence is the start date itself when it matches the
+// pattern — a weekday repeat starting on a Saturday begins on the
+// Monday after, not on the Saturday.
+function expandRepeat(startDate, frequency, until) {
+  const start = dateParts(startDate);
+  const dates = [];
+  let current = { ...start };
+  if (frequency === 'weekdays') {
+    while (dayOfWeek(current) === 0 || dayOfWeek(current) === 6) {
+      current = addDays(current, 1);
+    }
+  }
+  while (dates.length < 52) {
+    const key = dateKeyOfParts(current);
+    if (key > until) break;
+    dates.push(key);
+    current = nextRepeatDate(current, frequency, start.d);
+  }
+  return dates;
+}
+
+// Pure helpers are exported so tests can check the repeat maths
+// without a GitHub-backed request.
+export { expandRepeat, normalizeFor, isValidFor, REPEAT_FREQUENCIES };
+
 async function getCalendar(context) {
   const { env } = context;
 
@@ -236,6 +322,7 @@ export async function onRequestPost(context) {
 
     let message = '';
     let eventId = '';
+    let repeatInfo = null;
 
     // ADD EVENT
     if (action === 'add') {
@@ -259,23 +346,72 @@ export async function onRequestPost(context) {
 
       const event = body.event || {};
 
-      eventId = newId();
-
-      if (!Array.isArray(events[date])) {
-        events[date] = [];
+      // A repeat is expanded here into one stored instance per
+      // occurrence, all sharing one repeatId.
+      let repeat = null;
+      if (event.repeat !== undefined && event.repeat !== null) {
+        if (typeof event.repeat !== 'object' || Array.isArray(event.repeat)) {
+          return jsonResponse({ error: 'Invalid repeat' }, 400);
+        }
+        const frequency = event.repeat.frequency;
+        if (!REPEAT_FREQUENCIES.includes(frequency)) {
+          return jsonResponse({
+            error: 'Invalid repeat frequency',
+            received: frequency ?? null,
+            expected: 'daily, weekly, weekdays or monthly'
+          }, 400);
+        }
+        const untilResult = getValidDate(event.repeat.until);
+        if (!untilResult.valid) return jsonResponse(untilResult.error, 400);
+        if (untilResult.date < date) {
+          return jsonResponse({
+            error: 'Repeat "until" date is before the start date',
+            received: untilResult.date
+          }, 400);
+        }
+        repeat = { frequency, until: untilResult.date };
       }
 
-      events[date].push({
+      const baseEvent = {
         ...event,
-        id: eventId,
         title,
         startTime: normalizeTime(event.startTime),
         endTime: normalizeTime(event.endTime),
         time: String(event.time || '').trim(),
-        author: String(event.author || 'Unknown')
-      });
+        author: String(event.author || 'Unknown'),
+        for: normalizeFor(event.for)
+      };
+      // The repeat spec itself is not stored on instances; the
+      // shared repeatId is what groups them.
+      delete baseEvent.repeat;
+      delete baseEvent.repeatId;
 
-      message = `Add calendar event for ${date}`;
+      if (repeat) {
+        const repeatId = newId();
+        const dates = expandRepeat(date, repeat.frequency, repeat.until);
+        const ids = [];
+        for (const occurrence of dates) {
+          const id = newId();
+          if (!Array.isArray(events[occurrence])) {
+            events[occurrence] = [];
+          }
+          events[occurrence].push({ ...baseEvent, id, repeatId });
+          ids.push(id);
+        }
+        eventId = ids[0] || '';
+        repeatInfo = { repeatId, count: dates.length, ids };
+        message = `Add repeating calendar event (${dates.length} dates) from ${date}`;
+      } else {
+        eventId = newId();
+
+        if (!Array.isArray(events[date])) {
+          events[date] = [];
+        }
+
+        events[date].push({ ...baseEvent, id: eventId });
+
+        message = `Add calendar event for ${date}`;
+      }
 
     // UPDATE EVENT
     } else if (action === 'update') {
@@ -335,6 +471,12 @@ export async function onRequestPost(context) {
         startTime: normalizeTime(event.startTime),
         endTime: normalizeTime(event.endTime),
         time: String(event.time || '').trim(),
+        // Editing one instance only ever touches that instance; a new
+        // "for" value applies to it alone, the rest of a repeat series
+        // keeps theirs.
+        for: isValidFor(event.for)
+          ? event.for
+          : (isValidFor(old.for) ? old.for : 'both'),
         editedBy: String(event.author || 'Unknown'),
         editedAt: new Date().toISOString()
       };
@@ -437,7 +579,10 @@ export async function onRequestPost(context) {
     return jsonResponse({
       ok: true,
       sha: json.content?.sha || null,
-      id: eventId
+      id: eventId,
+      ...(repeatInfo
+        ? { repeatId: repeatInfo.repeatId, count: repeatInfo.count, ids: repeatInfo.ids }
+        : {})
     });
 
   } catch (e) {
