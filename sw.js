@@ -1,7 +1,11 @@
 // Service Worker for Charlotte & Luke
-// Strategy: stale-while-revalidate for static assets, network-first for API
+// Strategy: stale-while-revalidate for static assets, network-first for API.
+// Two hard rules: never cache a failed response, and never serve stale API
+// data as if it were fresh — an offline API call gets a clear 503, not an
+// old answer. Navigation requests with no cached copy fall back to the
+// offline page instead of a browser error.
 
-const CACHE_NAME = 'charlotte-v9';
+const CACHE_NAME = 'charlotte-v10';
 const OFFLINE_URL = '/offline.html';
 
 // Static assets to precache — keep in sync with what pages actually load.
@@ -17,6 +21,7 @@ const PRECACHE_ASSETS = [
   '/apple-touch-icon.png',
   '/icons/icon-192.png',
   '/icons/icon-512.png',
+  '/icons/icon-512-maskable.png',
   '/assets/css/theme.css',
   '/assets/css/site-polish.css',
   '/assets/css/site-theme.css',
@@ -45,13 +50,16 @@ const PRECACHE_ASSETS = [
   '/assets/js/stickers-overlay.js',
 ];
 
-// Install: precache static assets
+// Install: precache static assets. Each asset is added on its own so one
+// missing file can never fail the whole precache.
 self.addEventListener('install', event => {
   event.waitUntil(
     caches.open(CACHE_NAME).then(cache => {
-      return cache.addAll(PRECACHE_ASSETS).catch(err => {
-        console.warn('Precache failed for some assets:', err);
-      });
+      return Promise.allSettled(
+        PRECACHE_ASSETS.map(url => cache.add(url).catch(err => {
+          console.warn('Precache failed for', url, err);
+        }))
+      );
     })
   );
   self.skipWaiting();
@@ -68,6 +76,13 @@ self.addEventListener('activate', event => {
   );
   self.clients.claim();
 });
+
+function offlineJsonResponse() {
+  return new Response(JSON.stringify({ error: 'Offline' }), {
+    status: 503,
+    headers: { 'content-type': 'application/json' }
+  });
+}
 
 // Fetch: stale-while-revalidate for static, network-first for API
 self.addEventListener('fetch', event => {
@@ -95,29 +110,39 @@ self.addEventListener('fetch', event => {
     return;
   }
 
-  // API requests: network-first with cache fallback
+  // API requests: network-first, never cached. Shared data must never be
+  // stale, so an offline API call gets a clear 503 instead of an old answer.
   if (url.pathname.startsWith('/api/')) {
     event.respondWith(
       fetch(event.request).then(response => {
-        if (response.ok) {
-          const cache = caches.open(CACHE_NAME);
-          cache.then(c => c.put(event.request, response.clone()));
-        }
+        if (!response.ok) return response;
         return response;
-      }).catch(() => {
-        return caches.match(event.request).then(cached => {
-          if (cached) return cached;
-          return new Response(JSON.stringify({ error: 'Offline' }), {
-            status: 503,
-            headers: { 'content-type': 'application/json' }
-          });
+      }).catch(() => offlineJsonResponse())
+    );
+    return;
+  }
+
+  // Navigation requests: serve from cache when offline, and fall back to
+  // the offline page when there is no cached copy of the page at all.
+  const isNavigation = event.request.mode === 'navigate' ||
+    (event.request.headers.get('accept') || '').includes('text/html');
+  if (isNavigation) {
+    event.respondWith(
+      caches.open(CACHE_NAME).then(cache => {
+        return cache.match(event.request).then(cached => {
+          const fetchPromise = fetch(event.request).then(response => {
+            if (response.ok) cache.put(event.request, response.clone());
+            return response;
+          }).catch(() => cached || cache.match(OFFLINE_URL));
+          return cached || fetchPromise;
         });
       })
     );
     return;
   }
 
-  // Static assets: stale-while-revalidate
+  // Static assets: stale-while-revalidate. Only successful responses are
+  // ever written to the cache.
   event.respondWith(
     caches.open(CACHE_NAME).then(cache => {
       return cache.match(event.request).then(cached => {
@@ -130,15 +155,3 @@ self.addEventListener('fetch', event => {
     })
   );
 });
-
-// Background sync for pending saves
-self.addEventListener('sync', event => {
-  if (event.tag === 'sync-bathroom') {
-    event.waitUntil(syncBathroom());
-  }
-});
-
-async function syncBathroom() {
-  // Placeholder for background sync of bathroom check-ins
-  // Will be implemented when needed
-}
