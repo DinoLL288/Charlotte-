@@ -1,0 +1,321 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <script src="assets/js/site-shell-guard.js"></script>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Our story</title>
+  <script src="assets/js/format-time.js?v=1"></script>
+  <script>
+    if (!localStorage.getItem('charlotte-user')) {
+      window.location.href = 'login.html';
+    }
+  </script>
+  <style>
+    :root {
+      --ink: #10344f;
+      --navy: #143f5f;
+      --ocean: #2a78a8;
+      --gold: #c9a24a;
+      --gold-soft: #ecd7a0;
+      --display: Georgia, "Times New Roman", serif;
+    }
+
+    * { box-sizing: border-box; }
+
+    body {
+      margin: 0;
+      min-height: 100vh;
+      color: var(--ink);
+      background: #f7fbfe;
+      font-family: system-ui, -apple-system, "Segoe UI", sans-serif;
+    }
+
+    /* ---------- Hero ---------- */
+
+    .hero {
+      position: relative;
+      padding: 104px 20px 66px;
+      text-align: center;
+      color: #fff;
+      overflow: hidden;
+      isolation: isolate;
+    }
+
+    .hero::before {
+      content: "";
+      position: absolute;
+      inset: 0;
+      z-index: -2;
+      background: url('assets/images/holding-hands.jpg') center 34% / cover no-repeat;
+    }
+
+    .hero::after {
+      content: "";
+      position: absolute;
+      inset: 0;
+      z-index: -1;
+      background: linear-gradient(180deg, rgba(5, 21, 35, 0.62) 0%, rgba(6, 24, 40, 0.72) 60%, rgba(6, 24, 40, 0.9) 100%);
+    }
+
+    .hero .eyebrow {
+      color: var(--gold-soft);
+      text-shadow: 0 2px 12px rgba(3, 15, 26, 0.6);
+      text-transform: uppercase;
+      letter-spacing: .14em;
+      font-size: .8rem;
+      margin: 0;
+    }
+
+    .hero h1 {
+      margin: 12px 0 8px;
+      font-family: var(--display);
+      font-weight: 400;
+      font-size: clamp(2.4rem, 7vw, 4rem);
+      line-height: 1.05;
+      text-shadow: 0 4px 26px rgba(3, 15, 26, 0.55);
+    }
+
+    .hero p.subtitle {
+      margin: 0;
+      color: #e6f3fc;
+      font-size: clamp(0.98rem, 2.6vw, 1.1rem);
+      text-shadow: 0 2px 12px rgba(3, 15, 26, 0.6);
+    }
+
+    .hero .days {
+      margin: 18px 0 0;
+      font-family: var(--display);
+      font-size: 1.15rem;
+      color: var(--gold-soft);
+      text-shadow: 0 2px 12px rgba(3, 15, 26, 0.6);
+    }
+
+    .hero .days strong {
+      font-size: 1.6rem;
+      color: #fff;
+    }
+
+    .top-bar {
+      position: absolute;
+      top: 16px;
+      left: 16px;
+      z-index: 5;
+    }
+
+    .button {
+      display: inline-block;
+      padding: 10px 16px;
+      border-radius: 999px;
+      background: rgba(255, 255, 255, 0.92);
+      color: var(--navy);
+      font-weight: 700;
+      font-size: .9rem;
+      text-decoration: none;
+      box-shadow: 0 8px 22px rgba(3, 15, 26, 0.35);
+    }
+
+    .share-button {
+      margin-top: 20px;
+      border: 0;
+      cursor: pointer;
+      padding: 12px 22px;
+      border-radius: 999px;
+      background: var(--gold);
+      color: #fff;
+      font-weight: 700;
+      font-size: .95rem;
+      box-shadow: 0 10px 26px rgba(3, 15, 26, 0.4);
+    }
+
+    .share-button:active { transform: scale(0.97); }
+
+    /* ---------- Layout ---------- */
+
+    .screen {
+      width: min(820px, 100%);
+      margin: 0 auto;
+      padding: 0 18px 64px;
+    }
+
+    .story-status {
+      margin: -34px 0 0;
+      position: relative;
+      text-align: center;
+      color: #5c7c93;
+      font-size: .95rem;
+      background: rgba(255, 253, 247, 0.94);
+      border: 1px solid rgba(255, 255, 255, 0.95);
+      border-radius: 16px;
+      box-shadow: 0 14px 34px rgba(20, 63, 95, 0.14);
+      padding: 14px 18px;
+    }
+
+    .story-status:empty { display: none; }
+
+    .story-count {
+      margin: 18px 0 0;
+      text-align: center;
+      color: #6a5230;
+      font-size: .8rem;
+      font-weight: 700;
+      letter-spacing: .12em;
+      text-transform: uppercase;
+    }
+
+    /* ---------- Timeline ---------- */
+
+    .story-timeline {
+      position: relative;
+      margin-top: 26px;
+      padding-left: 44px;
+    }
+
+    .story-timeline::before {
+      content: "";
+      position: absolute;
+      left: 17px;
+      top: 6px;
+      bottom: 6px;
+      width: 2px;
+      background: linear-gradient(180deg, var(--gold), var(--ocean));
+    }
+
+    .story-month-title {
+      font-family: var(--display);
+      font-size: 1.5rem;
+      font-weight: 700;
+      color: var(--navy);
+      margin: 34px 0 16px -44px;
+      padding-left: 44px;
+      position: relative;
+    }
+
+    .story-month:first-child .story-month-title { margin-top: 0; }
+
+    .story-entry {
+      position: relative;
+      margin-bottom: 18px;
+    }
+
+    .story-dot {
+      position: absolute;
+      left: -44px;
+      top: 14px;
+      width: 36px;
+      height: 36px;
+      margin-left: 0;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 1.05rem;
+      background: #fff;
+      border: 2px solid var(--gold);
+      border-radius: 50%;
+      box-shadow: 0 4px 12px rgba(20, 63, 95, 0.18);
+      z-index: 1;
+    }
+
+    .story-milestone .story-dot { background: var(--gold-soft); }
+    .story-moment .story-dot { background: #fff7e0; }
+
+    .story-card {
+      background: rgba(255, 253, 247, 0.96);
+      border: 1px solid rgba(255, 255, 255, 0.95);
+      border-radius: 20px;
+      box-shadow: 0 16px 36px rgba(20, 63, 95, 0.12);
+      padding: 16px 18px;
+      overflow: hidden;
+    }
+
+    .story-meta {
+      display: flex;
+      flex-wrap: wrap;
+      align-items: center;
+      gap: 8px;
+      font-size: .78rem;
+      color: #5c7c93;
+    }
+
+    .story-date { font-weight: 700; color: var(--navy); }
+
+    .story-kind {
+      background: #e8f3fb;
+      color: #2a6a94;
+      border-radius: 999px;
+      padding: 2px 9px;
+      font-weight: 700;
+      font-size: .68rem;
+      letter-spacing: .08em;
+      text-transform: uppercase;
+    }
+
+    .story-coming {
+      background: var(--gold-soft);
+      color: #6a5230;
+      border-radius: 999px;
+      padding: 2px 9px;
+      font-weight: 700;
+      font-size: .68rem;
+      letter-spacing: .08em;
+      text-transform: uppercase;
+    }
+
+    .story-title {
+      margin: 8px 0 0;
+      font-family: var(--display);
+      font-size: 1.25rem;
+      font-weight: 700;
+      color: #123a58;
+      line-height: 1.25;
+    }
+
+    .story-body {
+      margin: 8px 0 0;
+      font-size: .95rem;
+      line-height: 1.5;
+      color: #33566e;
+    }
+
+    .story-photo { display: block; margin-top: 12px; border-radius: 14px; overflow: hidden; }
+    .story-photo img { display: block; width: 100%; max-height: 320px; object-fit: cover; }
+
+    .story-author {
+      display: inline-block;
+      margin-top: 10px;
+      font-size: .78rem;
+      font-weight: 700;
+      color: #6a5230;
+    }
+
+    @media (max-width: 560px) {
+      .story-timeline { padding-left: 38px; }
+      .story-timeline::before { left: 14px; }
+      .story-dot { left: -38px; width: 30px; height: 30px; font-size: .95rem; }
+      .story-month-title { margin-left: -38px; padding-left: 38px; font-size: 1.3rem; }
+    }
+  </style>
+</head>
+<body>
+  <div class="top-bar">
+    <a class="button" href="index.html">← Back to hub</a>
+  </div>
+
+  <header class="hero">
+    <p class="eyebrow">Luke &amp; Charlotte</p>
+    <h1>Our story</h1>
+    <p class="subtitle">Every moment of us, in one timeline.</p>
+    <p class="days"><strong id="story-days">…</strong> days together</p>
+    <button class="share-button" id="story-share" type="button">📤 Share our story</button>
+  </header>
+
+  <main class="screen">
+    <p class="story-status" id="story-status">Loading our story…</p>
+    <p class="story-count" id="story-count"></p>
+    <div class="story-timeline" id="story-timeline"></div>
+  </main>
+
+  <script type="module" src="assets/js/story.js?v=1"></script>
+  <script defer src="assets/js/stickers-overlay.js"></script>
+</body>
+</html>
