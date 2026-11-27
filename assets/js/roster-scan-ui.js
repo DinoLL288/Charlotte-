@@ -3,7 +3,7 @@
 // it is never uploaded, never sent to the server and never stored.
 // Only the shift details the user ticks and confirms are saved,
 // as calendar events through the existing /api/calendar endpoint.
-import { parseRosterText, buildShiftEvent } from './roster-scan.js';
+import { parseRosterText, buildShiftEvent } from './roster-scan.js?v=2';
 
 const TESSERACT_CDN = 'https://cdn.jsdelivr.net/npm/tesseract.js@5/dist/tesseract.min.js';
 

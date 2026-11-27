@@ -184,9 +184,12 @@ test('builds the calendar event payload for the logged-in user', () => {
       startTime: '14:00',
       endTime: '21:00',
       time: 'Break 6:30 PM - 7:00 PM',
-      author: 'Luke'
+      author: 'Luke',
+      for: 'Luke'
     }
   });
   assert.equal(buildShiftEvent(shifts[0], 'Charlotte').event.title, "Charlotte's job shift");
+  assert.equal(buildShiftEvent(shifts[0], 'Charlotte').event.for, 'Charlotte');
   assert.equal(buildShiftEvent(shifts[0], '').event.title, "Us's job shift");
+  assert.equal(buildShiftEvent(shifts[0], '').event.for, 'both');
 });

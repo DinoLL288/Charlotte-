@@ -221,7 +221,9 @@ export function buildShiftEvent(shift, author) {
       startTime: shift.startTime || '',
       endTime: shift.endTime || '',
       time: formatShiftDetails(shift),
-      author: name
+      author: name,
+      // A scanned shift belongs to the one person on the roster, never both.
+      for: name === 'Luke' || name === 'Charlotte' ? name : 'both'
     }
   };
 }

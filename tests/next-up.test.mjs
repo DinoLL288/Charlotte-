@@ -45,12 +45,12 @@ test('nextOccurrence returns the next yearly date, rolling to next year', functi
   assert.equal(nextOccurrence('11-27', now).getDate(), 27);
 });
 
-test('isCountdownEvent skips shifts, quiet days, call logs and single-person events', function () {
+test('isCountdownEvent counts down only to both-of-us events and quiet days', function () {
   assert.equal(isCountdownEvent({ title: 'Movie night' }), true);
   assert.equal(isCountdownEvent({ title: 'Movie night', for: 'both' }), true);
+  assert.equal(isCountdownEvent({ title: '🌙 Quiet day', quietDay: true }), true);
   assert.equal(isCountdownEvent({ title: "Luke's job shift", startTime: '09:00' }), false);
   assert.equal(isCountdownEvent({ title: "Charlotte's job shift" }), false);
-  assert.equal(isCountdownEvent({ title: '🌙 Luke · quiet day', quietDay: true }), false);
   assert.equal(isCountdownEvent({ title: 'WhatsApp voice call', kind: 'whatsapp-call' }), false);
   assert.equal(isCountdownEvent({ title: 'Birthday', specialDate: true }), false);
   assert.equal(isCountdownEvent({ title: 'Gym', for: 'Luke' }), false);
