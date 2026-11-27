@@ -31,6 +31,7 @@
     "@capacitor/cli": "^8.6.3",
     "@capacitor/core": "^8.6.3",
     "@capacitor/ios": "^8.6.3",
+    "@tauri-apps/cli": "^2.12.6",
     "sharp": "^0.35.5"
   }
 }

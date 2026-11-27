@@ -43,6 +43,7 @@ test('capacitor ios project exists', () => {
 test('tauri config points at the live site', () => {
   const cfg = readJson('src-tauri/tauri.conf.json');
   assert.equal(cfg.identifier, 'com.charlotte.luke');
+  assert.equal(cfg.bundle.identifier, undefined, 'identifier is top-level only in Tauri v2, not under bundle');
   assert.equal(cfg.productName, 'Charlotte & Luke');
   assert.equal(cfg.app.windows[0].url, LIVE);
   assert.equal(cfg.build.devUrl, LIVE);
