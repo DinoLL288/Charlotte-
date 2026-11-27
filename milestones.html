@@ -1,0 +1,134 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <script src="assets/js/site-shell-guard.js"></script>
+  <meta charset="UTF-8"><meta name="viewport" content="width=device-width, initial-scale=1.0"><title>Milestones · Our big numbers</title>
+  <script>if (!localStorage.getItem('charlotte-user')) location.href = 'login.html';</script>
+  <link rel="stylesheet" href="assets/css/site-bundle.css" data-site-polish="true" data-site-theme="true">
+  <style>
+    .hero{padding:78px 20px 66px;text-align:center;color:#fff;background:linear-gradient(160deg,#0d2c44,#2a78a8)}.hero .eyebrow{color:var(--gold-soft)}.hero h1{margin:10px 0;font-size:clamp(2.2rem,7vw,3.5rem);font-weight:400}.hero p:last-child{max-width:54ch;margin:0 auto;color:#e6f3fc;line-height:1.6}.top-bar{position:absolute;top:16px;left:16px;z-index:2}.shell{width:min(920px,100%);margin:-30px auto 60px;padding:0 18px;position:relative}
+    .big-card{padding:26px 22px;border-radius:18px;background:rgba(255,255,255,.85);border:1px solid rgba(255,255,255,.9);text-align:center;box-shadow:0 8px 24px rgba(29,90,128,.1);margin-bottom:14px}
+    .big-card .num{font-family:var(--font-display);font-size:clamp(3rem,12vw,4.5rem);line-height:1;color:#123a58}
+    .big-card .label{font-size:.85rem;color:#5c7c93;margin-top:6px}
+    .big-card .since{font-size:.78rem;color:#8a6d2b;margin-top:4px;font-weight:700}
+    .next-card{padding:20px;border-radius:18px;background:rgba(255,255,255,.78);border:1px solid rgba(255,255,255,.9);box-shadow:0 8px 24px rgba(29,90,128,.1);margin-bottom:24px;text-align:center}
+    .next-card h3{margin:0 0 6px;font-family:var(--font-display);color:#123a58;font-size:1.15rem}
+    .next-card .when{color:#4a7291;font-size:.9rem}
+    .next-card .when strong{color:#8a6d2b}
+    .progress{margin:14px auto 0;max-width:420px;height:8px;border-radius:4px;background:#e4edf2;overflow:hidden}
+    .progress div{height:100%;border-radius:4px;background:linear-gradient(90deg,#4e99ba,#c9a24a);transition:width .5s}
+    .stats-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:14px;margin-bottom:24px}
+    .stat-card{padding:20px;border-radius:18px;background:rgba(255,255,255,.78);border:1px solid rgba(255,255,255,.9);text-align:center;box-shadow:0 8px 24px rgba(29,90,128,.1)}
+    .stat-card .icon{font-size:1.8rem;margin-bottom:6px}
+    .stat-card .num{font-family:var(--font-display);font-size:2.2rem;color:#123a58}
+    .stat-card .label{font-size:.78rem;color:#5c7c93;margin-top:4px}
+    .note{text-align:center;color:#7b91a0;font-size:.8rem;line-height:1.6;padding:0 12px}
+    .loading{text-align:center;padding:40px;color:#5c7c93}
+    @media(max-width:600px){.stats-grid{grid-template-columns:repeat(2,1fr)}}
+    @media(max-width:400px){.stats-grid{grid-template-columns:1fr}}
+  </style>
+</head>
+<body>
+  <div class="top-bar"><a class="button" href="index.html">← Back to hub</a></div>
+  <header class="hero"><p class="eyebrow">Our milestones</p><h1>🎉 Milestones</h1><p>Our big numbers, celebrated — every one counted live from what we've actually shared.</p></header>
+  <main class="shell">
+    <div class="big-card">
+      <div class="num" id="daysTogether">—</div>
+      <div class="label">days together</div>
+      <div class="since">since 26 October 2026 · 5:46 pm</div>
+    </div>
+    <div class="next-card" id="nextMilestone">
+      <h3>Next up</h3>
+      <div class="when" id="nextMilestoneText">Loading…</div>
+      <div class="progress" id="nextMilestoneBar" style="display:none"><div id="nextMilestoneFill" style="width:0%"></div></div>
+    </div>
+    <div class="stats-grid" id="statsGrid">
+      <div class="loading">Loading our numbers…</div>
+    </div>
+    <p class="note">Every number here is counted from our real moods, photos and plans — nothing is made up. A "—" means that bit couldn't be loaded right now, not that it's zero.</p>
+  </main>
+  <script src="assets/js/dialog.js"></script><script src="assets/js/avatar.js"></script>
+  <script src="assets/js/milestones.js?v=1"></script>
+  <script>
+  (function(){
+    const user = localStorage.getItem('charlotte-user') || 'Unknown';
+    const M = window.Milestones;
+    const daysEl = document.getElementById('daysTogether');
+    const nextText = document.getElementById('nextMilestoneText');
+    const nextBar = document.getElementById('nextMilestoneBar');
+    const nextFill = document.getElementById('nextMilestoneFill');
+    const grid = document.getElementById('statsGrid');
+
+    function dash(value) { return value === null || value === undefined ? '—' : value; }
+    function fmtDate(date) {
+      return date.toLocaleDateString('en-AU', { day: 'numeric', month: 'short', year: 'numeric' });
+    }
+
+    function renderStats(cards) {
+      grid.innerHTML = cards.map(c => `
+        <div class="stat-card">
+          <div class="icon">${c.icon}</div>
+          <div class="num">${c.num}</div>
+          <div class="label">${c.label}</div>
+        </div>
+      `).join('');
+    }
+
+    async function load() {
+      // Days together + next milestone need no server data.
+      const since = new Date(M.TOGETHER_SINCE);
+      const days = M.daysTogether(since, new Date());
+      daysEl.textContent = dash(days);
+      const next = M.nextMilestone(days, since);
+      if (next) {
+        nextText.innerHTML = `<strong>${next.target} days together</strong> in ${next.inDays} day${next.inDays === 1 ? '' : 's'} · ${fmtDate(next.date)}`;
+        nextBar.style.display = 'block';
+        nextFill.style.width = Math.min(100, Math.round(days / next.target * 100)) + '%';
+      } else {
+        nextText.textContent = 'No next milestone worked out yet.';
+      }
+
+      // Moods: streaks + total, from the shared mood store.
+      let streak = { current: 0, longest: 0 };
+      let moodsTotal = null;
+      try {
+        const res = await fetch('/api/question-room?view=mood&user=' + encodeURIComponent(user), { cache: 'no-store' });
+        const json = await res.json();
+        const entries = M.normalizeMoodEntries(json.entries || json.moods || null, user);
+        if (entries) {
+          streak = M.streaks(M.moodDateKeys(entries), new Date());
+          moodsTotal = M.totalMoods(entries);
+        }
+      } catch (e) { /* missing data stays "—" / 0 streaks */ }
+
+      // Photos.
+      let photosTotal = null;
+      try {
+        const res = await fetch('/api/gallery', { cache: 'no-store', credentials: 'same-origin' });
+        const json = await res.json();
+        photosTotal = M.totalPhotos(json.photos || null);
+      } catch (e) { /* stays "—" */ }
+
+      // Calendar events.
+      let eventsTotal = null;
+      try {
+        const res = await fetch('/api/calendar');
+        const json = await res.json();
+        eventsTotal = M.totalEvents(json.events || null);
+      } catch (e) { /* stays "—" */ }
+
+      renderStats([
+        { icon: '🔥', num: streak.current, label: 'day mood streak' },
+        { icon: '🏅', num: streak.longest, label: 'longest mood streak' },
+        { icon: '💛', num: dash(moodsTotal), label: 'moods logged' },
+        { icon: '📷', num: dash(photosTotal), label: 'photos saved' },
+        { icon: '📅', num: dash(eventsTotal), label: 'calendar events' },
+      ]);
+    }
+
+    load();
+  })();
+  </script>
+<script src="assets/js/stickers-overlay.js"></script>
+</body>
+</html>
