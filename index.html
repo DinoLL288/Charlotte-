@@ -230,6 +230,11 @@
   .calm-arrow { color: #8a6d2b; opacity: .5; font-size: 1.1rem; }
   @media (max-width: 480px) { .calm-row { padding: 14px 14px; } .calm-title { font-size: .95rem; } .calm-sub { font-size: .78rem; } }
 
+  /* ---------- Loading shimmer for data that arrives after the page ---------- */
+  @keyframes hub-shimmer { 0% { opacity: .45; } 50% { opacity: 1; } 100% { opacity: .45; } }
+  [data-together].is-loading, .calm-row.next-up.is-loading .calm-title { animation: hub-shimmer 1.4s ease-in-out infinite; }
+  @media (prefers-reduced-motion: reduce) { [data-together].is-loading, .calm-row.next-up.is-loading .calm-title { animation: none; opacity: .75; } }
+
   /* ---------- Three doors home (Option A) ---------- */
   .hero-doors { padding: 72px 20px 36px; text-align: center; color: #fff; background: linear-gradient(180deg, rgba(18,40,58,.55), rgba(18,40,58,.82)), image-set(url("assets/images/holding-hands.avif") type("image/avif"), url("assets/images/holding-hands.webp") type("image/webp"), url("assets/images/holding-hands.jpg") type("image/jpeg")) center 35% / cover no-repeat; }
   .hero-doors-inner { width: min(560px, 100%); margin: 0 auto; }
@@ -274,7 +279,7 @@
       <p class="eyebrow">Charlotte &amp; Luke</p>
       <h1><span class="word" style="--i:0">Our</span> <span class="word" style="--i:1">little</span> <span class="word" style="--i:2">universe</span></h1>
       <p class="hub-hero-sub">Every note, photo, plan and promise — kept in one quiet corner of the internet.</p>
-      <div class="together" data-together role="timer" aria-label="Time we have been together"></div>
+      <div class="together is-loading" data-together role="timer" aria-label="Time we have been together">Counting our days together…</div>
       <p class="together-since">Together since 26 October 2026 · 5:46 pm</p>
     </div>
   </header>
@@ -284,7 +289,7 @@
       <p class="eyebrow" style="color:#ecd7a0">Charlotte &amp; Luke</p>
       <h1>Our little universe</h1>
       <p>Every note, photo, plan and promise — kept in one quiet corner.</p>
-      <div class="together" data-together role="timer" aria-label="Time we have been together"></div>
+      <div class="together is-loading" data-together role="timer" aria-label="Time we have been together">Counting our days together…</div>
       <p class="together-since">Together since 26 October 2026 · 5:46 pm</p>
     </div>
   </header>
@@ -339,7 +344,7 @@
       </div>
       <div class="calm-section">
         <h2 class="calm-section-title">Plans &amp; dates</h2>
-        <a class="calm-row next-up" data-next-up="card" href="calendar.html"><span class="calm-icon">⏳</span><span class="calm-body"><span class="next-up-eyebrow">Next up together</span><span class="calm-title">Counting down…</span><span class="calm-sub">Loading our next date</span></span><span class="calm-arrow">→</span></a>
+        <a class="calm-row next-up is-loading" data-next-up="card" href="calendar.html"><span class="calm-icon">⏳</span><span class="calm-body"><span class="next-up-eyebrow">Next up together</span><span class="calm-title">Counting down…</span><span class="calm-sub">Loading our next date</span></span><span class="calm-arrow">→</span></a>
         <a class="calm-row" href="calendar.html"><span class="calm-icon">📅</span><span class="calm-body"><span class="calm-title">Calendar</span><span class="calm-sub">Dates, plans and countdowns</span></span><span class="calm-arrow">→</span></a>
         <a class="calm-row" href="question-night.html"><span class="calm-icon">💬</span><span class="calm-body"><span class="calm-title">Question night</span><span class="calm-sub">A shared room that opens when we’re both ready</span></span><span class="calm-arrow">→</span></a>
         <a class="calm-row" href="tiktok.html"><span class="calm-icon">🎵</span><span class="calm-body"><span class="calm-title">TikTok plans</span><span class="calm-sub">Videos we want to dance to</span></span><span class="calm-arrow">→</span></a>
@@ -585,7 +590,7 @@
   </script>
   <script src="assets/js/together.js"></script>
   <script src="assets/js/special-dates.js"></script>
-  <script type="module" src="assets/js/next-up.js?v=4"></script>
+  <script type="module" src="assets/js/next-up.js?v=5"></script>
   <script src="assets/js/avatar.js"></script>
   <script src="assets/js/emoji-rain.js"></script>
   <script>
@@ -627,6 +632,7 @@
       document.documentElement.classList.toggle('hero-paused', document.hidden);
     });
   </script>
+<script type="module" src="assets/js/back-to-top.js?v=1"></script>
 <script src="assets/js/stickers-overlay.js"></script>
 </body>
 </html>

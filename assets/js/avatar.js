@@ -140,7 +140,7 @@
     document.head.appendChild(theme);
   }
 
-  ['special-dates.js', 'site-theme.js', 'site-reminders.js', 'reactions.js', 'motion.js', 'surprises.js', 'request-cache.js'].forEach(src => {
+  ['special-dates.js', 'site-theme.js', 'site-reminders.js', 'reactions.js?v=2', 'motion.js', 'surprises.js', 'request-cache.js'].forEach(src => {
     if (document.querySelector(`script[data-site-helper="${src}"]`)) return;
     const helper = document.createElement('script');
     helper.src = '/assets/js/' + src;
