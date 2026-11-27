@@ -205,15 +205,6 @@
         "time": ""
       }
     ],
-    "2026-11-27": [
-      {
-        "title": "Check eu.org domain approval (charlotte-and-lukes-littleuniverse.eu.org) - email hostmaster if not approved",
-        "author": "Luke",
-        "time": "",
-        "startTime": "",
-        "id": "073c8cc9-c396-40ab-8711-7de86e77f1f3"
-      }
-    ],
     "2026-11-26": [
       {
         "title": "Wash Hair",
@@ -352,6 +343,18 @@
         "startTime": "",
         "endTime": "",
         "time": ""
+      }
+    ],
+    "2026-12-18": [
+      {
+        "title": "Check eu.org domain approval (charlotte-and-lukes-littleuniverse.eu.org) - email hostmaster if not approved",
+        "author": "Luke",
+        "time": "",
+        "startTime": "",
+        "id": "073c8cc9-c396-40ab-8711-7de86e77f1f3",
+        "endTime": "",
+        "editedBy": "Luke",
+        "editedAt": "2026-11-27T08:50:41.030Z"
       }
     ]
   }
