@@ -1,0 +1,19 @@
+{
+  "queue": [
+    {
+      "id": "799fb6d8-9895-4c7b-b564-445b52ad1e9c",
+      "videoId": "dfELHX3VuJc",
+      "title": "You NEED to STOP Using Windows 11 Right Now. Microsoft is OVER",
+      "addedBy": "Luke",
+      "addedAt": "2026-11-27T14:13:17.316Z",
+      "watched": false
+    }
+  ],
+  "nowPlaying": {
+    "videoId": "dfELHX3VuJc",
+    "state": "paused",
+    "position": 11.022352,
+    "updatedAt": "2026-11-27T14:14:48.834Z",
+    "updatedBy": "Luke"
+  }
+}
