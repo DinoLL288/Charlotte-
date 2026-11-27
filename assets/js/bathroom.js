@@ -26,7 +26,8 @@
   }
   function formatDate(value, options = {}) {
     const date = new Date(value);
-    return Number.isNaN(date.getTime()) ? '' : date.toLocaleString([], { timeZone: 'Australia/Perth', ...options });
+    // 12-hour with AM/PM — never the device's 24-hour setting.
+    return Number.isNaN(date.getTime()) ? '' : formatDateTime12h(date, { timeZone: 'Australia/Perth', ...options });
   }
   function dayLabel(key) {
     if (key === dateKey(new Date())) return 'Today';

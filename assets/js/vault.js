@@ -223,7 +223,7 @@
     const when = new Date(blob.updatedAt);
     if (Number.isNaN(when.getTime())) return '';
     const who = ['Luke', 'Charlotte'].includes(blob.updatedBy) ? blob.updatedBy : '';
-    const stamp = when.toLocaleString(undefined, { dateStyle: 'medium', timeStyle: 'short' });
+    const stamp = formatDateTime12h(when, { dateStyle: 'medium', timeStyle: 'short' });
     return who ? `${who} · ${stamp}` : stamp;
   }
 

@@ -2,6 +2,7 @@
 <html lang="en">
 <head>
   <script src="assets/js/site-shell-guard.js"></script>
+  <script src="assets/js/format-time.js?v=1"></script>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>TikTok Plans</title>
@@ -243,9 +244,8 @@
 
     function formatTime(time) {
       if (!time) return '';
-      const date = new Date('2000-01-01T' + time);
-      if (Number.isNaN(date.getTime())) return time;
-      return date.toLocaleTimeString(undefined, { hour: 'numeric', minute: '2-digit' });
+      // 12-hour with AM/PM — never the device's 24-hour setting.
+      return formatTime12h(time);
     }
 
     function displayUrl(url) {

@@ -2,6 +2,7 @@
 <html lang="en">
 <head>
   <script src="assets/js/site-shell-guard.js"></script>
+  <script src="assets/js/format-time.js?v=1"></script>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Calendar</title>
@@ -482,10 +483,8 @@
     }
 
     function formatClock(value) {
-      const mins = minutesOfDay(value);
-      if (mins === null) return String(value || '');
-      const date = new Date(2000, 0, 1, Math.floor(mins / 60), mins % 60);
-      return date.toLocaleTimeString(undefined, { hour: 'numeric', minute: '2-digit' });
+      // 12-hour with AM/PM — never the device's 24-hour setting.
+      return formatTime12h(value);
     }
 
     function formatDayLabel(dateKey) {
@@ -532,7 +531,7 @@
     function formatNowLine() {
       const now = new Date();
       const date = now.toLocaleDateString(undefined, { weekday: 'short', day: 'numeric', month: 'short' });
-      const time = now.toLocaleTimeString(undefined, { hour: 'numeric', minute: '2-digit' });
+      const time = formatTime12h(now);
       return `${date} · ${time}`;
     }
 
@@ -1032,8 +1031,8 @@
     setInterval(tick, 15000);
     loadEvents();
   </script>
-  <script type="module" src="assets/js/roster-scan-ui.js"></script>
-  <script type="module" src="assets/js/next-up.js?v=3"></script>
+  <script type="module" src="assets/js/roster-scan-ui.js?v=1"></script>
+  <script type="module" src="assets/js/next-up.js?v=4"></script>
   <script src="assets/js/avatar.js"></script>
   <script defer src="assets/js/dialog.js"></script>
 <script defer src="assets/js/stickers-overlay.js"></script>

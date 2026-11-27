@@ -2,6 +2,7 @@
 <html lang="en">
 <head>
   <script src="assets/js/site-shell-guard.js"></script>
+  <script src="assets/js/format-time.js?v=1"></script>
   <meta charset="UTF-8"><meta name="viewport" content="width=device-width, initial-scale=1.0"><title>Question night</title>
   <script>if (!localStorage.getItem('charlotte-user')) location.href = 'login.html';</script><link rel="stylesheet" href="assets/css/theme.css">
   <style>
@@ -50,7 +51,7 @@
     function writeDraft(key,value){try{if(value)localStorage.setItem(key,value);else localStorage.removeItem(key);}catch{}}
     function showStatus(id,text){document.getElementById(id).textContent=text;}
     function answerText(answer){return typeof answer==='string'?answer:(answer?.text||'');}
-    function answerDate(answer){if(typeof answer!=='object'||!answer?.answeredAt)return '';const date=new Date(answer.answeredAt);return Number.isNaN(date.getTime())?'':date.toLocaleString([], {dateStyle:'medium',timeStyle:'short'});}
+    function answerDate(answer){if(typeof answer!=='object'||!answer?.answeredAt)return '';const date=new Date(answer.answeredAt);return Number.isNaN(date.getTime())?'':formatDateTime12h(date, { dateStyle: 'medium', timeStyle: 'short' });}
     function answerDateLabel(answer,session){const exact=answerDate(answer);if(exact)return `Answered ${exact}`;return answerText(answer)?`Answered during the question night on ${new Date(session+'T00:00:00').toLocaleDateString([], {dateStyle:'medium'})} (exact date not recorded)`:'';}
     function otherPerson(name){return name==='Charlotte'?'Luke':'Charlotte';}
     function renderCounts(){for(const name of ['Charlotte','Luke']){const box=document.getElementById('count-'+name.toLowerCase()),count=data.questionCounts[name]||0;box.classList.toggle('is-mine',name===user);box.querySelector('span').textContent=`${count} question${count===1?'':'s'} saved for our next night`;}const mine=data.questionCounts[user]||0;document.getElementById('bankCount').textContent=`We have ${mine} question${mine===1?'':'s'} saved for me to ask ${otherPerson(user)}.`;}

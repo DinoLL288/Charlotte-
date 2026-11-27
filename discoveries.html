@@ -2,6 +2,7 @@
 <html lang="en">
 <head>
   <script src="assets/js/site-shell-guard.js"></script>
+  <script src="assets/js/format-time.js?v=1"></script>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
   <title>Discoveries</title>
@@ -59,7 +60,7 @@
           const d = document.createElement('div');
           d.className = 'find';
           d.textContent = f.emoji || '✨';
-          d.title = (f.user || '') + ' · ' + (f.rare ? 'rare' : 'found') + ' · ' + new Date(f.at).toLocaleString();
+          d.title = (f.user || '') + ' · ' + (f.rare ? 'rare' : 'found') + ' · ' + formatDateTime12h(f.at, { dateStyle: 'medium', timeStyle: 'short' });
           box.appendChild(d);
         });
       }

@@ -1,5 +1,6 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
+import '../assets/js/format-time.js'; // loads window.formatTime12h for the countdown
 import {
   escapeHtml,
   nextOccurrence,
@@ -119,7 +120,7 @@ test('findNextUp returns null when there is nothing at all', function () {
 test('describeCountdown words the wait for today, tomorrow and days away', function () {
   var now = morning();
   var today = describeCountdown({ title: 'Movie night', at: new Date(2026, 10, 27, 18, 0), startTime: '18:00' }, now);
-  assert.equal(today.headline, 'today at 6:00 pm');
+  assert.equal(today.headline, 'today at 6:00 PM');
   assert.match(today.detail, /Movie night/);
 
   var soon = describeCountdown({ title: 'Call', at: new Date(2026, 10, 27, 9, 42), startTime: '09:42' }, now);

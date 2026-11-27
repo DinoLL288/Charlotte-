@@ -37,8 +37,11 @@ function formatDayLabel(isoDate) {
   });
 }
 
-function formatClock24(value) {
+function formatClock(value) {
+  // 12-hour with AM/PM for the scanned shift preview — the stored
+  // start/end times stay 24-hour "HH:MM", only the display changes.
   if (!value) return '';
+  if (typeof formatTime12h === 'function') return formatTime12h(value);
   const parts = value.split(':');
   const hours = Number(parts[0]);
   const minutes = Number(parts[1]);
@@ -64,7 +67,7 @@ function renderPreview() {
     const title = document.createElement('strong');
     title.textContent = formatDayLabel(shift.date);
     const details = document.createElement('small');
-    const times = [formatClock24(shift.startTime), formatClock24(shift.endTime)]
+    const times = [formatClock(shift.startTime), formatClock(shift.endTime)]
       .filter(Boolean)
       .join(' – ');
     details.textContent = [

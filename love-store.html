@@ -2,6 +2,7 @@
 <html lang="en">
 <head>
   <script src="assets/js/site-shell-guard.js"></script>
+  <script src="assets/js/format-time.js?v=1"></script>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
   <title>Love store</title>
@@ -91,7 +92,7 @@
         charlotteControls.hidden=user!=='Charlotte';
         kissToggle.textContent=kissWelcome?'Pause this setting':'Kisses are welcome again';
         const update=document.getElementById('kissUpdate');
-        update.textContent=state&&state.updatedAt?'Updated by Charlotte · '+new Date(state.updatedAt).toLocaleString():'';
+        update.textContent=state&&state.updatedAt?'Updated by Charlotte · '+formatDateTime12h(state.updatedAt, { dateStyle: 'medium', timeStyle: 'short' }):'';
         if(user==='Luke'&&kissWelcome&&state.updatedAt){
           const seenKey='charlotte-kiss-welcome-seen-'+state.updatedAt;
           if(!localStorage.getItem(seenKey)){

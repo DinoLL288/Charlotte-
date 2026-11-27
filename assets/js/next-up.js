@@ -122,7 +122,10 @@ function formatDay(at) {
 }
 
 function formatTime(at) {
-  // en-AU gives "6:00 pm"; normalise any narrow space to a plain one.
+  // 12-hour with AM/PM ("6:00 PM"), never the device's 24-hour setting.
+  // formatTime12h comes from assets/js/format-time.js, loaded before this
+  // module on every page; fall back to the locale call if it is missing.
+  if (typeof formatTime12h === 'function') return formatTime12h(at);
   return at.toLocaleTimeString('en-AU', { hour: 'numeric', minute: '2-digit' }).replace(/[\u202f\u00a0]/g, ' ');
 }
 
