@@ -1,0 +1,45 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <script src="assets/js/site-shell-guard.js"></script>
+  <meta charset="UTF-8"><meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover"><title>Our bucket list · Things we want to do together</title>
+  <link rel="manifest" href="/site.webmanifest">
+  <link rel="apple-touch-icon" href="/apple-touch-icon.png">
+  <meta name="theme-color" content="#0d2c44">
+  <meta name="apple-mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-title" content="Charlotte">
+  <script>if(!localStorage.getItem('charlotte-user'))location.href='login.html';</script>
+  <link rel="stylesheet" href="assets/css/site-bundle.css" data-site-polish="true" data-site-theme="true">
+  <style>
+    body{margin:0;min-height:100vh;font-family:var(--font-body);background:linear-gradient(160deg,#edf8ff,#badff5 100%);color:#123a58}.hero{padding:78px 20px 48px;text-align:center;color:#fff;background:linear-gradient(160deg,#0d2c44,#2a78a8)}.hero h1{margin:8px 0;font-size:clamp(2.2rem,8vw,3.5rem)}.hero p{margin:0 auto;max-width:48ch;opacity:.9}.shell{width:min(980px,calc(100% - 32px));margin:-28px auto 70px}.panel{padding:18px;border-radius:20px;background:rgba(255,255,255,.88);border:1px solid rgba(255,255,255,.95);box-shadow:0 10px 30px rgba(29,90,128,.12);margin-bottom:14px}.panel h2,.panel h3{font-family:var(--font-display);margin:0 0 12px}.top-bar{position:absolute}.button{padding:10px 16px;border-radius:999px;background:#123a58;color:#fff;text-decoration:none;font-weight:700;font-size:.9rem;border:0;cursor:pointer}.button.secondary{background:#edf4f8;color:#123a58}.button.danger{background:#fbe9e7;color:#8a3b2e}.button.small{padding:7px 12px;font-size:.8rem}.button:disabled{opacity:.55;cursor:default}.status{min-height:1.4em;margin:8px 0 0;color:#73591f;font-weight:700}.add-row{display:flex;gap:8px;flex-wrap:wrap}.add-row input{flex:1 1 220px;min-width:0;border:1px solid #d5e3ec;border-radius:999px;padding:11px 14px;font:inherit;box-sizing:border-box}.count{font-weight:700;color:#8a6d2b;margin:0 0 8px}.progress{height:10px;border-radius:999px;background:#e3edf3;overflow:hidden;margin-bottom:4px}.progress i{display:block;height:100%;width:0;background:linear-gradient(90deg,#c9a24a,#e8c96a);transition:width .3s}.bucket-list{display:grid;gap:8px}.bucket-item{display:flex;gap:10px;align-items:center;background:#eff5f8;border-radius:14px;padding:9px 10px;border:1px solid transparent}.bucket-item.done{opacity:.65}.bucket-item.done .bucket-info strong{text-decoration:line-through}.bucket-tick{flex:none;width:30px;height:30px;border-radius:50%;border:2px solid #c9a24a;background:#fff;color:#8a6d2b;font-size:1rem;font-weight:700;cursor:pointer;line-height:1}.bucket-item.done .bucket-tick{background:#c9a24a;color:#fff}.bucket-info{flex:1;min-width:0}.bucket-info strong{display:block;font-size:.95rem;overflow-wrap:anywhere}.bucket-info span{font-size:.78rem;color:#6a8292}@media(max-width:720px){.shell{width:calc(100% - 20px)}}
+  </style>
+</head>
+<body>
+  <div class="top-bar"><a class="button secondary" href="index.html">← Back to hub</a></div>
+  <header class="hero"><p style="text-transform:uppercase;letter-spacing:.12em;font-size:.8rem">Bucket list</p><h1>🪣 Things we want to do</h1><p>Every dream, trip and silly little plan we want to do together — tick them off as we live them.</p></header>
+  <main class="shell">
+    <section class="panel">
+      <h2>How far we&rsquo;ve got</h2>
+      <p class="count" id="bucketCount">Loading our list…</p>
+      <div class="progress"><i id="bucketProgress"></i></div>
+    </section>
+
+    <section class="panel">
+      <h2>Add to the list</h2>
+      <div class="add-row">
+        <input id="bucketAddInput" type="text" placeholder="e.g. Watch the sunrise at the beach" aria-label="Bucket list item" maxlength="200">
+        <button class="button" id="bucketAddButton" type="button">Add to list</button>
+      </div>
+      <p class="status" id="bucketAddStatus" role="status"></p>
+    </section>
+
+    <section class="panel">
+      <h2>Our list</h2>
+      <div class="bucket-list" id="bucketList"><span style="color:#6a8292;font-size:.9rem">Loading our list…</span></div>
+    </section>
+  </main>
+  <script src="assets/js/dialog.js"></script><script src="assets/js/avatar.js"></script>
+  <script type="module" src="assets/js/bucket-list.js?v=1"></script>
+  <script src="assets/js/stickers-overlay.js"></script>
+</body>
+</html>
