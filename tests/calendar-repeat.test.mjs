@@ -34,6 +34,31 @@ test('expandRepeat weekdays skips Saturday and Sunday', function () {
   );
 });
 
+test('expandRepeat every-n-days steps by the chosen gap', function () {
+  // Every 2 days from Mon 30 Nov.
+  assert.deepEqual(
+    expandRepeat('2026-11-30', 'every-n-days', '2026-12-06', 2),
+    ['2026-11-30', '2026-12-02', '2026-12-04', '2026-12-06']
+  );
+  // Every 3 days.
+  assert.deepEqual(
+    expandRepeat('2026-11-30', 'every-n-days', '2026-12-09', 3),
+    ['2026-11-30', '2026-12-03', '2026-12-06', '2026-12-09']
+  );
+  // A gap that does not land on the until date stops before it.
+  assert.deepEqual(
+    expandRepeat('2026-11-30', 'every-n-days', '2026-12-05', 3),
+    ['2026-11-30', '2026-12-03']
+  );
+});
+
+test('expandRepeat caps an every-n-days series at 52 instances', function () {
+  const dates = expandRepeat('2026-11-30', 'every-n-days', '2027-12-31', 2);
+  assert.equal(dates.length, 52);
+  assert.equal(dates[0], '2026-11-30');
+  assert.equal(dates[51], '2027-03-12');
+});
+
 test('expandRepeat monthly keeps the same day and skips short months', function () {
   assert.deepEqual(
     expandRepeat('2026-11-15', 'monthly', '2027-02-15'),
@@ -78,6 +103,6 @@ test('isValidFor only accepts the three audience values', function () {
   assert.equal(isValidFor(undefined), false);
 });
 
-test('REPEAT_FREQUENCIES lists the four supported repeats', function () {
-  assert.deepEqual(REPEAT_FREQUENCIES, ['daily', 'weekly', 'weekdays', 'monthly']);
+test('REPEAT_FREQUENCIES lists the five supported repeats', function () {
+  assert.deepEqual(REPEAT_FREQUENCIES, ['daily', 'weekly', 'weekdays', 'monthly', 'every-n-days']);
 });

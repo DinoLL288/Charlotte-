@@ -131,7 +131,7 @@ function isValidFor(value) {
   return value === 'both' || value === 'Luke' || value === 'Charlotte';
 }
 
-const REPEAT_FREQUENCIES = ['daily', 'weekly', 'weekdays', 'monthly'];
+const REPEAT_FREQUENCIES = ['daily', 'weekly', 'weekdays', 'monthly', 'every-n-days'];
 
 // Date helpers for repeat expansion. All UTC so month lengths and
 // weekdays never shift with the viewer's timezone.
@@ -158,8 +158,9 @@ function addDays(parts, count) {
   return { y: dt.getUTCFullYear(), m: dt.getUTCMonth() + 1, d: dt.getUTCDate() };
 }
 
-function nextRepeatDate(current, frequency, anchorDay) {
+function nextRepeatDate(current, frequency, anchorDay, interval) {
   if (frequency === 'daily') return addDays(current, 1);
+  if (frequency === 'every-n-days') return addDays(current, interval || 2);
   if (frequency === 'weekly') return addDays(current, 7);
   if (frequency === 'weekdays') {
     let next = addDays(current, 1);
@@ -184,8 +185,9 @@ function nextRepeatDate(current, frequency, anchorDay) {
 // and stopping at `until` (inclusive). At most 52 instances. The
 // first occurrence is the start date itself when it matches the
 // pattern — a weekday repeat starting on a Saturday begins on the
-// Monday after, not on the Saturday.
-function expandRepeat(startDate, frequency, until) {
+// Monday after, not on the Saturday. `interval` is the day gap for
+// an 'every-n-days' repeat (2 = every other day).
+function expandRepeat(startDate, frequency, until, interval) {
   const start = dateParts(startDate);
   const dates = [];
   let current = { ...start };
@@ -198,7 +200,7 @@ function expandRepeat(startDate, frequency, until) {
     const key = dateKeyOfParts(current);
     if (key > until) break;
     dates.push(key);
-    current = nextRepeatDate(current, frequency, start.d);
+    current = nextRepeatDate(current, frequency, start.d, interval);
   }
   return dates;
 }
@@ -358,8 +360,20 @@ export async function onRequestPost(context) {
           return jsonResponse({
             error: 'Invalid repeat frequency',
             received: frequency ?? null,
-            expected: 'daily, weekly, weekdays or monthly'
+            expected: 'daily, weekly, weekdays, monthly or every-n-days'
           }, 400);
+        }
+        // "Every few days" needs a whole-day gap: 2 to 30 days.
+        let interval = null;
+        if (frequency === 'every-n-days') {
+          interval = Number(event.repeat.interval);
+          if (!Number.isInteger(interval) || interval < 2 || interval > 30) {
+            return jsonResponse({
+              error: 'Invalid repeat interval',
+              received: event.repeat.interval ?? null,
+              expected: 'a whole number of days from 2 to 30'
+            }, 400);
+          }
         }
         const untilResult = getValidDate(event.repeat.until);
         if (!untilResult.valid) return jsonResponse(untilResult.error, 400);
@@ -369,7 +383,7 @@ export async function onRequestPost(context) {
             received: untilResult.date
           }, 400);
         }
-        repeat = { frequency, until: untilResult.date };
+        repeat = { frequency, until: untilResult.date, interval };
       }
 
       const baseEvent = {
@@ -388,7 +402,7 @@ export async function onRequestPost(context) {
 
       if (repeat) {
         const repeatId = newId();
-        const dates = expandRepeat(date, repeat.frequency, repeat.until);
+        const dates = expandRepeat(date, repeat.frequency, repeat.until, repeat.interval);
         const ids = [];
         for (const occurrence of dates) {
           const id = newId();

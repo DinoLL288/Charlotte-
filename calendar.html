@@ -388,7 +388,11 @@
             <option value="weekly">Weekly</option>
             <option value="weekdays">Weekdays (Mon–Fri)</option>
             <option value="monthly">Monthly</option>
+            <option value="every-n-days">Every few days…</option>
           </select>
+        </label>
+        <label class="modal-field" id="repeatIntervalField" hidden>Repeat every (days)
+          <input id="eventRepeatInterval" type="number" min="2" max="30" value="2" inputmode="numeric" aria-label="Repeat every this many days">
         </label>
         <label class="modal-field" id="repeatUntilField" hidden>Repeat until
           <input id="eventRepeatUntil" type="date">
@@ -426,6 +430,8 @@
     const eventFor = document.getElementById('eventFor');
     const eventRepeat = document.getElementById('eventRepeat');
     const eventRepeatUntil = document.getElementById('eventRepeatUntil');
+    const eventRepeatInterval = document.getElementById('eventRepeatInterval');
+    const repeatIntervalField = document.getElementById('repeatIntervalField');
     const repeatRow = document.getElementById('repeatRow');
     const repeatUntilField = document.getElementById('repeatUntilField');
     const todayBtn = document.getElementById('todayBtn');
@@ -827,6 +833,8 @@
       eventRepeat.value = 'none';
       eventRepeatUntil.value = '';
       eventRepeatUntil.min = key;
+      eventRepeatInterval.value = '2';
+      repeatIntervalField.hidden = true;
       repeatUntilField.hidden = true;
       repeatRow.style.display = '';
       deleteEvent.style.display = 'none';
@@ -864,6 +872,7 @@
 
     eventRepeat.addEventListener('change', () => {
       repeatUntilField.hidden = eventRepeat.value === 'none';
+      repeatIntervalField.hidden = eventRepeat.value !== 'every-n-days';
     });
 
     cancelEvent.addEventListener('click', closeModal);
@@ -900,6 +909,14 @@
             return;
           }
           event.repeat = { frequency, until };
+          if (frequency === 'every-n-days') {
+            const interval = Number(eventRepeatInterval.value);
+            if (!Number.isInteger(interval) || interval < 2 || interval > 30) {
+              siteDialog.alert('Repeat every 2 to 30 days — pick a whole number in that range.');
+              return;
+            }
+            event.repeat.interval = interval;
+          }
         }
       }
       saveEvent.disabled = true;

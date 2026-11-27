@@ -92,6 +92,31 @@ test('add expands a weekly repeat into dated instances sharing one repeatId', as
   }
 });
 
+test('add expands an every-n-days repeat by the chosen gap', async function () {
+  const mock = makeFetch({});
+  const ctx = context(mock.fetchStub);
+  try {
+    const res = await onRequestPost({
+      env: ctx.env,
+      request: postRequest({
+        date: '2026-11-30',
+        event: {
+          title: 'Water the plants',
+          repeat: { frequency: 'every-n-days', interval: 3, until: '2026-12-09' }
+        }
+      })
+    });
+    assert.equal(res.status, 200);
+    const json = await res.json();
+    assert.equal(json.ok, true);
+    assert.equal(json.count, 4);
+    const events = mock.savedEvents();
+    assert.deepEqual(Object.keys(events).sort(), ['2026-11-30', '2026-12-03', '2026-12-06', '2026-12-09']);
+  } finally {
+    ctx.restore();
+  }
+});
+
 test('add caps a repeat at 52 instances', async function () {
   const mock = makeFetch({});
   const ctx = context(mock.fetchStub);
@@ -144,7 +169,11 @@ test('add rejects a bad frequency, a bad until date and an until before the star
     { event: { title: 'X', repeat: { frequency: 'yearly', until: '2026-12-31' } } },
     { event: { title: 'X', repeat: { frequency: 'daily', until: '31-12-2026' } } },
     { event: { title: 'X', repeat: { frequency: 'daily', until: '2026-11-29' } } },
-    { event: { title: 'X', repeat: 'daily' } }
+    { event: { title: 'X', repeat: 'daily' } },
+    { event: { title: 'X', repeat: { frequency: 'every-n-days', until: '2026-12-31' } } },
+    { event: { title: 'X', repeat: { frequency: 'every-n-days', interval: 1, until: '2026-12-31' } } },
+    { event: { title: 'X', repeat: { frequency: 'every-n-days', interval: 31, until: '2026-12-31' } } },
+    { event: { title: 'X', repeat: { frequency: 'every-n-days', interval: 'three', until: '2026-12-31' } } }
   ];
   for (const payload of cases) {
     const mock = makeFetch({});
