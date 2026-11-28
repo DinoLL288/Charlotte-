@@ -25,9 +25,8 @@
       window.addEventListener('load', function () {
         navigator.serviceWorker.getRegistrations().then(function (rs) {
           return Promise.all(rs.map(function (r) { return r.unregister(); }));
-        }).then(function () {
-          return navigator.serviceWorker.register('/sw.js?v=19');
         }).catch(function () {});
+        navigator.serviceWorker.register('/sw.js?v=19').catch(function () {});
       });
     }
   </script>

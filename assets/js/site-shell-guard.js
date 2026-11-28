@@ -222,6 +222,7 @@
 // Register service worker for caching and offline support
 if ('serviceWorker' in navigator && window.top === window.self) {
   window.addEventListener('load', () => {
-    navigator.serviceWorker.getRegistrations().then(rs => Promise.all(rs.map(r => r.unregister()))).then(() => navigator.serviceWorker.register('/sw.js?v=19')).catch(() => {});
+    navigator.serviceWorker.getRegistrations().then(rs => Promise.all(rs.map(r => r.unregister()))).catch(() => {});
+    navigator.serviceWorker.register('/sw.js?v=19').catch(() => {});
   });
 }
