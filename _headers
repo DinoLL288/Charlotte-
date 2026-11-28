@@ -1,5 +1,5 @@
 /*
-  Cache-Control: public, max-age=60, stale-while-revalidate=300
+  Cache-Control: no-cache, no-store, must-revalidate
 
 /sw.js
   Cache-Control: no-store
