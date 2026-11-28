@@ -207,15 +207,15 @@ test('navigation offline with no cached copy falls back to the offline page', as
   const cache = await h.sandbox.caches.open('charlotte-v13');
   const offline = new FakeResponse('<h1>offline</h1>');
   await cache.put('/offline.html', offline);
-  const res = await dispatchFetch(h, makeRequest('https://charlotte-3ts.pages.dev/calendar.html', { mode: 'navigate', accept: 'text/html' }));
+  const res = await dispatchFetch(h, makeRequest('https://charlotte-3ts.pages.dev/calendar', { mode: 'navigate', accept: 'text/html' }));
   assert.equal(res.body, '<h1>offline</h1>');
 });
 
 test('navigation offline with a cached copy serves the cached page', async () => {
   const h = loadServiceWorker(() => Promise.reject(new Error('offline')));
   const cache = await h.sandbox.caches.open('charlotte-v13');
-  await cache.put('https://charlotte-3ts.pages.dev/calendar.html', new FakeResponse('<h1>cached calendar</h1>'));
-  const res = await dispatchFetch(h, makeRequest('https://charlotte-3ts.pages.dev/calendar.html', { mode: 'navigate', accept: 'text/html' }));
+  await cache.put('https://charlotte-3ts.pages.dev/calendar', new FakeResponse('<h1>cached calendar</h1>'));
+  const res = await dispatchFetch(h, makeRequest('https://charlotte-3ts.pages.dev/calendar', { mode: 'navigate', accept: 'text/html' }));
   assert.equal(res.body, '<h1>cached calendar</h1>');
 });
 

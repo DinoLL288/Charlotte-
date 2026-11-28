@@ -117,6 +117,11 @@ self.addEventListener('fetch', event => {
     return;
   }
 
+  // Let the browser handle .html URLs natively (Cloudflare redirects them to
+  // the extensionless pretty URL). Intercepting the 308 in a service worker
+  // breaks navigation in Chrome (ERR_FAILED).
+  if (url.pathname.endsWith('.html')) return;
+
   // API requests: network-first, never cached. Shared data must never be
   // stale, so an offline API call gets a clear 503 instead of an old answer.
   if (url.pathname.startsWith('/api/')) {
