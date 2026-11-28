@@ -1,0 +1,86 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <link rel="manifest" href="/site.webmanifest">
+  <link rel="apple-touch-icon" href="/apple-touch-icon.png">
+  <meta name="theme-color" content="#0d2c44">
+  <meta name="apple-mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-title" content="Charlotte">
+  <script src="assets/js/site-shell-guard.js"></script>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+  <title>Four in a row</title>
+  <link rel="stylesheet" href="assets/css/theme.css">
+  <link rel="icon" href="assets/images/favicon.svg" type="image/svg+xml">
+  <script>if (!localStorage.getItem('charlotte-user')) location.href = 'login.html';</script>
+  <style>
+    body { margin: 0; min-height: 100vh; font-family: var(--font-body); background: linear-gradient(160deg, #eaf7ff, #c3e6fb 42%, #8ecbeb 100%); color: #10344f; }
+    .top-bar { position: fixed; top: 12px; left: 12px; z-index: 5; display: flex; gap: 8px; flex-wrap: wrap; }
+    .button { padding: 8px 14px; border-radius: 999px; background: #123a58; color: #fff; text-decoration: none; font-weight: 700; font-size: .85rem; border: 0; cursor: pointer; }
+    .button.secondary { background: rgba(255,255,255,.85); color: #123a58; }
+    .hero { padding: 78px 20px 30px; text-align: center; color: #fff; background: linear-gradient(160deg, #0d2c44, #2a78a8); }
+    .hero .eyebrow { color: #ecd7a0; font-size: 1rem; font-family: var(--font-display); font-style: italic; }
+    .hero h1 { margin: 10px 0 8px; font-size: clamp(2rem, 7vw, 3.2rem); font-weight: 400; }
+    .hero p { margin: 0 auto; max-width: 52ch; color: #e6f3fc; line-height: 1.6; }
+    .shell { width: min(560px, calc(100% - 32px)); margin: 0 auto; padding: 24px 0 80px; }
+    .hud { display: flex; gap: 10px; flex-wrap: wrap; justify-content: center; margin-bottom: 18px; }
+    .hud .pill { padding: 8px 16px; border-radius: 999px; background: rgba(255,255,255,.9); color: #123a58; font-weight: 700; font-size: .95rem; box-shadow: 0 6px 16px rgba(0,0,0,.12); }
+    .panel { padding: clamp(20px, 5vw, 28px); border-radius: 22px; background: rgba(255,255,255,.75); border: 1px solid rgba(255,255,255,.9); box-shadow: 0 20px 50px rgba(20,63,95,.13); text-align: center; }
+    .panel h2 { margin: 0; color: #123a58; font-size: 1.5rem; }
+    .intro { margin: 8px 0 18px; color: #5c7c93; line-height: 1.5; }
+    .turn { font-size: 1.25rem; font-weight: 700; color: #123a58; margin: 0 0 14px; min-height: 1.4em; }
+    .four-drop-row { display: grid; grid-template-columns: repeat(7, 1fr); gap: 6px; margin-bottom: 6px; }
+    .four-drop { border: 0; background: transparent; color: #2a78a8; font-size: 1rem; cursor: pointer; padding: 4px 0; touch-action: manipulation; -webkit-tap-highlight-color: transparent; }
+    .four-drop:active { transform: scale(1.3); }
+    .four-board { display: grid; grid-template-columns: repeat(7, 1fr); gap: 6px; padding: 10px; border-radius: 18px; background: linear-gradient(160deg, #0d2c44, #1d5a80); box-shadow: 0 14px 30px rgba(20,63,95,.25); }
+    .four-cell { aspect-ratio: 1; border: 0; border-radius: 50%; background: rgba(255,255,255,.16); box-shadow: inset 0 3px 8px rgba(0,0,0,.35); cursor: pointer; padding: 0; display: flex; align-items: center; justify-content: center; touch-action: manipulation; -webkit-tap-highlight-color: transparent; }
+    .four-cell:active { background: rgba(255,255,255,.28); }
+    .four-disc { display: flex; align-items: center; justify-content: center; width: 88%; height: 88%; border-radius: 50%; font-size: clamp(1rem, 5vw, 1.5rem); box-shadow: 0 3px 8px rgba(0,0,0,.35); animation: four-drop-in .25s ease; }
+    .four-disc-luke { background: radial-gradient(circle at 35% 30%, #7cc4f5, #2a78a8 70%); }
+    .four-disc-charlotte { background: radial-gradient(circle at 35% 30%, #ffb3d1, #e56b9d 70%); }
+    @keyframes four-drop-in { from { transform: translateY(-14px) scale(.7); opacity: .4; } to { transform: translateY(0) scale(1); opacity: 1; } }
+    .four-cell.four-win { outline: 3px solid #f5c542; outline-offset: 1px; animation: four-win-pulse 1s ease infinite; }
+    @keyframes four-win-pulse { 0%, 100% { outline-color: #f5c542; } 50% { outline-color: #fff3c4; } }
+    .status { min-height: 1.4em; margin: 16px 0 0; color: #73591f; font-weight: 700; line-height: 1.5; }
+    .btn { border: 1px solid #143f5f; border-radius: 999px; padding: 12px 26px; color: #fff; background: #143f5f; font: inherit; font-weight: 700; font-size: 1rem; cursor: pointer; margin-top: 16px; touch-action: manipulation; }
+    .btn.secondary { color: #315d78; background: #eef7fb; border-color: #cddfe8; }
+    .tally-line { margin-top: 14px; color: #5c7c93; font-size: .9rem; }
+    .tally-line button { border: 0; background: none; color: #2a78a8; font: inherit; font-size: inherit; text-decoration: underline; cursor: pointer; padding: 0; }
+    @media (max-width: 480px) {
+      .four-board { gap: 4px; padding: 8px; }
+      .four-drop-row { gap: 4px; }
+    }
+  </style>
+</head>
+<body>
+  <div class="top-bar">
+    <a class="button" href="index.html">← Back to hub</a>
+    <a class="button secondary" href="games.html">All games</a>
+  </div>
+  <header class="hero">
+    <p class="eyebrow">Play &amp; earn</p>
+    <h1>Four in a row 🔴</h1>
+    <p>A game for two, on one phone. Luke plays 💙, Charlotte plays 🩷. Take turns dropping a disc — first to four in a row wins, and the winner earns 5 tokens.</p>
+  </header>
+  <main class="shell">
+    <div class="hud">
+      <span class="pill">💙 Luke: <span id="lukeWins">0</span></span>
+      <span class="pill">🩷 Charlotte: <span id="charlotteWins">0</span></span>
+      <span class="pill">🪙 Tokens: <span id="tokenCount">0</span></span>
+    </div>
+    <div class="panel">
+      <h2>Drop your disc</h2>
+      <p class="intro">Tap a ▼ arrow — or any spot in a column — to drop your disc there. Four across, down, or diagonal wins the game.</p>
+      <p class="turn" id="fourTurn">💙 Luke — your turn</p>
+      <div class="four-drop-row" id="fourDropRow"></div>
+      <div class="four-board" id="fourBoard" role="grid" aria-label="Four in a row board"></div>
+      <div class="status" id="fourStatus">Tap a column to drop your disc. First to four in a row wins!</div>
+      <button class="btn" id="fourAgain" style="display:none">Play again</button>
+      <p class="tally-line">Wins on this device — <button type="button" id="fourResetTally">reset the tally</button></p>
+    </div>
+  </main>
+  <script src="assets/js/avatar.js"></script>
+  <script type="module" src="assets/js/four-in-a-row.js?v=1"></script>
+  <script defer src="assets/js/stickers-overlay.js"></script>
+</body>
+</html>
