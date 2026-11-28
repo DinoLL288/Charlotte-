@@ -133,5 +133,6 @@ document.documentElement.dataset.homeLayout = preferences.homeLayout === 'doors'
   window.addEventListener('storage', event => {
     if (event.key === 'charlotte-user' && !event.newValue) location.replace('login.html');
   });
+  console.log('DEBUG initialPage', JSON.stringify(initialPage), 'safe', JSON.stringify(safePath(initialPage)));
   frame.src = safePath(initialPage);
 })();
