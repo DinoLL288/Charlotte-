@@ -1,5 +1,4 @@
 (function () {
-  document.documentElement.dataset.ssLoaded = 'true';
   const frame = document.getElementById('siteFrame');
   const query = new URLSearchParams(location.search);
   const initialPage = query.get('page') || 'index.html';
@@ -85,13 +84,10 @@
 }
 
 frame.addEventListener('load', () => {
-  document.documentElement.dataset.ssLog = (document.documentElement.dataset.ssLog || '') + '|frame load src=' + frame.getAttribute('src');
-  console.log('[site-shell] frame load, src=', frame.getAttribute('src'));
   installBouncyBalls();
 
   document.body.classList.remove('is-navigating');
   frame.classList.add('is-visible');
-  console.log('[site-shell] revealed, opacity=', getComputedStyle(frame).opacity);
 });
 
   window.addEventListener('message', event => {
@@ -122,8 +118,6 @@ document.documentElement.dataset.homeLayout = preferences.homeLayout === 'doors'
     }
     if (event.data.type === 'site-page-ready') {
       const next = safePath(event.data.path);
-      document.documentElement.dataset.ssLog = (document.documentElement.dataset.ssLog || '') + '|page-ready path=' + event.data.path + ' next=' + next + ' pending=' + pendingPath;
-      console.log('[site-shell] page-ready path=', event.data.path, 'next=', next, 'pending=', pendingPath, 'match=', !(pendingPath && next !== pendingPath));
       if (pendingPath && next !== pendingPath) return;
       if (!currentPath) history.replaceState({ page: next }, '', next);
       else if (next !== currentPath && !pendingPath) history.pushState({ page: next }, '', next);
@@ -139,9 +133,6 @@ document.documentElement.dataset.homeLayout = preferences.homeLayout === 'doors'
   window.addEventListener('storage', event => {
     if (event.key === 'charlotte-user' && !event.newValue) location.replace('login.html');
   });
-  document.documentElement.dataset.ssLog = (document.documentElement.dataset.ssLog || '') + '|initialPage=' + initialPage + ' safe=' + safePath(initialPage) + ' location=' + location.href;
-  console.log('[site-shell] initialPage=', initialPage, 'safe=', safePath(initialPage), 'location=', location.href);
   frame.src = safePath(initialPage);
-  frame.addEventListener('error', (e) => console.error('[site-shell] frame error', e));
 })();
 console.log('[site-shell] loaded, sw controlled?', !!navigator.serviceWorker?.controller);
