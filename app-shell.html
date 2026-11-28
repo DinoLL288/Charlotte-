@@ -23,7 +23,7 @@
     // registered from an iframe would be scoped to that frame, not the app.)
     if ('serviceWorker' in navigator) {
       window.addEventListener('load', function () {
-        navigator.serviceWorker.register('/sw.js').catch(function () {});
+        navigator.serviceWorker.register('/sw.js?v=19').catch(function () {});
       });
     }
   </script>
