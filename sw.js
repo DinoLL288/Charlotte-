@@ -5,7 +5,7 @@
 // old answer. Navigation requests with no cached copy fall back to the
 // offline page instead of a browser error.
 
-const CACHE_NAME = 'charlotte-v20';
+const CACHE_NAME = 'charlotte-v21';
 const OFFLINE_URL = '/offline.html';
 
 // Static assets to precache — keep in sync with what pages actually load.
@@ -94,7 +94,12 @@ self.addEventListener('fetch', event => {
   // Cloudflare redirects .html to the extensionless pretty URL. Following that
   // redirect inside a service worker breaks navigation in Chrome (ERR_FAILED),
   // so fetch the extensionless URL directly instead.
-  const fetchTarget = url.pathname.endsWith('.html')
+  // Cloudflare Pages canonicalizes `/index` to `/` with a 308. Fetching that
+  // redirect as a controlled navigation can fail in some browsers (including
+  // Opera). The root URL serves the same index.html without the redirect.
+  const fetchTarget = url.pathname === '/index'
+    ? new URL('/' + url.search + url.hash, url.origin).toString()
+    : url.pathname.endsWith('.html')
     ? new URL(url.pathname.replace(/\.html$/i, '') + url.search + url.hash, url.origin).toString()
     : event.request.url;
 
