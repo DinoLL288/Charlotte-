@@ -5,7 +5,7 @@
 // old answer. Navigation requests with no cached copy fall back to the
 // offline page instead of a browser error.
 
-const CACHE_NAME = 'charlotte-v19';
+const CACHE_NAME = 'charlotte-v20';
 const OFFLINE_URL = '/offline.html';
 
 // Static assets to precache — keep in sync with what pages actually load.
