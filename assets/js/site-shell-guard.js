@@ -212,8 +212,9 @@
     document.head.appendChild(fav);
   }
   if (window.top !== window.self) return;
-  const name = location.pathname.split('/').filter(Boolean).pop() || 'index.html';
-  if (name === 'app-shell.html' || name === 'login.html') return;
+  const rawName = location.pathname.split('/').filter(Boolean).pop() || 'index';
+  const name = rawName.replace(/\.html$/i, '') || 'index';
+  if (name === 'app-shell' || name === 'login') return;
   const page = `${name}${location.search}${location.hash}`;
   location.replace(`app-shell.html?page=${encodeURIComponent(page)}`);
 })();

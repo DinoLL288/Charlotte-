@@ -6,9 +6,17 @@
   let pendingPath = '';
 
   function safePath(value) {
-    const target = new URL(value || 'index.html', location.origin);
-    if (target.origin !== location.origin || !/\.html$/i.test(target.pathname) || target.pathname.endsWith('/app-shell.html')) return '/index.html';
-    return `${target.pathname}${target.search}${target.hash}`;
+    const target = new URL(value || 'index', location.origin);
+    if (target.origin !== location.origin) return '/index';
+    let pathname = target.pathname;
+    // Cloudflare Pages serves pages without the .html extension (and redirects
+    // .html to the clean URL), so normalise everything to the clean form.
+    pathname = pathname.replace(/\.html$/i, '');
+    if (pathname === '' || pathname === '/') pathname = '/index';
+    if (pathname.endsWith('/app-shell')) return '/index';
+    // Only allow page-like paths (no file extension other than the stripped .html).
+    if (/\.[a-z0-9]+$/i.test(pathname)) return '/index';
+    return `${pathname}${target.search}${target.hash}`;
   }
 
   function startPage(path, push = false) {
