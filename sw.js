@@ -5,7 +5,7 @@
 // old answer. Navigation requests with no cached copy fall back to the
 // offline page instead of a browser error.
 
-const CACHE_NAME = 'charlotte-v11';
+const CACHE_NAME = 'charlotte-v13';
 const OFFLINE_URL = '/offline.html';
 
 // Static assets to precache — keep in sync with what pages actually load.
@@ -91,6 +91,13 @@ self.addEventListener('fetch', event => {
   // Skip non-GET requests
   if (event.request.method !== 'GET') return;
 
+  // Cloudflare redirects .html to the extensionless pretty URL. Following that
+  // redirect inside a service worker breaks navigation in Chrome (ERR_FAILED),
+  // so fetch the extensionless URL directly instead.
+  const fetchTarget = url.pathname.endsWith('.html')
+    ? new URL(url.pathname.replace(/\.html$/i, '') + url.search + url.hash, url.origin).toString()
+    : event.request.url;
+
   // Skip cross-origin requests (except known CDNs)
   if (url.origin !== location.origin) {
     // Allow ui-avatars.com through (profile pics)
@@ -98,7 +105,7 @@ self.addEventListener('fetch', event => {
       event.respondWith(
         caches.open(CACHE_NAME).then(cache => {
           return cache.match(event.request).then(cached => {
-            const fetchPromise = fetch(event.request).then(response => {
+            const fetchPromise = fetch(fetchTarget).then(response => {
               if (response.ok) cache.put(event.request, response.clone());
               return response;
             }).catch(() => cached);
@@ -114,7 +121,7 @@ self.addEventListener('fetch', event => {
   // stale, so an offline API call gets a clear 503 instead of an old answer.
   if (url.pathname.startsWith('/api/')) {
     event.respondWith(
-      fetch(event.request).then(response => {
+      fetch(fetchTarget).then(response => {
         if (!response.ok) return response;
         return response;
       }).catch(() => offlineJsonResponse())
@@ -130,7 +137,7 @@ self.addEventListener('fetch', event => {
     event.respondWith(
       caches.open(CACHE_NAME).then(cache => {
         return cache.match(event.request).then(cached => {
-          const fetchPromise = fetch(event.request).then(response => {
+          const fetchPromise = fetch(fetchTarget).then(response => {
             if (response.ok) cache.put(event.request, response.clone());
             return response;
           }).catch(() => cached || cache.match(OFFLINE_URL));
@@ -146,7 +153,7 @@ self.addEventListener('fetch', event => {
   event.respondWith(
     caches.open(CACHE_NAME).then(cache => {
       return cache.match(event.request).then(cached => {
-        const fetchPromise = fetch(event.request).then(response => {
+        const fetchPromise = fetch(fetchTarget).then(response => {
           if (response.ok) cache.put(event.request, response.clone());
           return response;
         }).catch(() => cached || new Response('Offline', { status: 503 }));
