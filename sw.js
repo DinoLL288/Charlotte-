@@ -5,7 +5,7 @@
 // old answer. Navigation requests with no cached copy fall back to the
 // offline page instead of a browser error.
 
-const CACHE_NAME = 'charlotte-v18';
+const CACHE_NAME = 'charlotte-v19';
 const OFFLINE_URL = '/offline.html';
 
 // Static assets to precache — keep in sync with what pages actually load.
@@ -139,16 +139,15 @@ self.addEventListener('fetch', event => {
   const isNavigation = event.request.mode === 'navigate' ||
     (event.request.headers.get('accept') || '').includes('text/html');
   if (isNavigation) {
+    // Always fetch navigation requests from the network so HTML (app-shell) is
+    // never stale. Fall back to the cache / offline page only when offline.
     event.respondWith(
-      caches.open(CACHE_NAME).then(cache => {
-        return cache.match(event.request).then(cached => {
-          const fetchPromise = fetch(fetchTarget).then(response => {
-            if (response.ok) cache.put(event.request, response.clone());
-            return response;
-          }).catch(() => cached || cache.match(OFFLINE_URL));
-          return cached || fetchPromise;
-        });
-      })
+      fetch(fetchTarget).then(response => {
+        if (response.ok) {
+          caches.open(CACHE_NAME).then(cache => cache.put(event.request, response.clone()));
+        }
+        return response;
+      }).catch(() => caches.open(CACHE_NAME).then(cache => cache.match(event.request).then(cached => cached || cache.match(OFFLINE_URL))))
     );
     return;
   }
