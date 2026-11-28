@@ -78,10 +78,8 @@
 frame.addEventListener('load', () => {
   installBouncyBalls();
 
-  requestAnimationFrame(() => {
-    document.body.classList.remove('is-navigating');
-    frame.classList.add('is-visible');
-  });
+  document.body.classList.remove('is-navigating');
+  frame.classList.add('is-visible');
 });
 
   window.addEventListener('message', event => {
