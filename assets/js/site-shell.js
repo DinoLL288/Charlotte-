@@ -1,5 +1,5 @@
 (function () {
-  window.__ssLoaded = true;
+  document.documentElement.dataset.ssLoaded = 'true';
   const frame = document.getElementById('siteFrame');
   const query = new URLSearchParams(location.search);
   const initialPage = query.get('page') || 'index.html';
@@ -85,8 +85,7 @@
 }
 
 frame.addEventListener('load', () => {
-  window.__ssLogs = window.__ssLogs || [];
-  window.__ssLogs.push('frame load src=' + frame.getAttribute('src'));
+  document.documentElement.dataset.ssLog = (document.documentElement.dataset.ssLog || '') + '|frame load src=' + frame.getAttribute('src');
   console.log('[site-shell] frame load, src=', frame.getAttribute('src'));
   installBouncyBalls();
 
@@ -123,8 +122,7 @@ document.documentElement.dataset.homeLayout = preferences.homeLayout === 'doors'
     }
     if (event.data.type === 'site-page-ready') {
       const next = safePath(event.data.path);
-      window.__ssLogs = window.__ssLogs || [];
-      window.__ssLogs.push('page-ready path=' + event.data.path + ' next=' + next + ' pending=' + pendingPath + ' match=' + !(pendingPath && next !== pendingPath));
+      document.documentElement.dataset.ssLog = (document.documentElement.dataset.ssLog || '') + '|page-ready path=' + event.data.path + ' next=' + next + ' pending=' + pendingPath;
       console.log('[site-shell] page-ready path=', event.data.path, 'next=', next, 'pending=', pendingPath, 'match=', !(pendingPath && next !== pendingPath));
       if (pendingPath && next !== pendingPath) return;
       if (!currentPath) history.replaceState({ page: next }, '', next);
@@ -141,8 +139,7 @@ document.documentElement.dataset.homeLayout = preferences.homeLayout === 'doors'
   window.addEventListener('storage', event => {
     if (event.key === 'charlotte-user' && !event.newValue) location.replace('login.html');
   });
-  window.__ssLogs = window.__ssLogs || [];
-  window.__ssLogs.push('initialPage=' + initialPage + ' safe=' + safePath(initialPage) + ' location=' + location.href);
+  document.documentElement.dataset.ssLog = (document.documentElement.dataset.ssLog || '') + '|initialPage=' + initialPage + ' safe=' + safePath(initialPage) + ' location=' + location.href;
   console.log('[site-shell] initialPage=', initialPage, 'safe=', safePath(initialPage), 'location=', location.href);
   frame.src = safePath(initialPage);
   frame.addEventListener('error', (e) => console.error('[site-shell] frame error', e));
