@@ -204,7 +204,7 @@ test('service worker cache name is versioned', () => {
 test('navigation offline with no cached copy falls back to the offline page', async () => {
   const h = loadServiceWorker(() => Promise.reject(new Error('offline')));
   // Pre-seed the offline page in the cache.
-  const cache = await h.sandbox.caches.open('charlotte-v16');
+  const cache = await h.sandbox.caches.open('charlotte-v17');
   const offline = new FakeResponse('<h1>offline</h1>');
   await cache.put('/offline.html', offline);
   const res = await dispatchFetch(h, makeRequest('https://charlotte-3ts.pages.dev/calendar', { mode: 'navigate', accept: 'text/html' }));
@@ -213,7 +213,7 @@ test('navigation offline with no cached copy falls back to the offline page', as
 
 test('navigation offline with a cached copy serves the cached page', async () => {
   const h = loadServiceWorker(() => Promise.reject(new Error('offline')));
-  const cache = await h.sandbox.caches.open('charlotte-v16');
+  const cache = await h.sandbox.caches.open('charlotte-v17');
   await cache.put('https://charlotte-3ts.pages.dev/calendar', new FakeResponse('<h1>cached calendar</h1>'));
   const res = await dispatchFetch(h, makeRequest('https://charlotte-3ts.pages.dev/calendar', { mode: 'navigate', accept: 'text/html' }));
   assert.equal(res.body, '<h1>cached calendar</h1>');
@@ -221,7 +221,7 @@ test('navigation offline with a cached copy serves the cached page', async () =>
 
 test('API offline returns a clear 503 and never serves a cached answer', async () => {
   const h = loadServiceWorker(() => Promise.reject(new Error('offline')));
-  const cache = await h.sandbox.caches.open('charlotte-v16');
+  const cache = await h.sandbox.caches.open('charlotte-v17');
   // Even if an old API answer is somehow in the cache, it must not be served.
   await cache.put('https://charlotte-3ts.pages.dev/api/calendar', new FakeResponse('{"stale":true}'));
   const res = await dispatchFetch(h, makeRequest('https://charlotte-3ts.pages.dev/api/calendar'));
@@ -263,7 +263,7 @@ test('install precaches the app shell assets without one failure killing it', as
   const event = { waitUntil: p => { waitPromise = p; } };
   for (const fn of h.listeners.install || []) fn(event);
   await waitPromise;
-  const cache = await h.sandbox.caches.open('charlotte-v16');
+  const cache = await h.sandbox.caches.open('charlotte-v17');
   assert.ok(cache.store.has('/index.html'), 'index was not precached');
   assert.ok(cache.store.has('/offline.html'), 'offline page was not precached');
   assert.ok(!cache.store.has('/assets/js/gallery-videos.js'), 'failed asset was cached');
