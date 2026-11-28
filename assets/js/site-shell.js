@@ -1,4 +1,5 @@
 (function () {
+  window.__ssLoaded = true;
   const frame = document.getElementById('siteFrame');
   const query = new URLSearchParams(location.search);
   const initialPage = query.get('page') || 'index.html';
